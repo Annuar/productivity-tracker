@@ -1,0 +1,2747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Productivity Tracker — Gs. Annuar Faiz</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Outfit', 'Plus Jakarta Sans', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              200: '#c7d2fe',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#1e1b4b',
+            }
+          },
+          boxShadow: {
+            'glass': '0 4px 24px -4px rgba(15, 23, 42, 0.05), 0 1px 2px 0 rgba(15, 23, 42, 0.03)',
+            'glass-lg': '0 12px 32px -6px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04)'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #e2e8f0;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #94a3b8;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      opacity: 1;
+    }
+    /* Deeper, low-glare slate backdrop with subtle ambient mesh */
+    body {
+      background-color: #CBD5E1;
+      background-image:
+        radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 10%, rgba(14, 165, 233, 0.07) 0px, transparent 48%),
+        radial-gradient(at 50% 100%, rgba(15, 23, 42, 0.05) 0px, transparent 52%);
+      background-attachment: fixed;
+    }
+    /* Muted Frosted Liquid Glass Card Surface (low white glare) */
+    .liquid-card {
+      background: rgba(241, 245, 249, 0.72);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      box-shadow: 0 4px 24px -4px rgba(15, 23, 42, 0.08), inset 0 1px 0 0 rgba(255, 255, 255, 0.6);
+    }
+    .liquid-header {
+      background: rgba(226, 232, 240, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.45);
+    }
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+    html, body {
+      max-width: 100vw;
+      overflow-x: hidden;
+    }
+  </style>
+</head>
+<body class="text-slate-700 font-sans antialiased min-h-screen flex flex-col pb-24 md:pb-0 selection:bg-brand-100 selection:text-brand-900">
+
+  <!-- ===================================================================== -->
+  <!-- LANDING PAGE / LOGIN GATEWAY                                          -->
+  <!-- ===================================================================== -->
+  <div id="login-gateway" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
+    style="background-color: #CBD5E1; background-image: radial-gradient(at 15% 15%, rgba(79, 70, 229, 0.14) 0px, transparent 52%), radial-gradient(at 85% 20%, rgba(14, 165, 233, 0.12) 0px, transparent 50%), radial-gradient(at 50% 90%, rgba(15, 23, 42, 0.08) 0px, transparent 55%);">
+    <div class="w-full max-w-md liquid-card rounded-3xl p-6 sm:p-8 shadow-2xl border border-white/70 space-y-6 my-auto">
+      <!-- Brand / Studio Identity -->
+      <div class="text-center space-y-2.5">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-900 to-brand-600 text-white flex items-center justify-center font-display font-bold text-lg shadow-md ring-4 ring-white/50 mx-auto">
+          AF
+        </div>
+        <div>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-100/90 text-indigo-800 border border-indigo-200/80">
+            <i class="ph-fill ph-shield-check text-xs"></i> Protected Workspace
+          </span>
+          <h1 class="font-display text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight mt-2">
+            Productivity Tracker
+          </h1>
+          <p class="text-xs sm:text-sm text-slate-600 font-medium mt-1">
+            Sign in to access your productivity analytics &amp; daily activity log
+          </p>
+        </div>
+      </div>
+
+      <!-- Error Alert Banner -->
+      <div id="login-error-box" class="hidden p-3 rounded-2xl bg-rose-100/90 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-2">
+        <i class="ph-fill ph-warning-circle text-base text-rose-600 shrink-0"></i>
+        <span id="login-error-text">Invalid login code or password.</span>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+        <div>
+          <label for="login-username" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+            Login Code
+          </label>
+          <div class="relative">
+            <i class="ph-duotone ph-user-circle absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-lg"></i>
+            <input id="login-username" type="text" required autocomplete="username" placeholder="Enter your login code"
+              class="w-full rounded-2xl border border-slate-300/90 bg-slate-100/90 pl-10 pr-4 py-3 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-600 transition" />
+          </div>
+        </div>
+
+        <div>
+          <label for="login-password" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+            Password
+          </label>
+          <div class="relative">
+            <i class="ph-duotone ph-lock-key absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-lg"></i>
+            <input id="login-password" type="password" required autocomplete="current-password" placeholder="Enter your password"
+              class="w-full rounded-2xl border border-slate-300/90 bg-slate-100/90 pl-10 pr-11 py-3 font-mono text-sm font-semibold text-slate-900 placeholder:font-sans placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-600 transition" />
+            <button type="button" onclick="toggleLoginPasswordVisibility()" aria-label="Toggle password visibility"
+              class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition">
+              <i id="login-eye-icon" class="ph-bold ph-eye text-base"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit"
+          class="w-full py-3.5 px-5 rounded-2xl font-display text-sm font-bold text-white bg-gradient-to-r from-slate-900 via-indigo-900 to-brand-700 hover:opacity-95 active:scale-[0.99] transition shadow-md flex items-center justify-center gap-2 mt-2">
+          <span>Unlock Dashboard</span>
+          <i class="ph-bold ph-arrow-right text-base"></i>
+        </button>
+      </form>
+
+      <!-- Subtle Workspace Features Footer -->
+      <div class="pt-4 border-t border-slate-300/60 flex items-center justify-between text-[11px] font-semibold text-slate-500">
+        <span class="inline-flex items-center gap-1.5">
+          <i class="ph-duotone ph-chart-polar text-brand-600 text-sm"></i> 8-Category Telemetry
+        </span>
+        <span class="inline-flex items-center gap-1.5">
+          <i class="ph-duotone ph-cloud-check text-emerald-600 text-sm"></i> Cloud Sync Ready
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- PROTECTED DASHBOARD SHELL (Hidden until authenticated)                -->
+  <!-- ===================================================================== -->
+  <div id="dashboard-shell" class="hidden flex-1 flex flex-col">
+
+  <!-- Top Navigation Bar (Frosted Liquid Header) -->
+  <header class="liquid-header sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-2.5 sm:py-0 sm:h-[70px] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+      <!-- Left: Clean Staff Identity (No Pencil Icon) -->
+      <div class="flex items-center justify-between sm:justify-start gap-3 min-w-0">
+        <div class="flex items-center gap-3 min-w-0">
+          <div id="header-avatar" class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-br from-slate-800 via-indigo-900 to-brand-600 text-white flex items-center justify-center font-display font-bold text-xs sm:text-sm shadow-sm ring-2 ring-white/50 shrink-0">
+            AF
+          </div>
+          <div class="min-w-0">
+            <h1 id="header-profile-name" class="font-display text-sm sm:text-base font-bold text-slate-900 tracking-tight truncate">Gs. Annuar Faiz</h1>
+            <p id="header-profile-subtitle" class="text-[11px] text-slate-600 font-medium truncate">Productivity Tracker</p>
+          </div>
+        </div>
+
+        <!-- Mobile Menu Dropdown Trigger -->
+        <div class="relative sm:hidden shrink-0">
+          <button type="button" onclick="toggleHeaderMenu(event)" class="p-2 rounded-xl text-slate-700 bg-slate-100/80 border border-white/60 active:scale-95 transition" title="Menu">
+            <i class="ph-bold ph-dots-three-vertical text-base"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right: Period Switcher, Unified Menu & Primary CTA -->
+      <div class="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto relative">
+        <!-- Frosted Period Switcher Pill -->
+        <div class="flex items-center justify-between sm:justify-start bg-slate-100/80 rounded-xl border border-white/60 p-1 shadow-2xs flex-1 sm:flex-initial">
+          <div class="flex items-center">
+            <select id="select-year" onchange="handlePeriodChange()" aria-label="Select Year"
+              class="bg-transparent font-display text-xs sm:text-sm font-bold text-slate-800 pl-2 pr-1 py-1 focus:outline-none cursor-pointer">
+            </select>
+            <button onclick="openAddYearModal()" title="Add New Year"
+              class="p-1.5 rounded-lg text-slate-600 hover:text-brand-600 hover:bg-slate-200/70 transition">
+              <i class="ph-bold ph-plus text-xs"></i>
+            </button>
+          </div>
+          <div class="h-4 w-[1px] bg-slate-300 mx-1"></div>
+          <select id="select-month" onchange="handlePeriodChange()" aria-label="Select Month or Report"
+            class="bg-transparent font-display text-xs sm:text-sm font-bold text-brand-700 px-2 py-1 focus:outline-none cursor-pointer flex-1 sm:flex-initial text-right sm:text-left">
+            <option value="ALL">All Months (Annual)</option>
+            <option value="Jan">January</option>
+            <option value="Feb">February</option>
+            <option value="Mar">March</option>
+            <option value="Apr">April</option>
+            <option value="May">May</option>
+            <option value="Jun">June</option>
+            <option value="Jul">July</option>
+            <option value="Aug">August</option>
+            <option value="Sep">September</option>
+            <option value="Oct">October</option>
+            <option value="Nov">November</option>
+            <option value="Dec">December</option>
+          </select>
+        </div>
+
+        <!-- Unified Menu Dropdown + Primary Action -->
+        <div class="hidden sm:flex items-center gap-2">
+          <div class="relative">
+            <button type="button" onclick="toggleHeaderMenu(event)" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100/80 border border-white/60 hover:bg-slate-100 active:scale-[0.98] transition shadow-2xs">
+              <i class="ph-bold ph-list text-base text-slate-700"></i>
+              <span>Menu</span>
+              <i class="ph-bold ph-caret-down text-[11px] text-slate-500"></i>
+            </button>
+          </div>
+
+          <button onclick="openLogDrawer()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-display font-bold text-white bg-gradient-to-r from-slate-900 via-indigo-900 to-brand-700 hover:opacity-95 active:scale-[0.98] transition shadow-sm">
+            <i class="ph-bold ph-plus text-sm"></i>
+            <span>Log Activity</span>
+          </button>
+        </div>
+
+        <!-- Shared Dropdown Menu Panel (Anchored cleanly below Menu button) -->
+        <div id="header-menu-dropdown" onclick="event.stopPropagation()" class="hidden absolute right-3 sm:right-[138px] top-0 sm:top-full mt-2 w-56 bg-[#F8FAFC] rounded-2xl shadow-xl border border-slate-200/90 py-1.5 z-50 text-xs font-semibold text-slate-700">
+          <button onclick="closeHeaderMenu(); openProfileModal();" class="w-full px-4 py-2.5 text-left hover:bg-slate-200/60 flex items-center gap-2.5 transition">
+            <i class="ph-duotone ph-user-circle text-base text-brand-600"></i>
+            <span>Edit Profile</span>
+          </button>
+          <button onclick="closeHeaderMenu(); openProjectManagerModal();" class="w-full px-4 py-2.5 text-left hover:bg-slate-200/60 flex items-center gap-2.5 transition">
+            <i class="ph-duotone ph-folders text-base text-indigo-600"></i>
+            <span>Manage Projects</span>
+          </button>
+          <button onclick="closeHeaderMenu(); exportToCSV();" class="w-full px-4 py-2.5 text-left hover:bg-slate-200/60 flex items-center gap-2.5 transition">
+            <i class="ph-duotone ph-export text-base text-slate-600"></i>
+            <span>Export to CSV</span>
+          </button>
+          <div class="my-1 border-t border-slate-200/80"></div>
+          <button onclick="closeHeaderMenu(); openTagReferenceModal();" class="w-full px-4 py-2.5 text-left hover:bg-slate-200/60 flex items-center gap-2.5 transition">
+            <i class="ph-duotone ph-book-open text-base text-sky-600"></i>
+            <span>8-Category Tag Guide</span>
+          </button>
+          <button onclick="closeHeaderMenu(); openFirebaseConfigModal();" class="w-full px-4 py-2.5 text-left hover:bg-slate-200/60 flex items-center gap-2.5 transition">
+            <i class="ph-duotone ph-cloud-check text-base text-emerald-600"></i>
+            <span>Cloud Sync Config</span>
+          </button>
+          <div class="my-1 border-t border-slate-200/80"></div>
+          <button onclick="closeHeaderMenu(); handleLogout();" class="w-full px-4 py-2.5 text-left hover:bg-rose-100/70 text-rose-700 flex items-center gap-2.5 transition">
+            <i class="ph-duotone ph-lock-simple text-base text-rose-600"></i>
+            <span>Lock Workspace</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-6 lg:px-8 py-5 sm:py-7 space-y-5 sm:space-y-6">
+
+    <!-- 1. EXECUTIVE TELEMETRY HUB (Rearranged: Hero Utilization Card + Capacity Bento + Smart Insights) -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-4">
+
+      <!-- Left (5 cols): Hero Utilization & Capacity Balance Glass Card -->
+      <div class="lg:col-span-5 liquid-card rounded-3xl p-4 sm:p-6 flex flex-col justify-between relative overflow-hidden">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Utilization</span>
+            <div class="flex items-baseline gap-2.5 mt-1">
+              <span id="kpi-utilization" class="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight tabular-nums">0.0%</span>
+              <span id="kpi-util-badge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100/80 text-emerald-800 border border-emerald-200/80">Optimal</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-[11px] font-semibold text-slate-400 block">Logged Effort</span>
+            <span class="font-mono text-lg sm:text-xl font-bold text-brand-700 tabular-nums"><span id="kpi-workload">0</span>h</span>
+            <span class="text-[11px] font-medium text-slate-500 block tabular-nums">(<span id="kpi-days">0</span> days)</span>
+          </div>
+        </div>
+
+        <!-- Smooth Progress Bar -->
+        <div class="my-4">
+          <div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-1.5">
+            <span>0%</span>
+            <span>Target Zone (85–100%)</span>
+            <span>120%+</span>
+          </div>
+          <div class="w-full h-2.5 bg-slate-300/75 rounded-full overflow-hidden p-0.5">
+            <div id="kpi-util-progress" class="h-full bg-emerald-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Compact Capacity Inputs Strip -->
+        <div class="grid grid-cols-3 gap-2 pt-3 border-t border-slate-300/60">
+          <div class="bg-slate-200/70 rounded-2xl p-2.5 border border-white/50" title="Auto-calculated from Monday–Friday working days in this month (8h/day)">
+            <div class="flex items-center justify-between">
+              <label for="input-gross" class="block text-[10px] font-bold uppercase tracking-wider text-slate-600">Gross Hrs</label>
+              <span id="gross-wd-badge" class="text-[9px] font-mono font-bold text-slate-500">21d</span>
+            </div>
+            <input id="input-gross" type="number" readonly
+              class="w-full mt-0.5 font-mono text-sm sm:text-base font-bold text-slate-700 bg-transparent focus:outline-none cursor-default tabular-nums" />
+          </div>
+          <div class="bg-slate-200/70 rounded-2xl p-2.5 border border-white/50">
+            <label for="input-leave" class="block text-[10px] font-bold uppercase tracking-wider text-slate-600">Leave / PH</label>
+            <input id="input-leave" type="number" step="0.5" min="0" value="8" onchange="updateCapacityField('leave', this.value)"
+              class="w-full mt-0.5 font-mono text-sm sm:text-base font-bold text-amber-800 bg-transparent focus:outline-none focus:text-brand-700 tabular-nums" />
+          </div>
+          <div class="bg-slate-200/70 rounded-2xl p-2.5 border border-white/50">
+            <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-600">Net Cap.</span>
+            <span id="kpi-net-capacity" class="block mt-0.5 font-mono text-sm sm:text-base font-bold text-slate-800 tabular-nums">160</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right (7 cols): Smart Executive Insights & Actionable Highlights -->
+      <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-3.5">
+        <!-- Insight Card 1: Top Portfolio Focus -->
+        <div class="liquid-card rounded-3xl p-4 sm:p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Primary Focus</span>
+            <div class="w-8 h-8 rounded-xl bg-indigo-100/80 text-indigo-700 flex items-center justify-center">
+              <i class="ph-duotone ph-target text-lg"></i>
+            </div>
+          </div>
+          <div class="my-3">
+            <h3 id="insight-top-project" class="font-display text-sm sm:text-base font-bold text-slate-900 line-clamp-2 leading-snug">—</h3>
+            <p id="insight-top-project-sub" class="text-xs text-slate-500 mt-1 tabular-nums">0 hrs (0% share)</p>
+          </div>
+          <div class="text-[11px] font-semibold text-indigo-700 bg-indigo-50/80 px-2.5 py-1 rounded-xl border border-indigo-100 w-fit">
+            Highest Effort Portfolio
+          </div>
+        </div>
+
+        <!-- Insight Card 2: Dominant Skill / Scope -->
+        <div class="liquid-card rounded-3xl p-4 sm:p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Core Discipline</span>
+            <div class="w-8 h-8 rounded-xl bg-sky-100/80 text-sky-700 flex items-center justify-center">
+              <i class="ph-duotone ph-sparkle text-lg"></i>
+            </div>
+          </div>
+          <div class="my-3">
+            <h3 id="insight-top-category" class="font-display text-sm sm:text-base font-bold text-slate-900 line-clamp-2 leading-snug">—</h3>
+            <p id="insight-top-category-sub" class="text-xs text-slate-500 mt-1 tabular-nums">0 hrs across tasks</p>
+          </div>
+          <button onclick="openTagReferenceModal()" class="text-[11px] font-semibold text-sky-700 bg-sky-50/80 hover:bg-sky-100/80 px-2.5 py-1 rounded-xl border border-sky-100 w-fit inline-flex items-center gap-1 transition">
+            <span>View 8-Tag Guide</span> <i class="ph-bold ph-arrow-up-right"></i>
+          </button>
+        </div>
+
+        <!-- Insight Card 3: Delivery & Pipeline Velocity -->
+        <div class="liquid-card rounded-3xl p-4 sm:p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Task Velocity</span>
+            <div class="w-8 h-8 rounded-xl bg-emerald-100/80 text-emerald-700 flex items-center justify-center">
+              <i class="ph-duotone ph-check-circle text-lg"></i>
+            </div>
+          </div>
+          <div class="my-3">
+            <div class="flex items-baseline gap-1.5">
+              <span id="insight-completed-ratio" class="font-display text-2xl font-extrabold text-slate-900 tabular-nums">0/0</span>
+              <span class="text-xs font-semibold text-slate-500">completed</span>
+            </div>
+            <p id="insight-pipeline-sub" class="text-xs text-slate-500 mt-1 tabular-nums">0 in progress · 0 upcoming</p>
+          </div>
+          <div class="text-[11px] font-semibold text-emerald-700 bg-emerald-50/80 px-2.5 py-1 rounded-xl border border-emerald-100 w-fit tabular-nums">
+            <span id="insight-active-projects">0</span> Active Portfolios
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1B. Multi-Month Annual Breakdown Table (Visible only when "All Months" is selected) -->
+    <section id="annual-breakdown-section" class="hidden liquid-card rounded-3xl overflow-hidden">
+      <div class="px-4 sm:px-6 py-4 border-b border-slate-300/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-200/40">
+        <div>
+          <h2 class="font-display text-sm sm:text-base font-bold text-slate-900">Multi-Month Annual Summary (<span id="annual-year-label">2026</span>)</h2>
+          <p class="text-xs text-slate-600 mt-0.5">Tap any month row to inspect its detailed breakdown</p>
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs sm:text-sm tabular-nums">
+          <thead>
+            <tr class="bg-slate-300/45 border-b border-slate-300/70 text-slate-600 font-bold uppercase text-[10px] sm:text-[11px] tracking-wider">
+              <th class="py-3 px-4 sm:px-5">Month</th>
+              <th class="py-3 px-2.5 text-right">Gross</th>
+              <th class="py-3 px-2.5 text-right">Leave</th>
+              <th class="py-3 px-2.5 text-right">Net</th>
+              <th class="py-3 px-2.5 text-right">Logged</th>
+              <th class="py-3 px-2.5 text-right hidden sm:table-cell">Days</th>
+              <th class="py-3 px-4 sm:px-5 text-right">Util %</th>
+            </tr>
+          </thead>
+          <tbody id="annual-breakdown-body" class="divide-y divide-slate-300/50">
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 2. VISUAL ANALYTICS STUDIO (3-Chart Suite with Mobile Pill Tabs) -->
+    <section class="liquid-card rounded-3xl p-4 sm:p-6">
+      <!-- Header & Mobile View Switcher -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+        <div>
+          <h2 class="font-display text-base sm:text-lg font-bold text-slate-900">Workload Analytics (<span id="chart-period-label">Nov 2026</span>)</h2>
+          <p class="text-xs text-slate-600">Interactive portfolio allocation, category balance, and timeline pulse</p>
+        </div>
+
+        <!-- Mobile Chart Pill Switcher (3 clean views on small screens) -->
+        <div class="inline-flex bg-slate-300/65 p-1 rounded-xl border border-white/50 lg:hidden self-start sm:self-auto">
+          <button type="button" id="tab-btn-projects" onclick="switchMobileChartTab('projects')"
+            class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-900 shadow-2xs transition">
+            Portfolios
+          </button>
+          <button type="button" id="tab-btn-categories" onclick="switchMobileChartTab('categories')"
+            class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 transition">
+            Categories
+          </button>
+          <button type="button" id="tab-btn-timeline" onclick="switchMobileChartTab('timeline')"
+            class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 transition">
+            Pulse
+          </button>
+        </div>
+      </div>
+
+      <!-- Desktop 12-Col Bento Grid for 3 Charts -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <!-- Chart 1 (6 cols): Project Effort Stacked Bar -->
+        <div id="chart-panel-projects" class="lg:col-span-6 flex flex-col justify-between bg-slate-200/55 rounded-2xl p-4 border border-white/50">
+          <div class="flex items-center justify-between mb-3">
+            <span class="font-display text-xs font-bold uppercase tracking-wider text-slate-600">Portfolio Effort Breakdown</span>
+            <span class="font-mono text-[11px] font-semibold text-slate-500">Hours by Tag</span>
+          </div>
+          <div class="relative w-full h-60 sm:h-64">
+            <canvas id="projectStackedChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 2 (6 cols): 8-Category Donut + Legend -->
+        <div id="chart-panel-categories" class="hidden lg:flex lg:col-span-6 flex-col justify-between bg-slate-200/55 rounded-2xl p-4 border border-white/50">
+          <div class="flex items-center justify-between mb-3">
+            <span class="font-display text-xs font-bold uppercase tracking-wider text-slate-600">8-Category Share</span>
+            <button onclick="openTagReferenceModal()" class="text-[11px] font-bold text-brand-700 hover:text-brand-900 transition">
+              Tag Definitions &rarr;
+            </button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center my-auto">
+            <div class="sm:col-span-5 relative h-44">
+              <canvas id="categoryDonutChart"></canvas>
+            </div>
+            <div id="category-legend" class="sm:col-span-7 grid grid-cols-2 gap-1.5">
+              <!-- Legend pills injected by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart 3 (12 cols): Workload Rhythm / Timeline Pulse Area Chart -->
+        <div id="chart-panel-timeline" class="hidden lg:flex lg:col-span-12 flex-col justify-between bg-slate-200/55 rounded-2xl p-4 border border-white/50">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <span class="font-display text-xs font-bold uppercase tracking-wider text-slate-600">Effort Distribution Pulse</span>
+              <span id="pulse-subtitle" class="text-[11px] text-slate-500 ml-2">Logged hours across active dates</span>
+            </div>
+            <span class="font-mono text-[11px] font-semibold text-indigo-800 bg-indigo-100/80 px-2 py-0.5 rounded-md border border-indigo-200/80">8h = 1 Standard Day</span>
+          </div>
+          <div class="relative w-full h-40 sm:h-44">
+            <canvas id="effortPulseChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. PORTFOLIO CATEGORY MATRIX (Mobile Accordion Cards + Desktop Heat-Mapped Matrix) -->
+    <section class="liquid-card rounded-3xl overflow-hidden">
+      <div class="px-4 sm:px-6 py-4 border-b border-slate-300/60 flex items-center justify-between gap-2 bg-slate-200/40">
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <h2 class="font-display text-sm sm:text-base font-bold text-slate-900 truncate">Portfolio Category Matrix</h2>
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100/85 text-indigo-800 border border-indigo-200/80 shrink-0">
+              <i class="ph-fill ph-lightning text-xs"></i> Live Sync
+            </span>
+          </div>
+          <p class="text-xs text-slate-600 mt-0.5 hidden sm:block">Automatically aggregated from your Activity Tagging Log with intensity heat-mapping</p>
+        </div>
+        <button onclick="openProjectManagerModal()" class="text-xs font-bold text-slate-700 hover:text-brand-700 bg-slate-100/85 hover:bg-slate-100 border border-slate-300/80 px-3 py-1.5 rounded-xl inline-flex items-center gap-1.5 shrink-0 transition shadow-2xs">
+          <i class="ph-bold ph-sliders-horizontal text-brand-600"></i>
+          <span>Manage Projects</span>
+        </button>
+      </div>
+
+      <!-- MOBILE VIEW: Zero-Horizontal-Scroll Cards -->
+      <div id="matrix-mobile-cards" class="md:hidden divide-y divide-slate-300/50">
+      </div>
+
+      <!-- DESKTOP VIEW: Heat-Mapped Pivot Table -->
+      <div class="hidden md:block overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs sm:text-sm tabular-nums">
+          <thead>
+            <tr class="bg-slate-800 text-slate-100 font-display font-bold text-xs tracking-wide">
+              <th class="py-3.5 px-5 sticky left-0 bg-slate-800 z-10 min-w-[220px]">Project / Portfolio</th>
+              <th class="py-3.5 px-3 text-center" title="Business Analysis & Solution Planning">BA</th>
+              <th class="py-3.5 px-3 text-center" title="Data Analysis & KPI Framework">DA</th>
+              <th class="py-3.5 px-3 text-center" title="Dashboard Design & Development">DD</th>
+              <th class="py-3.5 px-3 text-center" title="Performance Reporting & Optimization">PR</th>
+              <th class="py-3.5 px-3 text-center" title="Stakeholder Consultation & Advisory">SC</th>
+              <th class="py-3.5 px-3 text-center" title="Project Delivery, Documentation, Testing & Assurance">PD</th>
+              <th class="py-3.5 px-3 text-center" title="Geospatial Integration & Smart City">GI</th>
+              <th class="py-3.5 px-3 text-center" title="AI, Automation, Learning & Innovation">AI</th>
+              <th class="py-3.5 px-5 text-right bg-slate-900">Total Hrs</th>
+            </tr>
+          </thead>
+          <tbody id="matrix-tbody" class="divide-y divide-slate-300/55 bg-slate-100/50">
+          </tbody>
+          <tfoot id="matrix-tfoot" class="bg-slate-300/65 font-bold text-slate-900 border-t border-slate-300">
+          </tfoot>
+        </table>
+      </div>
+    </section>
+
+    <!-- 4. ACTIVITY TAGGING LOG FEED (Mobile Feed Cards + Desktop Table) -->
+    <section class="liquid-card rounded-3xl overflow-hidden">
+      <div class="px-4 sm:px-6 py-4 border-b border-slate-300/60 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-200/40">
+        <div>
+          <h2 class="font-display text-sm sm:text-base font-bold text-slate-900">Activity Tagging Log (<span id="log-period-label">Nov 2026</span>)</h2>
+          <p class="text-xs text-slate-600 mt-0.5">Chronological work log with multi-category effort allocation</p>
+        </div>
+
+        <!-- Responsive Filters -->
+        <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
+          <div class="relative col-span-2 sm:flex-initial">
+            <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+            <input id="filter-search" type="text" placeholder="Search deliverable..." oninput="renderApp()"
+              class="w-full sm:w-48 pl-8 pr-3 py-2 text-xs font-medium bg-slate-100/85 border border-slate-300/90 rounded-xl focus:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500 transition" />
+          </div>
+
+          <select id="filter-project" onchange="renderApp()" class="w-full sm:w-auto text-xs font-semibold bg-slate-100/85 border border-slate-300/90 rounded-xl px-2.5 py-2 text-slate-700 focus:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500 transition truncate">
+            <option value="ALL">All Projects</option>
+          </select>
+
+          <select id="filter-status" onchange="renderApp()" class="w-full sm:w-auto text-xs font-semibold bg-slate-100/85 border border-slate-300/90 rounded-xl px-2.5 py-2 text-slate-700 focus:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
+            <option value="ALL">All Status</option>
+            <option value="Completed">Completed</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Upcoming">Upcoming</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- MOBILE VIEW: Native Touch-Friendly Feed Cards -->
+      <div id="log-mobile-cards" class="md:hidden divide-y divide-slate-300/50">
+      </div>
+
+      <!-- DESKTOP VIEW: Structured Table -->
+      <div class="hidden md:block overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs sm:text-sm">
+          <thead>
+            <tr class="bg-slate-300/45 border-b border-slate-300/70 text-slate-600 font-bold uppercase text-[11px] tracking-wider">
+              <th class="py-3.5 px-5 min-w-[185px]">Project / Portfolio</th>
+              <th class="py-3.5 px-3 min-w-[155px]">Date Range</th>
+              <th class="py-3.5 px-4 min-w-[260px]">Activity / Deliverable</th>
+              <th class="py-3.5 px-3 min-w-[185px]">Category Breakdown</th>
+              <th class="py-3.5 px-3 text-right">Hours</th>
+              <th class="py-3.5 px-3 text-right">Days</th>
+              <th class="py-3.5 px-3 text-center">Status</th>
+              <th class="py-3.5 px-5 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="log-tbody" class="divide-y divide-slate-300/55 bg-slate-100/50">
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      <div id="empty-state" class="hidden py-12 px-4 text-center bg-slate-200/35">
+        <div class="w-12 h-12 rounded-2xl bg-slate-300/70 text-slate-600 flex items-center justify-center mx-auto mb-3">
+          <i class="ph-duotone ph-clipboard-text text-2xl"></i>
+        </div>
+        <h3 class="font-display text-sm font-bold text-slate-900">No activities recorded for this period</h3>
+        <p class="text-xs text-slate-600 mt-1 max-w-sm mx-auto">Adjust your filters, switch months, or tap "+ Log Activity" to record your work.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MOBILE STICKY FROSTED BOTTOM ACTION BAR -->
+  <nav class="md:hidden fixed bottom-0 inset-x-0 z-30 liquid-header border-t border-slate-300/70 px-3 py-2 flex items-center justify-between gap-2 shadow-[0_-6px_24px_rgba(15,23,42,0.06)]">
+    <button onclick="openProjectManagerModal()" class="flex-1 flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-700 hover:bg-white/60 active:scale-95 transition">
+      <i class="ph-duotone ph-folders text-lg text-brand-600"></i>
+      <span class="text-[10px] font-bold mt-0.5">Projects</span>
+    </button>
+
+    <button onclick="openLogDrawer()" class="flex-[2] flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl font-display text-xs font-bold text-white bg-gradient-to-r from-slate-900 via-indigo-900 to-brand-700 shadow-md active:scale-95 transition">
+      <i class="ph-bold ph-plus text-sm"></i>
+      <span>Log Activity</span>
+    </button>
+
+    <button onclick="exportToCSV()" class="flex-1 flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-700 hover:bg-white/60 active:scale-95 transition">
+      <i class="ph-duotone ph-export text-lg text-slate-600"></i>
+      <span class="text-[10px] font-bold mt-0.5">Export</span>
+    </button>
+  </nav>
+
+  </div><!-- End #dashboard-shell -->
+
+  <!-- ===================================================================== -->
+  <!-- QUICK-LOG SLIDE-OVER DRAWER (WITH START/END CALENDAR PICKERS)         -->
+  <!-- ===================================================================== -->
+  <div id="drawer-backdrop" onclick="closeLogDrawer()" class="fixed inset-0 bg-slate-900/45 backdrop-blur-xs z-40 hidden transition-opacity"></div>
+  <aside id="log-drawer" class="fixed inset-y-0 right-0 w-full max-w-lg bg-[#F8FAFC] shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-out flex flex-col border-l border-slate-200">
+    <!-- Drawer Header -->
+    <div class="px-4 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-100/80">
+      <div>
+        <h3 id="drawer-title" class="font-display text-base font-bold text-slate-900">Log Daily Activity</h3>
+        <p class="text-xs text-slate-500">Enter hours directly under each applicable category</p>
+      </div>
+      <button onclick="closeLogDrawer()" class="p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-200/70 transition">
+        <i class="ph-bold ph-x text-lg"></i>
+      </button>
+    </div>
+
+    <!-- Drawer Form -->
+    <form id="activity-form" onsubmit="handleSaveActivity(event)" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
+      <input type="hidden" id="edit-entry-id" value="" />
+
+      <!-- Project Selection -->
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <label for="form-project" class="block text-xs font-bold uppercase tracking-wider text-slate-600">Project / Portfolio</label>
+          <button type="button" onclick="closeLogDrawer(); openProjectManagerModal();" class="text-[11px] font-bold text-brand-700 hover:text-brand-900">
+            + Manage Projects
+          </button>
+        </div>
+        <select id="form-project" required class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600">
+        </select>
+      </div>
+
+      <!-- Calendar Date Range (Start Date to End Date) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label for="form-start-date" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Start Date</label>
+          <input id="form-start-date" type="date" required onchange="syncEndDateMin()"
+            class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600" />
+        </div>
+        <div>
+          <label for="form-end-date" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">End Date</label>
+          <input id="form-end-date" type="date" required
+            class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600" />
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div>
+        <label for="form-status" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Status</label>
+        <select id="form-status" class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600">
+          <option value="Completed">Completed</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Upcoming">Upcoming</option>
+        </select>
+      </div>
+
+      <!-- Deliverable Description -->
+      <div>
+        <label for="form-activity" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Activity / Deliverable</label>
+        <textarea id="form-activity" rows="2" required placeholder="e.g., Enhancement and optimization of dashboards..."
+          class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600"></textarea>
+      </div>
+
+      <!-- 8 Category Hour Inputs -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Category Hours Breakdown</label>
+          <span class="text-[11px] font-medium text-slate-500">Enter hours (e.g. 0.5, 2, 8)</span>
+        </div>
+
+        <div id="category-inputs-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        </div>
+      </div>
+    </form>
+
+    <!-- Drawer Sticky Footer -->
+    <div class="px-4 sm:px-6 py-4 border-t border-slate-200 bg-slate-100/80 flex items-center justify-between gap-4">
+      <div>
+        <span class="text-xs font-medium text-slate-500 block">Calculated Effort</span>
+        <div class="font-mono text-base font-bold text-slate-900 tabular-nums">
+          <span id="drawer-total-hours" class="text-brand-700">0</span> hrs
+          <span class="text-xs font-medium text-slate-500 ml-1">(<span id="drawer-total-days">0</span> days)</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button type="button" onclick="closeLogDrawer()" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100 transition">
+          Cancel
+        </button>
+        <button type="submit" form="activity-form" class="px-5 py-2.5 rounded-xl font-display text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-slate-900 via-indigo-900 to-brand-700 hover:opacity-95 shadow-sm transition">
+          Save Log
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===================================================================== -->
+  <!-- PROJECT / PORTFOLIO MANAGER MODAL (ADD / EDIT / DELETE)               -->
+  <!-- ===================================================================== -->
+  <div id="project-modal" onclick="closeProjectManagerModal()" class="fixed inset-0 bg-slate-900/45 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div onclick="event.stopPropagation()" class="bg-[#F8FAFC] rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-white flex flex-col max-h-[85vh]">
+      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-100/80">
+        <div>
+          <h3 class="font-display text-base font-bold text-slate-900">Manage Projects & Portfolios</h3>
+          <p class="text-xs text-slate-500">Add, rename, or remove projects across your matrix and logs</p>
+        </div>
+        <button onclick="closeProjectManagerModal()" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200/70">
+          <i class="ph-bold ph-x text-base"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleAddProject(event)" class="p-4 bg-slate-100/60 border-b border-slate-200 flex gap-2">
+        <input id="new-project-input" type="text" required placeholder="New project or portfolio name..."
+          class="flex-1 rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600" />
+        <button type="submit" class="px-4 py-2 rounded-xl font-display text-xs sm:text-sm font-bold text-white bg-slate-900 hover:bg-brand-700 shrink-0 transition">
+          + Add
+        </button>
+      </form>
+
+      <div id="project-manager-list" class="p-4 overflow-y-auto divide-y divide-slate-200/80 flex-1">
+      </div>
+
+      <div class="px-6 py-3 border-t border-slate-200 bg-slate-100/80 flex justify-end">
+        <button onclick="closeProjectManagerModal()" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- ADD YEAR MODAL                                                        -->
+  <!-- ===================================================================== -->
+  <div id="year-modal" onclick="closeAddYearModal()" class="fixed inset-0 bg-slate-900/45 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div onclick="event.stopPropagation()" class="bg-[#F8FAFC] rounded-3xl max-w-sm w-full overflow-hidden shadow-2xl border border-white">
+      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-100/80">
+        <h3 class="font-display text-base font-bold text-slate-900">Add Tracker Year</h3>
+        <button onclick="closeAddYearModal()" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200/70">
+          <i class="ph-bold ph-x text-base"></i>
+        </button>
+      </div>
+      <form onsubmit="handleAddYear(event)" class="p-6 space-y-4">
+        <div>
+          <label for="new-year-input" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Year (YYYY)</label>
+          <input id="new-year-input" type="number" min="2020" max="2099" required placeholder="2027"
+            class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 font-mono text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600" />
+        </div>
+        <div class="flex justify-end gap-2">
+          <button type="button" onclick="closeAddYearModal()" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-xl font-display text-sm font-bold text-white bg-slate-900 hover:bg-brand-700">Add Year</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- FIREBASE CLOUD CONFIG MODAL (FOR GITHUB PAGES & CROSS-DEVICE SYNC)    -->
+  <!-- ===================================================================== -->
+  <div id="firebase-modal" onclick="closeFirebaseConfigModal()" class="fixed inset-0 bg-slate-900/45 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div onclick="event.stopPropagation()" class="bg-[#F8FAFC] rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-white">
+      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-100/80">
+        <div>
+          <h3 class="font-display text-base font-bold text-slate-900">Firebase Realtime Database Sync</h3>
+          <p class="text-xs text-slate-500">Sync your logs across mobile, desktop, and GitHub Pages</p>
+        </div>
+        <button onclick="closeFirebaseConfigModal()" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200/70">
+          <i class="ph-bold ph-x text-base"></i>
+        </button>
+      </div>
+      <div class="p-6 space-y-4">
+        <div class="p-3 rounded-xl bg-sky-50 border border-sky-200 text-xs text-sky-900 space-y-1">
+          <p class="font-bold">Connected Endpoint:</p>
+          <p class="font-mono text-[11px] break-all">https://productivity-tracker-556c4-default-rtdb.asia-southeast1.firebasedatabase.app/</p>
+        </div>
+        <div>
+          <label for="firebase-config-textarea" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Firebase Web Config JSON</label>
+          <textarea id="firebase-config-textarea" rows="6" placeholder='{"apiKey": "...", "authDomain": "...", "databaseURL": "...", "projectId": "...", "appId": "..."}'
+            class="w-full rounded-xl border border-slate-300 bg-white p-3 font-mono text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600"></textarea>
+        </div>
+        <div class="flex items-center justify-between pt-1">
+          <span id="firebase-uid-display" class="text-[11px] font-mono text-slate-400">Not signed in</span>
+          <div class="flex gap-2">
+            <button type="button" onclick="closeFirebaseConfigModal()" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100">Close</button>
+            <button type="button" onclick="applyCustomFirebaseConfig()" class="px-4 py-2 rounded-xl font-display text-sm font-bold text-white bg-slate-900 hover:bg-brand-700">Connect & Sync</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- REFERENCE GUIDE MODAL                                                 -->
+  <!-- ===================================================================== -->
+  <div id="ref-modal" onclick="closeTagReferenceModal()" class="fixed inset-0 bg-slate-900/45 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div onclick="event.stopPropagation()" class="bg-[#F8FAFC] rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl border border-white">
+      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-100/80">
+        <div>
+          <h3 class="font-display text-base font-bold text-slate-900">Eight-Category Tag Reference</h3>
+          <p class="text-xs text-slate-500">Standard workload definitions from your Reference sheet</p>
+        </div>
+        <button onclick="closeTagReferenceModal()" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200/70">
+          <i class="ph-bold ph-x text-base"></i>
+        </button>
+      </div>
+      <div class="p-6 max-h-[70vh] overflow-y-auto">
+        <table class="w-full text-left text-xs sm:text-sm border-collapse">
+          <thead>
+            <tr class="border-b border-slate-200 text-slate-500 font-bold uppercase text-[11px]">
+              <th class="pb-2.5 pr-3">Code</th>
+              <th class="pb-2.5 px-3">Workload Category</th>
+              <th class="pb-2.5 pl-3">Use When</th>
+            </tr>
+          </thead>
+          <tbody id="ref-table-body" class="divide-y divide-slate-200/80">
+          </tbody>
+        </table>
+      </div>
+      <div class="px-6 py-3 border-t border-slate-200 bg-slate-100/80 flex justify-end">
+        <button onclick="closeTagReferenceModal()" class="px-4 py-2 rounded-xl font-display text-sm font-bold text-white bg-slate-900 hover:bg-brand-700">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 2-STEP ACTION CONFIRMATION MODAL (Elevated z-[60] above all forms)    -->
+  <!-- ===================================================================== -->
+  <div id="confirm-modal" onclick="closeConfirmModal()" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-[60] hidden flex items-center justify-center p-4">
+    <div onclick="event.stopPropagation()" class="bg-[#F8FAFC] rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-white">
+      <div class="p-6 space-y-3">
+        <div class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center">
+          <i class="ph-duotone ph-warning-circle text-2xl"></i>
+        </div>
+        <h3 id="confirm-modal-title" class="font-display text-base font-bold text-slate-900">Confirm Action</h3>
+        <p id="confirm-modal-message" class="text-xs sm:text-sm text-slate-600 leading-relaxed">Are you sure you want to proceed?</p>
+      </div>
+      <div class="px-6 py-3.5 border-t border-slate-200 bg-slate-100/80 flex justify-end gap-2">
+        <button onclick="closeConfirmModal()" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100">Cancel</button>
+        <button id="confirm-modal-proceed-btn" class="px-4 py-2 rounded-xl font-display text-sm font-bold text-white bg-rose-600 hover:bg-rose-700">Yes, Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- EDIT PROFILE MODAL                                                    -->
+  <!-- ===================================================================== -->
+  <div id="profile-modal" onclick="closeProfileModal()" class="fixed inset-0 bg-slate-900/45 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div onclick="event.stopPropagation()" class="bg-[#F8FAFC] rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-white">
+      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-100/80">
+        <div>
+          <h3 class="font-display text-base font-bold text-slate-900">Edit Profile</h3>
+          <p class="text-xs text-slate-500">Personalize your dashboard header across devices</p>
+        </div>
+        <button onclick="closeProfileModal()" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200/70">
+          <i class="ph-bold ph-x text-base"></i>
+        </button>
+      </div>
+      <form onsubmit="handleSaveProfile(event)" class="p-6 space-y-4">
+        <div class="grid grid-cols-4 gap-3">
+          <div class="col-span-3">
+            <label for="profile-name-input" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Display Name</label>
+            <input id="profile-name-input" type="text" required placeholder="e.g., Gs. Annuar Faiz"
+              class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600" />
+          </div>
+          <div class="col-span-1">
+            <label for="profile-initials-input" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Initials</label>
+            <input id="profile-initials-input" type="text" maxlength="3" required placeholder="AF"
+              class="w-full rounded-xl border border-slate-300 bg-white px-2.5 py-2.5 text-center font-display text-sm font-bold uppercase text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600" />
+          </div>
+        </div>
+        <div>
+          <label for="profile-subtitle-input" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Role / Subtitle</label>
+          <input id="profile-subtitle-input" type="text" placeholder="e.g., Productivity Tracker"
+            class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600" />
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeProfileModal()" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-xl font-display text-sm font-bold text-white bg-slate-900 hover:bg-brand-700">Save Profile</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-20 md:bottom-5 right-4 sm:right-5 z-50 transform translate-y-24 opacity-0 transition-all duration-300 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl text-xs font-semibold flex items-center gap-2 max-w-[90vw]">
+    <i id="toast-icon" class="ph-fill ph-check-circle text-emerald-400 text-lg shrink-0"></i>
+    <span id="toast-message">Saved!</span>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- APPLICATION LOGIC & FIREBASE REALTIME DATABASE SYNC                   -->
+  <!-- ===================================================================== -->
+  <script type="module">
+    import { initializeApp, getApps, deleteApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getDatabase, ref, set, remove, onValue, off } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+    // =========================================================================
+    // 1. MASTER DEFINITIONS, DEFAULT STATE & FIREBASE RTDB CONFIG
+    // =========================================================================
+    const DEFAULT_FIREBASE_CONFIG = {
+      apiKey: "AIzaSyCWKLsAbq5EY6LhvEsKszWyhUQo-oLUdY0",
+      authDomain: "productivity-tracker-556c4.firebaseapp.com",
+      databaseURL: "https://productivity-tracker-556c4-default-rtdb.asia-southeast1.firebasedatabase.app/",
+      projectId: "productivity-tracker-556c4",
+      storageBucket: "productivity-tracker-556c4.firebasestorage.app",
+      messagingSenderId: "202908168797",
+      appId: "1:202908168797:web:09dc050baf2173586f93b4",
+      measurementId: "G-831Y8Z3GYR"
+    };
+
+    const AUTH_CREDENTIALS = {
+      code: 'annuarfaiz',
+      pass: '25102013'
+    };
+    const SESSION_AUTH_KEY = 'ru_studio_unlocked_v1';
+
+    const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    const CATEGORIES = [
+      { code: 'BA', name: 'Business Analysis & Solution Planning', color: '#4f46e5', badgeBg: 'bg-indigo-100/90 text-indigo-800 border-indigo-200', useWhen: 'Requirements, scope, feasibility and solution planning' },
+      { code: 'DA', name: 'Data Analysis & KPI Framework', color: '#0284c7', badgeBg: 'bg-sky-100/90 text-sky-800 border-sky-200', useWhen: 'Data profiling, validation, KPI definition and analytical exploration' },
+      { code: 'DD', name: 'Dashboard Design & Development', color: '#0d9488', badgeBg: 'bg-teal-100/90 text-teal-800 border-teal-200', useWhen: 'Dashboard design, configuration, enhancement and prototypes' },
+      { code: 'PR', name: 'Performance Reporting & Optimization', color: '#059669', badgeBg: 'bg-emerald-100/90 text-emerald-800 border-emerald-200', useWhen: 'Management reporting, widget optimization and operational insights' },
+      { code: 'SC', name: 'Stakeholder Consultation & Advisory', color: '#d97706', badgeBg: 'bg-amber-100/90 text-amber-800 border-amber-200', useWhen: 'Meetings, workshops, demos, advisory and solution reviews' },
+      { code: 'PD', name: 'Project Delivery, Documentation & Assurance', color: '#7c3aed', badgeBg: 'bg-purple-100/90 text-purple-800 border-purple-200', useWhen: 'Coordination, UAT/DAT, documentation, issue tracking, testing and delivery assurance' },
+      { code: 'GI', name: 'Geospatial Integration & Smart City', color: '#e11d48', badgeBg: 'bg-rose-100/90 text-rose-800 border-rose-200', useWhen: 'Maps, spatial analysis, location intelligence and Smart City support' },
+      { code: 'AI', name: 'AI, Automation, Learning & Innovation', color: '#475569', badgeBg: 'bg-slate-200 text-slate-800 border-slate-300', useWhen: 'AI use cases, automation, POCs, learning and innovation activities' }
+    ];
+
+    const DEFAULT_PROJECTS = [
+      'MPAG Phase 3: Kebersihan & Kesihatan',
+      'MPAG Web Map Editor',
+      'UPEN Dashboard AI CCTV',
+      'STM Dashboard',
+      'TM Smartmap',
+      'PD Bi-Weekly',
+      'Learning',
+      'Ad-hoc',
+      'Public Holiday'
+    ];
+
+    const PROJECT_PALETTE = [
+      { badge: 'bg-indigo-100/90 text-indigo-900 border-indigo-200/90', dot: '#4f46e5' },
+      { badge: 'bg-sky-100/90 text-sky-900 border-sky-200/90', dot: '#0284c7' },
+      { badge: 'bg-teal-100/90 text-teal-900 border-teal-200/90', dot: '#0d9488' },
+      { badge: 'bg-purple-100/90 text-purple-900 border-purple-200/90', dot: '#7c3aed' },
+      { badge: 'bg-amber-100/90 text-amber-900 border-amber-200/90', dot: '#d97706' },
+      { badge: 'bg-emerald-100/90 text-emerald-900 border-emerald-200/90', dot: '#059669' },
+      { badge: 'bg-rose-100/90 text-rose-900 border-rose-200/90', dot: '#e11d48' },
+      { badge: 'bg-cyan-100/90 text-cyan-900 border-cyan-200/90', dot: '#0891b2' },
+      { badge: 'bg-fuchsia-100/90 text-fuchsia-900 border-fuchsia-200/90', dot: '#c026d3' },
+      { badge: 'bg-orange-100/90 text-orange-900 border-orange-200/90', dot: '#ea580c' }
+    ];
+
+    function getProjectTheme(projectName) {
+      const idx = appState.projects.indexOf(projectName);
+      if (idx !== -1) {
+        return PROJECT_PALETTE[idx % PROJECT_PALETTE.length];
+      }
+      let hash = 0;
+      for (let i = 0; i < (projectName || '').length; i++) {
+        hash = ((hash << 5) - hash) + projectName.charCodeAt(i);
+        hash |= 0;
+      }
+      return PROJECT_PALETTE[Math.abs(hash) % PROJECT_PALETTE.length];
+    }
+
+    const INITIAL_SAMPLE_LOGS = [
+      { id: '1', project: 'Ad-hoc', startDate: '2026-11-02', endDate: '2026-11-02', activity: 'TAD On-boarding', status: 'Completed', hours: { SC: 1 } },
+      { id: '2', project: 'PD Bi-Weekly', startDate: '2026-11-03', endDate: '2026-11-03', activity: 'Bi-weekly report', status: 'Completed', hours: { SC: 1 } },
+      { id: '3', project: 'MPAG Phase 3: Kebersihan & Kesihatan', startDate: '2026-11-03', endDate: '2026-11-20', activity: 'Enhancement and optimization of Kesihatan and Kebersihan dashboards, including widget logic refinement & filter standardization.', status: 'Completed', hours: { BA: 4, DD: 28, PR: 16 } },
+      { id: '4', project: 'MPAG Web Map Editor', startDate: '2026-11-03', endDate: '2026-11-03', activity: 'Planning, requirements review, feature documentation.', status: 'Completed', hours: { BA: 2 } },
+      { id: '5', project: 'MPAG Web Map Editor', startDate: '2026-11-03', endDate: '2026-11-20', activity: 'Map Web Editor requirements and features documentation', status: 'In Progress', hours: { BA: 8, SC: 8, PD: 80 } },
+      { id: '6', project: 'Learning', startDate: '2026-11-05', endDate: '2026-11-05', activity: 'LinkedIn Learning: Critical Thinking for More Effective Communication', status: 'Completed', hours: { AI: 2 } },
+      { id: '7', project: 'Ad-hoc', startDate: '2026-11-06', endDate: '2026-11-06', activity: 'Discussion - Review Job Scope with Supervisor', status: 'Completed', hours: { SC: 0.5 } },
+      { id: '8', project: 'MPAG Web Map Editor', startDate: '2026-11-10', endDate: '2026-11-10', activity: 'Checkpoint - Planning, requirements review', status: 'Completed', hours: { BA: 1 } },
+      { id: '9', project: 'UPEN Dashboard AI CCTV', startDate: '2026-11-11', endDate: '2026-11-11', activity: 'Discuss AI CCTV use cases across 11 PBTs', status: 'Completed', hours: { BA: 2, SC: 3 } },
+      { id: '10', project: 'MPAG Web Map Editor', startDate: '2026-11-13', endDate: '2026-11-13', activity: 'Checkpoint - Planning, requirements review', status: 'Completed', hours: { BA: 1 } },
+      { id: '11', project: 'Learning', startDate: '2026-11-16', endDate: '2026-11-16', activity: 'TMLearn Course: AI @ Work Readiness Survey', status: 'Completed', hours: { AI: 1 } },
+      { id: '12', project: 'PD Bi-Weekly', startDate: '2026-11-17', endDate: '2026-11-17', activity: 'Bi-weekly report', status: 'Completed', hours: { SC: 1 } },
+      { id: '13', project: 'MPAG Web Map Editor', startDate: '2026-11-17', endDate: '2026-11-17', activity: 'Checkpoint - Planning, requirements review', status: 'Completed', hours: { BA: 1 } },
+      { id: '14', project: 'Ad-hoc', startDate: '2026-11-18', endDate: '2026-11-18', activity: 'Resource Utilization Preparation', status: 'Completed', hours: { PR: 12, SC: 1, AI: 3 } },
+      { id: '15', project: 'STM Dashboard', startDate: '2026-11-19', endDate: '2026-11-19', activity: 'STM Dashboard comparison to existing lifetech reports to STM', status: 'Completed', hours: { DA: 0.5, DD: 1, SC: 1, PD: 1.5 } },
+      { id: '16', project: 'UPEN Dashboard AI CCTV', startDate: '2026-11-20', endDate: '2026-11-20', activity: 'Define dashboard standardization requirements', status: 'In Progress', hours: { DD: 4, SC: 3 } },
+      { id: '17', project: 'MPAG Web Map Editor', startDate: '2026-11-20', endDate: '2026-11-20', activity: 'Checkpoint - Planning, requirements review', status: 'Completed', hours: { BA: 1 } },
+      { id: '18', project: 'Learning', startDate: '2026-11-20', endDate: '2026-11-20', activity: 'TMLearn Course: SOCSO Compliance and Incident Reporting Awareness', status: 'Upcoming', hours: { AI: 2 } },
+      { id: '19', project: 'STM Dashboard', startDate: '2026-11-23', endDate: '2026-11-23', activity: 'STM Dashboard Workshop', status: 'Upcoming', hours: { BA: 2, SC: 0.5, PD: 1.5 } },
+      { id: '20', project: 'MPAG Phase 3: Kebersihan & Kesihatan', startDate: '2026-11-26', endDate: '2026-11-26', activity: 'UAT with MPAG', status: 'Upcoming', hours: { SC: 2, PD: 2 } }
+    ];
+
+    let appState = {
+      profile: {
+        name: 'Gs. Annuar Faiz',
+        initials: 'AF',
+        subtitle: 'Productivity Tracker'
+      },
+      years: ['2026'],
+      selectedYear: '2026',
+      selectedMonth: 'Nov',
+      capacities: {
+        '2026-Nov': { gross: 168, leave: 8 }
+      },
+      projects: [...DEFAULT_PROJECTS],
+      logs: JSON.parse(JSON.stringify(INITIAL_SAMPLE_LOGS))
+    };
+
+    let rtdb = null;
+    let currentUser = null;
+    let activeLogsRef = null;
+    let activeSettingsRef = null;
+    let isCloudReady = false;
+    let pendingConfirmCallback = null;
+    let projectStackedChartInstance = null;
+    let categoryDonutChartInstance = null;
+    let effortPulseChartInstance = null;
+
+    // =========================================================================
+    // 2. FIREBASE REALTIME DATABASE CONNECTION & SYNC ENGINE
+    // =========================================================================
+    function getFirebaseConfig() {
+      if (DEFAULT_FIREBASE_CONFIG && DEFAULT_FIREBASE_CONFIG.apiKey) {
+        return DEFAULT_FIREBASE_CONFIG;
+      }
+      if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+        try {
+          return JSON.parse(__firebase_config);
+        } catch (e) {
+          console.error('Invalid injected __firebase_config', e);
+        }
+      }
+      return null;
+    }
+
+    function getSanitizedAppId() {
+      const raw = (typeof __app_id !== 'undefined' && __app_id) ? String(__app_id) : 'annuar-resource-tracker';
+      if (raw.includes('index.html')) return 'annuar-resource-tracker';
+      return raw.replace(/[.#$\[\]\/]/g, '_');
+    }
+
+    function getRtdbBasePath() {
+      return `artifacts/${getSanitizedAppId()}/public/data`;
+    }
+
+    async function initFirebaseSync() {
+      const config = getFirebaseConfig();
+      if (!config || !config.apiKey) return;
+
+      try {
+        const existingApps = getApps();
+        for (const a of existingApps) {
+          await deleteApp(a);
+        }
+
+        const app = initializeApp(config);
+        const auth = getAuth(app);
+        rtdb = getDatabase(app);
+
+        const isUsingDefaultConfig = DEFAULT_FIREBASE_CONFIG && config.projectId === DEFAULT_FIREBASE_CONFIG.projectId;
+        if (!isUsingDefaultConfig && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+
+        currentUser = auth.currentUser;
+        if (!currentUser) return;
+
+        const uidDisplay = document.getElementById('firebase-uid-display');
+        if (uidDisplay) uidDisplay.textContent = `UID: ${currentUser.uid.slice(0, 10)}…`;
+
+        isCloudReady = true;
+        attachRealtimeListeners();
+      } catch (err) {
+        console.error('Firebase RTDB initialization error:', err);
+      }
+    }
+
+    function attachRealtimeListeners() {
+      if (!rtdb || !currentUser) return;
+
+      const basePath = getRtdbBasePath();
+      if (activeSettingsRef) off(activeSettingsRef);
+      if (activeLogsRef) off(activeLogsRef);
+
+      activeSettingsRef = ref(rtdb, `${basePath}/settings`);
+      activeLogsRef = ref(rtdb, `${basePath}/logs`);
+
+      onValue(activeSettingsRef, async (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          if (data.profile) {
+            const legacySubtitles = ['Portfolio & Resource Telemetry', 'Portfolio & Resource Studio'];
+            const loadedSub = legacySubtitles.includes(data.profile.subtitle) ? 'Productivity Tracker' : data.profile.subtitle;
+            appState.profile = { ...appState.profile, ...data.profile, subtitle: loadedSub };
+            renderProfileHeader();
+          }
+          if (Array.isArray(data.years) && data.years.length > 0) appState.years = data.years;
+          if (data.capacities) appState.capacities = data.capacities;
+          if (Array.isArray(data.projects) && data.projects.length > 0) appState.projects = data.projects;
+          syncPeriodSelectors();
+          syncProjectDropdowns();
+          renderApp();
+        } else {
+          await saveSettingsToCloud();
+        }
+      }, (err) => {
+        console.error('RTDB settings listener error:', err);
+      });
+
+      onValue(activeLogsRef, async (snapshot) => {
+        if (!snapshot.exists()) {
+          for (const log of INITIAL_SAMPLE_LOGS) {
+            await saveLogToCloud(log);
+          }
+        } else {
+          const rawVal = snapshot.val();
+          const fetchedLogs = Object.keys(rawVal).map(key => ({
+            id: key,
+            ...rawVal[key],
+            hours: rawVal[key].hours || {}
+          }));
+          fetchedLogs.sort((a, b) => (b.startDate || '').localeCompare(a.startDate || ''));
+          appState.logs = fetchedLogs;
+          renderApp();
+        }
+      }, (err) => {
+        console.error('RTDB logs listener error:', err);
+      });
+    }
+
+    async function saveSettingsToCloud() {
+      if (!isCloudReady || !rtdb || !currentUser) return;
+      try {
+        const settingsRef = ref(rtdb, `${getRtdbBasePath()}/settings`);
+        await set(settingsRef, {
+          profile: appState.profile,
+          years: appState.years,
+          capacities: appState.capacities,
+          projects: appState.projects
+        });
+      } catch (err) {
+        console.error('Error saving settings to RTDB:', err);
+        showToast('Cloud sync warning: check RTDB rules.', 'error');
+      }
+    }
+
+    async function saveLogToCloud(entry) {
+      if (!isCloudReady || !rtdb || !currentUser) return;
+      try {
+        const logRef = ref(rtdb, `${getRtdbBasePath()}/logs/${entry.id}`);
+        await set(logRef, {
+          project: entry.project,
+          startDate: entry.startDate,
+          endDate: entry.endDate || entry.startDate,
+          activity: entry.activity,
+          status: entry.status,
+          hours: entry.hours || {}
+        });
+      } catch (err) {
+        console.error('Error saving log to RTDB:', err);
+        showToast('Cloud sync warning: check RTDB rules.', 'error');
+      }
+    }
+
+    async function deleteLogFromCloud(id) {
+      if (!isCloudReady || !rtdb || !currentUser) return;
+      try {
+        const logRef = ref(rtdb, `${getRtdbBasePath()}/logs/${id}`);
+        await remove(logRef);
+      } catch (err) {
+        console.error('Error deleting log from RTDB:', err);
+      }
+    }
+
+    function openFirebaseConfigModal() {
+      const currentCfg = getFirebaseConfig();
+      document.getElementById('firebase-config-textarea').value = currentCfg ? JSON.stringify(currentCfg, null, 2) : '';
+      document.getElementById('firebase-modal').classList.remove('hidden');
+    }
+
+    function closeFirebaseConfigModal() {
+      document.getElementById('firebase-modal').classList.add('hidden');
+    }
+
+    function applyCustomFirebaseConfig() {
+      const raw = document.getElementById('firebase-config-textarea').value.trim();
+      if (!raw) return;
+      try {
+        const cleaned = raw.replace(/^const\s+\w+\s*=\s*/, '').replace(/;$/, '');
+        const parsed = JSON.parse(cleaned);
+        if (!parsed.apiKey || !parsed.projectId) {
+          showToast('Config must include apiKey and projectId.', 'error');
+          return;
+        }
+        Object.assign(DEFAULT_FIREBASE_CONFIG, parsed);
+        closeFirebaseConfigModal();
+        showToast('Connecting to Firebase Realtime Database...');
+        initFirebaseSync();
+      } catch (e) {
+        showToast('Invalid JSON format. Please paste valid Firebase config JSON.', 'error');
+      }
+    }
+
+    function renderProfileHeader() {
+      const name = appState.profile?.name || 'Gs. Annuar Faiz';
+      const initials = appState.profile?.initials || 'AF';
+      const subtitle = appState.profile?.subtitle || 'Productivity Tracker';
+
+      const avatarEl = document.getElementById('header-avatar');
+      const nameEl = document.getElementById('header-profile-name');
+      const subEl = document.getElementById('header-profile-subtitle');
+
+      if (avatarEl) avatarEl.textContent = initials;
+      if (nameEl) nameEl.textContent = name;
+      if (subEl) subEl.textContent = subtitle;
+    }
+
+    function openProfileModal() {
+      document.getElementById('profile-name-input').value = appState.profile.name || '';
+      document.getElementById('profile-initials-input').value = appState.profile.initials || '';
+      document.getElementById('profile-subtitle-input').value = appState.profile.subtitle || '';
+      document.getElementById('profile-modal').classList.remove('hidden');
+    }
+
+    function closeProfileModal() {
+      document.getElementById('profile-modal').classList.add('hidden');
+    }
+
+    function handleSaveProfile(e) {
+      e.preventDefault();
+      const name = document.getElementById('profile-name-input').value.trim();
+      const initials = document.getElementById('profile-initials-input').value.trim().toUpperCase() || 'AF';
+      const subtitle = document.getElementById('profile-subtitle-input').value.trim() || 'Productivity Tracker';
+      if (!name) return;
+
+      confirmAction(
+        'Update Profile Details',
+        `Save profile changes for "${name}" (${initials})?`,
+        async () => {
+          appState.profile = { name, initials, subtitle };
+          renderProfileHeader();
+          closeProfileModal();
+          await saveSettingsToCloud();
+          showToast('Profile updated & synced to cloud!');
+        }
+      );
+    }
+
+    function resetDemoData() {
+      confirmAction(
+        'Reset Sample Data',
+        'Restore default November 2026 sample logs and projects across your cloud database?',
+        async () => {
+          appState.years = ['2026'];
+          appState.selectedYear = '2026';
+          appState.selectedMonth = 'Nov';
+          appState.capacities = { '2026-Nov': { gross: 168, leave: 8 } };
+          appState.projects = [...DEFAULT_PROJECTS];
+          appState.logs = JSON.parse(JSON.stringify(INITIAL_SAMPLE_LOGS));
+
+          syncPeriodSelectors();
+          syncProjectDropdowns();
+          renderApp();
+
+          if (isCloudReady && rtdb) {
+            await saveSettingsToCloud();
+            const logsRootRef = ref(rtdb, `${getRtdbBasePath()}/logs`);
+            await remove(logsRootRef);
+            for (const log of INITIAL_SAMPLE_LOGS) {
+              await saveLogToCloud(log);
+            }
+          }
+          showToast('Sample data restored!', 'info');
+        }
+      );
+    }
+
+    // =========================================================================
+    // 3. DATE, WORKING DAYS & PERIOD HELPERS
+    // =========================================================================
+    function getMonthWorkingDays(yearStr, monthShort) {
+      const year = parseInt(yearStr, 10);
+      const monthIdx = MONTHS.indexOf(monthShort);
+      if (isNaN(year) || monthIdx === -1) return 21;
+
+      const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
+      let workingDays = 0;
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dayOfWeek = new Date(year, monthIdx, d).getDay();
+        if (dayOfWeek !== 0 && dayOfWeek !== 6) workingDays++;
+      }
+      return workingDays;
+    }
+
+    function getAutoGrossHours(yearStr, monthShort) {
+      return getMonthWorkingDays(yearStr, monthShort) * 8;
+    }
+
+    function getLogDateSpanList(startIso, endIso) {
+      if (!startIso) return [];
+      const [sy, sm, sd] = startIso.split('-').map(Number);
+      const start = new Date(sy, sm - 1, sd);
+      const effectiveEndIso = endIso && endIso >= startIso ? endIso : startIso;
+      const [ey, em, ed] = effectiveEndIso.split('-').map(Number);
+      const end = new Date(ey, em - 1, ed);
+
+      const allDates = [];
+      const weekdays = [];
+      const cur = new Date(start);
+      let guard = 0;
+      while (cur <= end && guard < 400) {
+        const iso = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, '0')}-${String(cur.getDate()).padStart(2, '0')}`;
+        allDates.push(iso);
+        const dow = cur.getDay();
+        if (dow !== 0 && dow !== 6) {
+          weekdays.push(iso);
+        }
+        cur.setDate(cur.getDate() + 1);
+        guard++;
+      }
+      return weekdays.length > 0 ? weekdays : allDates;
+    }
+
+    function getLogYearMonth(log) {
+      if (!log.startDate) return { year: '2026', month: 'Nov' };
+      const parts = log.startDate.split('-');
+      const year = parts[0];
+      const monthIndex = parseInt(parts[1], 10) - 1;
+      const month = MONTHS[monthIndex] || 'Nov';
+      return { year, month };
+    }
+
+    function formatDisplayDateRange(startIso, endIso) {
+      if (!startIso) return '';
+      const fmt = (iso) => {
+        const [y, m, d] = iso.split('-');
+        return `${parseInt(d, 10)}/${parseInt(m, 10)}/${y}`;
+      };
+      if (!endIso || startIso === endIso) return fmt(startIso);
+      return `${fmt(startIso)} – ${fmt(endIso)}`;
+    }
+
+    function getLogsForCurrentPeriod() {
+      return appState.logs.filter(log => {
+        const { year, month } = getLogYearMonth(log);
+        if (year !== appState.selectedYear) return false;
+        if (appState.selectedMonth !== 'ALL' && month !== appState.selectedMonth) return false;
+        return true;
+      });
+    }
+
+    function syncPeriodSelectors() {
+      const yearSelect = document.getElementById('select-year');
+      yearSelect.innerHTML = appState.years.map(y => `<option value="${y}">${y}</option>`).join('');
+      yearSelect.value = appState.selectedYear;
+      document.getElementById('select-month').value = appState.selectedMonth;
+    }
+
+    function handlePeriodChange() {
+      appState.selectedYear = document.getElementById('select-year').value;
+      appState.selectedMonth = document.getElementById('select-month').value;
+      renderApp();
+    }
+
+    function openAddYearModal() {
+      const nextYear = Math.max(...appState.years.map(Number)) + 1;
+      document.getElementById('new-year-input').value = nextYear;
+      document.getElementById('year-modal').classList.remove('hidden');
+    }
+
+    function closeAddYearModal() {
+      document.getElementById('year-modal').classList.add('hidden');
+    }
+
+    async function handleAddYear(e) {
+      e.preventDefault();
+      const yr = document.getElementById('new-year-input').value.trim();
+      if (!yr) return;
+      if (!appState.years.includes(yr)) {
+        appState.years.push(yr);
+        appState.years.sort();
+      }
+      appState.selectedYear = yr;
+      appState.selectedMonth = 'Jan';
+      await saveSettingsToCloud();
+      syncPeriodSelectors();
+      renderApp();
+      closeAddYearModal();
+      showToast(`Year ${yr} added & synced to cloud!`);
+    }
+
+    async function updateCapacityField(field, val) {
+      if (appState.selectedMonth === 'ALL' || field === 'gross') return;
+      const num = Math.max(0, parseFloat(val) || 0);
+      const key = `${appState.selectedYear}-${appState.selectedMonth}`;
+      const autoGross = getAutoGrossHours(appState.selectedYear, appState.selectedMonth);
+      if (!appState.capacities[key]) {
+        appState.capacities[key] = { gross: autoGross, leave: 0 };
+      }
+      appState.capacities[key].gross = autoGross;
+      appState.capacities[key][field] = num;
+      renderApp();
+      await saveSettingsToCloud();
+    }
+
+    // =========================================================================
+    // 4. PROJECT / PORTFOLIO MANAGEMENT
+    // =========================================================================
+    function syncProjectDropdowns() {
+      const formProj = document.getElementById('form-project');
+      const filterProj = document.getElementById('filter-project');
+      const currentFilter = filterProj.value || 'ALL';
+
+      formProj.innerHTML = appState.projects.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
+      filterProj.innerHTML = `<option value="ALL">All Projects</option>` +
+        appState.projects.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
+
+      if (appState.projects.includes(currentFilter)) {
+        filterProj.value = currentFilter;
+      } else {
+        filterProj.value = 'ALL';
+      }
+    }
+
+    function openProjectManagerModal() {
+      renderProjectManagerList();
+      document.getElementById('project-modal').classList.remove('hidden');
+    }
+
+    function closeProjectManagerModal() {
+      document.getElementById('project-modal').classList.add('hidden');
+    }
+
+    function renderProjectManagerList() {
+      const listEl = document.getElementById('project-manager-list');
+      listEl.innerHTML = appState.projects.map((proj, idx) => {
+        const logCount = appState.logs.filter(l => l.project === proj).length;
+        const theme = getProjectTheme(proj);
+        return `
+          <div class="py-2.5 flex items-center justify-between gap-2">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full shrink-0 shadow-2xs" style="background-color: ${theme.dot};"></span>
+                <input id="proj-edit-input-${idx}" type="text" value="${escapeHtml(proj)}"
+                  class="w-full text-xs sm:text-sm font-semibold text-slate-800 bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500" />
+              </div>
+              <span class="text-[11px] text-slate-400 ml-5">${logCount} logged entr${logCount === 1 ? 'y' : 'ies'}</span>
+            </div>
+            <div class="flex items-center gap-1 shrink-0">
+              <button type="button" onclick="confirmRenameProject(${idx})" title="Save Renamed Project"
+                class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-100/80 text-indigo-800 hover:bg-indigo-200/80 transition">
+                Save
+              </button>
+              <button type="button" onclick="confirmDeleteProject(${idx})" title="Delete Project"
+                class="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition">
+                <i class="ph-bold ph-trash text-base"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function handleAddProject(e) {
+      e.preventDefault();
+      const input = document.getElementById('new-project-input');
+      const name = input.value.trim();
+      if (!name) return;
+
+      if (appState.projects.some(p => p.toLowerCase() === name.toLowerCase())) {
+        showToast('Project already exists!', 'error');
+        return;
+      }
+
+      confirmAction(
+        'Add New Project',
+        `Add "${name}" to your Project / Portfolio list?`,
+        async () => {
+          appState.projects.push(name);
+          input.value = '';
+          syncProjectDropdowns();
+          renderProjectManagerList();
+          renderApp();
+          await saveSettingsToCloud();
+          showToast(`Project "${name}" synced to cloud!`);
+        }
+      );
+    }
+
+    function confirmRenameProject(index) {
+      const oldName = appState.projects[index];
+      const newName = document.getElementById(`proj-edit-input-${index}`).value.trim();
+      if (!newName || newName === oldName) return;
+
+      confirmAction(
+        'Rename Project',
+        `Rename "${oldName}" to "${newName}"? All existing activity logs under this project will also be updated.`,
+        async () => {
+          appState.projects[index] = newName;
+          const affectedLogs = appState.logs.filter(log => log.project === oldName);
+          for (const log of affectedLogs) {
+            log.project = newName;
+            await saveLogToCloud(log);
+          }
+          syncProjectDropdowns();
+          renderProjectManagerList();
+          renderApp();
+          await saveSettingsToCloud();
+          showToast('Project renamed across all cloud logs!');
+        }
+      );
+    }
+
+    function confirmDeleteProject(index) {
+      const projName = appState.projects[index];
+      if (appState.projects.length <= 1) {
+        showToast('At least one project must remain.', 'error');
+        return;
+      }
+
+      confirmAction(
+        'Delete Project / Portfolio',
+        `Are you sure you want to remove "${projName}" from your active project list?`,
+        async () => {
+          appState.projects.splice(index, 1);
+          syncProjectDropdowns();
+          renderProjectManagerList();
+          renderApp();
+          await saveSettingsToCloud();
+          showToast(`Project "${projName}" removed from cloud.`, 'info');
+        }
+      );
+    }
+
+    // =========================================================================
+    // 5. CORE RENDERING ENGINE, SMART INSIGHTS & 3-CHART SUITE
+    // =========================================================================
+    function switchMobileChartTab(tab) {
+      const panels = {
+        projects: document.getElementById('chart-panel-projects'),
+        categories: document.getElementById('chart-panel-categories'),
+        timeline: document.getElementById('chart-panel-timeline')
+      };
+      const btns = {
+        projects: document.getElementById('tab-btn-projects'),
+        categories: document.getElementById('tab-btn-categories'),
+        timeline: document.getElementById('tab-btn-timeline')
+      };
+
+      Object.keys(panels).forEach(k => {
+        if (k === tab) {
+          panels[k].classList.remove('hidden');
+          panels[k].classList.add('flex');
+          btns[k].className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-900 shadow-2xs transition';
+        } else {
+          panels[k].classList.add('hidden');
+          panels[k].classList.remove('flex');
+          btns[k].className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 transition';
+        }
+      });
+    }
+
+    function renderApp() {
+      const isAnnual = appState.selectedMonth === 'ALL';
+      const periodLabel = isAnnual ? `All Months (${appState.selectedYear})` : `${appState.selectedMonth} ${appState.selectedYear}`;
+
+      document.getElementById('chart-period-label').textContent = periodLabel;
+      document.getElementById('log-period-label').textContent = periodLabel;
+
+      const periodLogs = getLogsForCurrentPeriod();
+
+      const matrix = {};
+      appState.projects.forEach(p => {
+        matrix[p] = { BA: 0, DA: 0, DD: 0, PR: 0, SC: 0, PD: 0, GI: 0, AI: 0, total: 0 };
+      });
+
+      const catTotals = { BA: 0, DA: 0, DD: 0, PR: 0, SC: 0, PD: 0, GI: 0, AI: 0 };
+      let grandTotalHours = 0;
+
+      periodLogs.forEach(log => {
+        if (!matrix[log.project]) {
+          matrix[log.project] = { BA: 0, DA: 0, DD: 0, PR: 0, SC: 0, PD: 0, GI: 0, AI: 0, total: 0 };
+        }
+        CATEGORIES.forEach(cat => {
+          const h = parseFloat(log.hours[cat.code]) || 0;
+          matrix[log.project][cat.code] += h;
+          matrix[log.project].total += h;
+          catTotals[cat.code] += h;
+          grandTotalHours += h;
+        });
+      });
+
+      renderKPIs(grandTotalHours, isAnnual);
+      renderSmartInsights(matrix, catTotals, grandTotalHours, periodLogs);
+      renderAnnualBreakdown(isAnnual);
+      renderVisualCharts(matrix, catTotals, grandTotalHours, periodLogs, isAnnual);
+      renderMatrix(matrix, catTotals, grandTotalHours);
+      renderActivityLog(periodLogs);
+    }
+
+    function renderSmartInsights(matrix, catTotals, grandTotal, periodLogs) {
+      let topProj = 'No logged effort yet';
+      let topProjHrs = 0;
+      let activeProjCount = 0;
+      Object.keys(matrix).forEach(p => {
+        if (matrix[p].total > 0) activeProjCount++;
+        if (matrix[p].total > topProjHrs) {
+          topProjHrs = matrix[p].total;
+          topProj = p;
+        }
+      });
+      const projPct = grandTotal > 0 ? ((topProjHrs / grandTotal) * 100).toFixed(0) : 0;
+      document.getElementById('insight-top-project').textContent = topProj;
+      document.getElementById('insight-top-project-sub').textContent = `${formatNum(topProjHrs)} hrs (${projPct}% of total workload)`;
+      document.getElementById('insight-active-projects').textContent = activeProjCount;
+
+      let topCat = CATEGORIES[0];
+      let topCatHrs = 0;
+      CATEGORIES.forEach(c => {
+        if (catTotals[c.code] > topCatHrs) {
+          topCatHrs = catTotals[c.code];
+          topCat = c;
+        }
+      });
+      const catPct = grandTotal > 0 ? ((topCatHrs / grandTotal) * 100).toFixed(0) : 0;
+      document.getElementById('insight-top-category').textContent = topCatHrs > 0 ? `${topCat.code} — ${topCat.name}` : 'No category logged';
+      document.getElementById('insight-top-category-sub').textContent = `${formatNum(topCatHrs)} hrs (${catPct}% share)`;
+
+      const completed = periodLogs.filter(l => l.status === 'Completed').length;
+      const inProgress = periodLogs.filter(l => l.status === 'In Progress').length;
+      const upcoming = periodLogs.filter(l => l.status === 'Upcoming').length;
+      document.getElementById('insight-completed-ratio').textContent = `${completed}/${periodLogs.length}`;
+      document.getElementById('insight-pipeline-sub').textContent = `${inProgress} in progress · ${upcoming} upcoming`;
+    }
+
+    function renderKPIs(workloadHours, isAnnual) {
+      const grossInput = document.getElementById('input-gross');
+      const leaveInput = document.getElementById('input-leave');
+      const wdBadge = document.getElementById('gross-wd-badge');
+
+      let gross = 0;
+      let leave = 0;
+      let totalWorkingDays = 0;
+
+      if (isAnnual) {
+        MONTHS.forEach(m => {
+          const wd = getMonthWorkingDays(appState.selectedYear, m);
+          const autoGross = wd * 8;
+          const cap = appState.capacities[`${appState.selectedYear}-${m}`] || { leave: 0 };
+          totalWorkingDays += wd;
+          gross += autoGross;
+          leave += (parseFloat(cap.leave) || 0);
+        });
+        grossInput.value = gross;
+        leaveInput.value = leave;
+        if (wdBadge) wdBadge.textContent = `${totalWorkingDays}d`;
+        leaveInput.disabled = true;
+        leaveInput.classList.add('opacity-60', 'cursor-not-allowed');
+      } else {
+        const wd = getMonthWorkingDays(appState.selectedYear, appState.selectedMonth);
+        gross = wd * 8;
+        const key = `${appState.selectedYear}-${appState.selectedMonth}`;
+        const cap = appState.capacities[key] || { leave: 0 };
+        leave = parseFloat(cap.leave) || 0;
+        grossInput.value = gross;
+        leaveInput.value = leave;
+        if (wdBadge) wdBadge.textContent = `${wd}d`;
+        leaveInput.disabled = false;
+        leaveInput.classList.remove('opacity-60', 'cursor-not-allowed');
+      }
+
+      const net = Math.max(0, gross - leave);
+      const utilPct = net > 0 ? (workloadHours / net) * 100 : 0;
+      const days = +(workloadHours / 8).toFixed(2);
+
+      document.getElementById('kpi-net-capacity').textContent = `${formatNum(net)}h`;
+      document.getElementById('kpi-workload').textContent = formatNum(workloadHours);
+      document.getElementById('kpi-days').textContent = formatNum(days);
+      document.getElementById('kpi-utilization').textContent = `${utilPct.toFixed(1)}%`;
+
+      const badge = document.getElementById('kpi-util-badge');
+      const utilText = document.getElementById('kpi-utilization');
+      const progressBar = document.getElementById('kpi-util-progress');
+      const cappedWidth = Math.min(100, Math.max(0, (utilPct / 120) * 100));
+      progressBar.style.width = `${cappedWidth}%`;
+
+      if (utilPct > 105) {
+        badge.textContent = 'Overallocated';
+        badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100/90 text-rose-800 border border-rose-200';
+        utilText.className = 'font-display text-3xl sm:text-4xl font-extrabold text-rose-700 tracking-tight tabular-nums';
+        progressBar.className = 'h-full bg-rose-500 rounded-full transition-all duration-500';
+      } else if (utilPct >= 85) {
+        badge.textContent = 'Optimal';
+        badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100/90 text-emerald-800 border border-emerald-200';
+        utilText.className = 'font-display text-3xl sm:text-4xl font-extrabold text-emerald-700 tracking-tight tabular-nums';
+        progressBar.className = 'h-full bg-emerald-500 rounded-full transition-all duration-500';
+      } else {
+        badge.textContent = 'Available Cap.';
+        badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100/90 text-amber-800 border border-amber-200';
+        utilText.className = 'font-display text-3xl sm:text-4xl font-extrabold text-amber-700 tracking-tight tabular-nums';
+        progressBar.className = 'h-full bg-amber-500 rounded-full transition-all duration-500';
+      }
+    }
+
+    function renderAnnualBreakdown(isAnnual) {
+      const section = document.getElementById('annual-breakdown-section');
+      if (!isAnnual) {
+        section.classList.add('hidden');
+        return;
+      }
+
+      section.classList.remove('hidden');
+      document.getElementById('annual-year-label').textContent = appState.selectedYear;
+
+      const tbody = document.getElementById('annual-breakdown-body');
+      tbody.innerHTML = MONTHS.map(m => {
+        const key = `${appState.selectedYear}-${m}`;
+        const autoGross = getAutoGrossHours(appState.selectedYear, m);
+        const cap = appState.capacities[key] || { leave: 0 };
+        const leaveHrs = parseFloat(cap.leave) || 0;
+        const net = Math.max(0, autoGross - leaveHrs);
+
+        const monthLogs = appState.logs.filter(l => {
+          const ym = getLogYearMonth(l);
+          return ym.year === appState.selectedYear && ym.month === m;
+        });
+
+        let hrs = 0;
+        monthLogs.forEach(l => {
+          CATEGORIES.forEach(c => { hrs += parseFloat(l.hours[c.code]) || 0; });
+        });
+
+        const days = +(hrs / 8).toFixed(2);
+        const util = net > 0 ? (hrs / net) * 100 : 0;
+        const utilColor = util > 105 ? 'text-rose-700 font-bold' : util >= 85 ? 'text-emerald-700 font-bold' : hrs > 0 ? 'text-amber-700 font-semibold' : 'text-slate-400';
+
+        return `
+          <tr onclick="document.getElementById('select-month').value='${m}'; handlePeriodChange();"
+              class="hover:bg-slate-200/65 cursor-pointer transition">
+            <td class="py-3 px-4 sm:px-5 font-display font-bold text-slate-900">${m} ${appState.selectedYear}</td>
+            <td class="py-3 px-2.5 text-right text-slate-600">${formatNum(autoGross)}</td>
+            <td class="py-3 px-2.5 text-right text-slate-600">${formatNum(leaveHrs)}</td>
+            <td class="py-3 px-2.5 text-right font-semibold text-slate-800">${formatNum(net)}</td>
+            <td class="py-3 px-2.5 text-right font-bold text-brand-700">${formatNum(hrs)}</td>
+            <td class="py-3 px-2.5 text-right text-slate-500 hidden sm:table-cell">${formatNum(days)}d</td>
+            <td class="py-3 px-4 sm:px-5 text-right ${utilColor}">${util.toFixed(1)}%</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderVisualCharts(matrix, catTotals, grandTotal, periodLogs, isAnnual) {
+      // 1. Render Compact Legend Pills
+      const legendContainer = document.getElementById('category-legend');
+      legendContainer.innerHTML = CATEGORIES.map(cat => {
+        const hrs = catTotals[cat.code];
+        const pct = grandTotal > 0 ? ((hrs / grandTotal) * 100).toFixed(0) : 0;
+        return `
+          <div class="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-slate-100/75 border border-white/50" title="${cat.name}">
+            <div class="flex items-center gap-1.5 min-w-0">
+              <span class="w-2 h-2 rounded-full shrink-0" style="background-color: ${cat.color};"></span>
+              <span class="font-display text-[11px] font-bold text-slate-800">${cat.code}</span>
+            </div>
+            <div class="text-right shrink-0 font-mono text-[10px]">
+              <span class="font-bold text-slate-900">${formatNum(hrs)}h</span>
+              <span class="text-slate-500 ml-0.5">${pct}%</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      if (typeof Chart === 'undefined') return;
+
+      // 2. Horizontal Stacked Bar Chart
+      const sortedProjects = Object.keys(matrix)
+        .filter(p => matrix[p].total > 0)
+        .sort((a, b) => matrix[b].total - matrix[a].total);
+
+      const labels = sortedProjects.length > 0 ? sortedProjects.map(p => p.length > 26 ? p.slice(0, 24) + '…' : p) : ['No Logged Data'];
+      const datasets = CATEGORIES.map(cat => ({
+        label: `${cat.code} — ${cat.name}`,
+        data: sortedProjects.length > 0 ? sortedProjects.map(p => matrix[p][cat.code] || 0) : [0],
+        backgroundColor: cat.color,
+        borderRadius: 4,
+        barThickness: 18
+      }));
+
+      const barCtx = document.getElementById('projectStackedChart').getContext('2d');
+      if (projectStackedChartInstance) projectStackedChartInstance.destroy();
+      projectStackedChartInstance = new Chart(barCtx, {
+        type: 'bar',
+        data: { labels, datasets },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#0f172a',
+              titleFont: { family: 'Outfit', size: 12, weight: 'bold' },
+              bodyFont: { family: 'Plus Jakarta Sans', size: 12 },
+              padding: 10,
+              cornerRadius: 12,
+              filter: (item) => item.raw > 0,
+              callbacks: {
+                label: (ctx) => ` ${ctx.dataset.label.split('—')[0].trim()}: ${ctx.raw} hrs`
+              }
+            }
+          },
+          scales: {
+            x: {
+              stacked: true,
+              grid: { color: 'rgba(148, 163, 184, 0.16)' },
+              border: { display: false },
+              ticks: { font: { family: 'JetBrains Mono', size: 10 }, color: '#64748b' }
+            },
+            y: {
+              stacked: true,
+              grid: { display: false },
+              border: { display: false },
+              ticks: { font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' }, color: '#334155' }
+            }
+          }
+        }
+      });
+
+      // 3. Category Donut Chart
+      const donutCtx = document.getElementById('categoryDonutChart').getContext('2d');
+      if (categoryDonutChartInstance) categoryDonutChartInstance.destroy();
+      const hasData = grandTotal > 0;
+      categoryDonutChartInstance = new Chart(donutCtx, {
+        type: 'doughnut',
+        data: {
+          labels: hasData ? CATEGORIES.map(c => `${c.code} — ${c.name}`) : ['No Data'],
+          datasets: [{
+            data: hasData ? CATEGORIES.map(c => catTotals[c.code]) : [1],
+            backgroundColor: hasData ? CATEGORIES.map(c => c.color) : ['#e2e8f0'],
+            borderWidth: 2,
+            borderColor: 'rgba(241, 245, 249, 0.9)',
+            hoverOffset: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '66%',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              enabled: hasData,
+              backgroundColor: '#0f172a',
+              titleFont: { family: 'Outfit', size: 12, weight: 'bold' },
+              bodyFont: { family: 'Plus Jakarta Sans', size: 12 },
+              padding: 10,
+              cornerRadius: 12,
+              callbacks: {
+                label: (ctx) => {
+                  const pct = grandTotal > 0 ? ((ctx.raw / grandTotal) * 100).toFixed(1) : 0;
+                  return ` ${ctx.raw} hrs (${pct}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // 4. Effort Distribution Pulse Area Chart (Pro-Rata Working Day Distribution)
+      let pulseLabels = [];
+      let pulseValues = [];
+      let referenceLineValues = [];
+
+      if (isAnnual) {
+        document.getElementById('pulse-subtitle').textContent = `Monthly pro-rata workload trajectory across ${appState.selectedYear}`;
+        pulseLabels = MONTHS;
+        const monthTotals = {};
+        MONTHS.forEach(m => { monthTotals[m] = 0; });
+
+        appState.logs.filter(l => (l.startDate || '').startsWith(appState.selectedYear)).forEach(l => {
+          let totalTaskHrs = 0;
+          CATEGORIES.forEach(c => { totalTaskHrs += parseFloat(l.hours[c.code]) || 0; });
+          if (totalTaskHrs <= 0) return;
+
+          const activeDates = getLogDateSpanList(l.startDate, l.endDate);
+          const dailyHrs = activeDates.length > 0 ? totalTaskHrs / activeDates.length : totalTaskHrs;
+
+          activeDates.forEach(iso => {
+            const parts = iso.split('-');
+            if (parts[0] === appState.selectedYear) {
+              const mName = MONTHS[parseInt(parts[1], 10) - 1];
+              if (mName && monthTotals[mName] !== undefined) {
+                monthTotals[mName] += dailyHrs;
+              }
+            }
+          });
+        });
+
+        pulseValues = MONTHS.map(m => +monthTotals[m].toFixed(2));
+        referenceLineValues = MONTHS.map(m => {
+          const cap = appState.capacities[`${appState.selectedYear}-${m}`] || { leave: 0 };
+          return Math.max(0, getAutoGrossHours(appState.selectedYear, m) - (parseFloat(cap.leave) || 0));
+        });
+      } else {
+        document.getElementById('pulse-subtitle').textContent = `Pro-rata working-day distribution across ${appState.selectedMonth} ${appState.selectedYear}`;
+        const yearNum = parseInt(appState.selectedYear, 10);
+        const monthIdx = MONTHS.indexOf(appState.selectedMonth);
+        const daysInMonth = new Date(yearNum, monthIdx + 1, 0).getDate();
+        const prefix = `${appState.selectedYear}-${String(monthIdx + 1).padStart(2, '0')}`;
+
+        const monthWorkingIsos = [];
+        for (let d = 1; d <= daysInMonth; d++) {
+          const dt = new Date(yearNum, monthIdx, d);
+          const dow = dt.getDay();
+          if (dow !== 0 && dow !== 6) {
+            monthWorkingIsos.push(`${prefix}-${String(d).padStart(2, '0')}`);
+          }
+        }
+
+        const dailyMap = {};
+        monthWorkingIsos.forEach(iso => { dailyMap[iso] = 0; });
+
+        appState.logs.forEach(l => {
+          let totalTaskHrs = 0;
+          CATEGORIES.forEach(c => { totalTaskHrs += parseFloat(l.hours[c.code]) || 0; });
+          if (totalTaskHrs <= 0) return;
+
+          const activeDates = getLogDateSpanList(l.startDate, l.endDate);
+          const dailyHrs = activeDates.length > 0 ? totalTaskHrs / activeDates.length : totalTaskHrs;
+
+          activeDates.forEach(iso => {
+            if (iso.startsWith(prefix)) {
+              dailyMap[iso] = (dailyMap[iso] || 0) + dailyHrs;
+            }
+          });
+        });
+
+        const sortedIsos = Object.keys(dailyMap).sort();
+        pulseLabels = sortedIsos.map(iso => `${parseInt(iso.split('-')[2], 10)} ${appState.selectedMonth}`);
+        pulseValues = sortedIsos.map(iso => +dailyMap[iso].toFixed(2));
+        referenceLineValues = sortedIsos.map(() => 8);
+      }
+
+      const pulseCtx = document.getElementById('effortPulseChart').getContext('2d');
+      const gradient = pulseCtx.createLinearGradient(0, 0, 0, 170);
+      gradient.addColorStop(0, 'rgba(79, 70, 229, 0.25)');
+      gradient.addColorStop(1, 'rgba(79, 70, 229, 0.0)');
+
+      if (effortPulseChartInstance) effortPulseChartInstance.destroy();
+      effortPulseChartInstance = new Chart(pulseCtx, {
+        type: 'line',
+        data: {
+          labels: pulseLabels,
+          datasets: [
+            {
+              label: isAnnual ? 'Logged Hours' : 'Pro-Rata Daily Hours',
+              data: pulseValues,
+              borderColor: '#4f46e5',
+              backgroundColor: gradient,
+              borderWidth: 2.5,
+              fill: true,
+              tension: 0.3,
+              pointBackgroundColor: '#ffffff',
+              pointBorderColor: '#4f46e5',
+              pointBorderWidth: 2,
+              pointRadius: 3.5,
+              pointHoverRadius: 6
+            },
+            {
+              label: isAnnual ? 'Net Capacity' : '8h Standard Day',
+              data: referenceLineValues,
+              borderColor: 'rgba(100, 116, 139, 0.45)',
+              borderDash: [5, 5],
+              borderWidth: 1.5,
+              fill: false,
+              pointRadius: 0,
+              pointHoverRadius: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#0f172a',
+              titleFont: { family: 'Outfit', size: 12, weight: 'bold' },
+              bodyFont: { family: 'JetBrains Mono', size: 12 },
+              padding: 10,
+              cornerRadius: 12,
+              callbacks: {
+                label: (ctx) => {
+                  if (ctx.datasetIndex === 1) {
+                    return ` ${ctx.dataset.label}: ${ctx.raw} hrs`;
+                  }
+                  return ` ${ctx.dataset.label}: ${ctx.raw} hrs (${+(ctx.raw / 8).toFixed(2)} days)`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              border: { display: false },
+              ticks: { font: { family: 'Plus Jakarta Sans', size: 10, weight: '600' }, color: '#64748b', maxRotation: 0 }
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(148, 163, 184, 0.16)' },
+              border: { display: false },
+              ticks: { font: { family: 'JetBrains Mono', size: 10 }, color: '#64748b' }
+            }
+          }
+        }
+      });
+    }
+
+    function renderMatrix(matrix, catTotals, grandTotal) {
+      const tbody = document.getElementById('matrix-tbody');
+      const tfoot = document.getElementById('matrix-tfoot');
+      const mobileCards = document.getElementById('matrix-mobile-cards');
+
+      const allMatrixProjects = Object.keys(matrix);
+
+      // 1. Mobile Zero-Horizontal-Scroll Cards
+      if (mobileCards) {
+        const activeTotalPills = CATEGORIES.filter(c => catTotals[c.code] > 0).map(c => `
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg font-mono text-[10px] font-bold border ${c.badgeBg}">
+            ${c.code}: ${formatNum(catTotals[c.code])}h
+          </span>
+        `).join('');
+
+        const projectCardsHtml = allMatrixProjects.map(proj => {
+          const row = matrix[proj];
+          const projTheme = getProjectTheme(proj);
+          const activeTags = CATEGORIES.filter(c => row[c.code] > 0).map(c => `
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg font-mono text-[11px] font-bold border ${c.badgeBg}">
+              ${c.code}: ${formatNum(row[c.code])}h
+            </span>
+          `).join('');
+
+          return `
+            <div class="p-4 space-y-2 bg-slate-100/50">
+              <div class="flex items-start justify-between gap-2">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl font-display text-xs font-bold border leading-snug ${projTheme.badge}">
+                  <span class="w-2 h-2 rounded-full shrink-0" style="background-color: ${projTheme.dot};"></span>
+                  <span>${escapeHtml(proj)}</span>
+                </span>
+                <span class="font-mono text-xs font-bold px-2.5 py-0.5 rounded-lg tabular-nums ${row.total > 0 ? 'bg-indigo-100/85 text-indigo-800 border border-indigo-200' : 'bg-slate-300/60 text-slate-500'} shrink-0">
+                  ${formatNum(row.total)} hrs
+                </span>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
+                ${activeTags || '<span class="text-[11px] text-slate-500 italic">No hours logged this period</span>'}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        mobileCards.innerHTML = `
+          ${projectCardsHtml}
+          <div class="p-4 bg-slate-300/55 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="font-display text-xs font-bold text-slate-900 uppercase tracking-wider">Category Grand Total</span>
+              <span class="font-mono text-sm font-extrabold text-brand-700 tabular-nums">${formatNum(grandTotal)} hrs</span>
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              ${activeTotalPills || '<span class="text-xs text-slate-500">0 hrs total</span>'}
+            </div>
+          </div>
+        `;
+      }
+
+      // 2. Desktop Heat-Mapped Table
+      let maxCell = 0;
+      allMatrixProjects.forEach(p => {
+        CATEGORIES.forEach(c => {
+          if (matrix[p][c.code] > maxCell) maxCell = matrix[p][c.code];
+        });
+      });
+
+      tbody.innerHTML = allMatrixProjects.map(proj => {
+        const row = matrix[proj];
+        const projTheme = getProjectTheme(proj);
+        const cells = CATEGORIES.map(cat => {
+          const val = row[cat.code];
+          if (val <= 0) {
+            return `<td class="py-3 px-3 text-center text-slate-400 font-medium">·</td>`;
+          }
+          const intensity = maxCell > 0 ? val / maxCell : 0;
+          const heatClass = intensity > 0.6 ? 'bg-indigo-300/60 text-indigo-950 font-bold' :
+                            intensity > 0.2 ? 'bg-indigo-200/55 text-indigo-900 font-semibold' :
+                                              'bg-slate-200/55 text-slate-800 font-medium';
+          return `<td class="py-3 px-3 text-center font-mono ${heatClass} transition">${formatNum(val)}</td>`;
+        }).join('');
+
+        return `
+          <tr class="hover:bg-slate-200/65 transition">
+            <td class="py-3 px-5 font-display font-bold text-slate-800 sticky left-0 bg-[#E2E8F0] z-10 border-r border-slate-300/70">
+              <span class="inline-flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${projTheme.dot};"></span>
+                <span>${escapeHtml(proj)}</span>
+              </span>
+            </td>
+            ${cells}
+            <td class="py-3 px-5 text-right font-mono font-bold text-slate-900 bg-slate-300/45">${formatNum(row.total)}</td>
+          </tr>
+        `;
+      }).join('');
+
+      const footCells = CATEGORIES.map(cat => {
+        const val = catTotals[cat.code];
+        return `<td class="py-3.5 px-3 text-center font-mono text-slate-800">${formatNum(val)}</td>`;
+      }).join('');
+
+      tfoot.innerHTML = `
+        <tr>
+          <td class="py-3.5 px-5 sticky left-0 bg-slate-300 z-10 font-display text-slate-900">Category Total</td>
+          ${footCells}
+          <td class="py-3.5 px-5 text-right font-mono text-brand-900 bg-indigo-200/75 font-extrabold">${formatNum(grandTotal)}</td>
+        </tr>
+      `;
+    }
+
+    function renderActivityLog(periodLogs) {
+      const search = document.getElementById('filter-search').value.toLowerCase();
+      const projFilter = document.getElementById('filter-project').value;
+      const statusFilter = document.getElementById('filter-status').value;
+
+      const filtered = periodLogs.filter(log => {
+        const matchesSearch = log.activity.toLowerCase().includes(search) ||
+          log.project.toLowerCase().includes(search) ||
+          formatDisplayDateRange(log.startDate, log.endDate).toLowerCase().includes(search);
+        const matchesProj = projFilter === 'ALL' || log.project === projFilter;
+        const matchesStatus = statusFilter === 'ALL' || log.status === statusFilter;
+        return matchesSearch && matchesProj && matchesStatus;
+      });
+
+      const tbody = document.getElementById('log-tbody');
+      const mobileCards = document.getElementById('log-mobile-cards');
+      const emptyState = document.getElementById('empty-state');
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        if (mobileCards) mobileCards.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+
+      const statusStyles = {
+        'Completed': 'bg-emerald-100/80 text-emerald-800 border-emerald-200',
+        'In Progress': 'bg-amber-100/80 text-amber-800 border-amber-200',
+        'Upcoming': 'bg-sky-100/80 text-sky-800 border-sky-200'
+      };
+
+      // 1. Mobile Native Feed Cards
+      if (mobileCards) {
+        mobileCards.innerHTML = filtered.map(log => {
+          let rowHours = 0;
+          const tagPills = [];
+          const projTheme = getProjectTheme(log.project);
+          CATEGORIES.forEach(cat => {
+            const h = parseFloat(log.hours[cat.code]) || 0;
+            if (h > 0) {
+              rowHours += h;
+              tagPills.push(`
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg font-mono text-[11px] font-bold border ${cat.badgeBg}">
+                  ${cat.code}: ${formatNum(h)}h
+                </span>
+              `);
+            }
+          });
+          const rowDays = +(rowHours / 8).toFixed(2);
+          const badgeClass = statusStyles[log.status] || 'bg-slate-200 text-slate-700';
+
+          return `
+            <div class="p-4 space-y-2.5 bg-slate-100/55">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg font-display text-xs font-bold border max-w-full ${projTheme.badge}">
+                    <span class="w-2 h-2 rounded-full shrink-0" style="background-color: ${projTheme.dot};"></span>
+                    <span class="truncate">${escapeHtml(log.project)}</span>
+                  </span>
+                  <span class="font-mono text-[11px] text-slate-600 flex items-center gap-1 mt-1">
+                    <i class="ph ph-calendar-blank"></i> ${escapeHtml(formatDisplayDateRange(log.startDate, log.endDate))}
+                  </span>
+                </div>
+                <button onclick="cycleStatus('${log.id}')"
+                  class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold border shrink-0 active:scale-95 transition ${badgeClass}">
+                  ${escapeHtml(log.status)}
+                </button>
+              </div>
+
+              <p class="text-xs text-slate-700 leading-relaxed">${escapeHtml(log.activity)}</p>
+
+              <div class="flex flex-wrap gap-1.5">
+                ${tagPills.join('')}
+              </div>
+
+              <div class="pt-2 border-t border-slate-300/50 flex items-center justify-between">
+                <div class="font-mono text-xs font-bold text-slate-900 tabular-nums">
+                  ${formatNum(rowHours)} hrs <span class="text-[11px] font-medium text-slate-600">(${rowDays}d)</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <button onclick="editActivity('${log.id}')" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-200/80 border border-slate-300 hover:text-brand-700 transition inline-flex items-center gap-1">
+                    <i class="ph-bold ph-pencil-simple"></i> Edit
+                  </button>
+                  <button onclick="confirmDeleteActivity('${log.id}')" class="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-100/70 transition" title="Delete">
+                    <i class="ph-bold ph-trash text-sm"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 2. Desktop Table Rows
+      tbody.innerHTML = filtered.map(log => {
+        let rowHours = 0;
+        const tagPills = [];
+        const projTheme = getProjectTheme(log.project);
+
+        CATEGORIES.forEach(cat => {
+          const h = parseFloat(log.hours[cat.code]) || 0;
+          if (h > 0) {
+            rowHours += h;
+            tagPills.push(`
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg font-mono text-[11px] font-bold border ${cat.badgeBg}">
+                ${cat.code}: ${formatNum(h)}h
+              </span>
+            `);
+          }
+        });
+
+        const rowDays = +(rowHours / 8).toFixed(3);
+        const badgeClass = statusStyles[log.status] || 'bg-slate-200 text-slate-700';
+
+        return `
+          <tr class="hover:bg-slate-200/65 transition group">
+            <td class="py-3.5 px-5 align-top">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl font-display text-xs font-bold border leading-snug ${projTheme.badge}">
+                <span class="w-2 h-2 rounded-full shrink-0" style="background-color: ${projTheme.dot};"></span>
+                <span>${escapeHtml(log.project)}</span>
+              </span>
+            </td>
+            <td class="py-3.5 px-3 font-mono text-slate-600 whitespace-nowrap align-top text-xs">${escapeHtml(formatDisplayDateRange(log.startDate, log.endDate))}</td>
+            <td class="py-3.5 px-4 text-slate-700 align-top leading-relaxed">${escapeHtml(log.activity)}</td>
+            <td class="py-3.5 px-3 align-top">
+              <div class="flex flex-wrap gap-1.5">
+                ${tagPills.length ? tagPills.join('') : '<span class="text-xs text-slate-500">No hours</span>'}
+              </div>
+            </td>
+            <td class="py-3.5 px-3 text-right font-mono font-bold text-slate-900 align-top tabular-nums">${formatNum(rowHours)}</td>
+            <td class="py-3.5 px-3 text-right font-mono text-slate-600 align-top tabular-nums">${rowDays}</td>
+            <td class="py-3.5 px-3 text-center align-top">
+              <button onclick="cycleStatus('${log.id}')" title="Click to cycle status"
+                class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold border cursor-pointer hover:opacity-80 transition ${badgeClass}">
+                ${escapeHtml(log.status)}
+              </button>
+            </td>
+            <td class="py-3.5 px-5 text-right align-top whitespace-nowrap">
+              <button onclick="editActivity('${log.id}')" class="p-1.5 rounded-lg text-slate-600 hover:text-brand-700 hover:bg-slate-200/80 transition" title="Edit">
+                <i class="ph-bold ph-pencil-simple text-base"></i>
+              </button>
+              <button onclick="confirmDeleteActivity('${log.id}')" class="p-1.5 rounded-lg text-slate-600 hover:text-rose-600 hover:bg-rose-100/70 transition" title="Delete">
+                <i class="ph-bold ph-trash text-base"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // =========================================================================
+    // 6. QUICK-LOG DRAWER & 2-STEP CONFIRMATION HANDLERS
+    // =========================================================================
+    function initFormElements() {
+      syncProjectDropdowns();
+
+      const grid = document.getElementById('category-inputs-grid');
+      grid.innerHTML = CATEGORIES.map(cat => `
+        <div class="p-3 rounded-2xl border border-slate-200/90 bg-white focus-within:border-brand-600 transition flex items-center justify-between gap-2 shadow-2xs">
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${cat.color};"></span>
+              <span class="font-display text-xs font-bold text-slate-900">${cat.code}</span>
+            </div>
+            <p class="text-[11px] text-slate-500 truncate mt-0.5" title="${cat.name}">${cat.name}</p>
+          </div>
+          <input type="number" id="cat-input-${cat.code}" data-cat="${cat.code}" step="0.5" min="0" placeholder="0"
+            oninput="recalcDrawerTotal()"
+            class="w-16 text-right font-mono font-bold text-sm bg-slate-50 border border-slate-300 rounded-xl px-2 py-1 text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-600 tabular-nums" />
+        </div>
+      `).join('');
+
+      document.getElementById('ref-table-body').innerHTML = CATEGORIES.map(cat => `
+        <tr>
+          <td class="py-3 pr-3 font-mono font-bold"><span class="px-2 py-0.5 rounded-lg border text-xs ${cat.badgeBg}">${cat.code}</span></td>
+          <td class="py-3 px-3 font-display font-bold text-slate-800">${cat.name}</td>
+          <td class="py-3 pl-3 text-slate-600">${cat.useWhen}</td>
+        </tr>
+      `).join('');
+    }
+
+    function syncEndDateMin() {
+      const startInput = document.getElementById('form-start-date');
+      const endInput = document.getElementById('form-end-date');
+      endInput.min = startInput.value;
+      if (!endInput.value || endInput.value < startInput.value) {
+        endInput.value = startInput.value;
+      }
+    }
+
+    function openLogDrawer(entryToEdit = null) {
+      const drawer = document.getElementById('log-drawer');
+      const backdrop = document.getElementById('drawer-backdrop');
+      const form = document.getElementById('activity-form');
+
+      form.reset();
+      document.getElementById('edit-entry-id').value = '';
+
+      if (entryToEdit) {
+        document.getElementById('drawer-title').textContent = 'Edit Logged Activity';
+        document.getElementById('edit-entry-id').value = entryToEdit.id;
+        if (!appState.projects.includes(entryToEdit.project)) {
+          appState.projects.push(entryToEdit.project);
+          syncProjectDropdowns();
+        }
+        document.getElementById('form-project').value = entryToEdit.project;
+        document.getElementById('form-start-date').value = entryToEdit.startDate;
+        document.getElementById('form-end-date').value = entryToEdit.endDate || entryToEdit.startDate;
+        document.getElementById('form-end-date').min = entryToEdit.startDate;
+        document.getElementById('form-status').value = entryToEdit.status;
+        document.getElementById('form-activity').value = entryToEdit.activity;
+
+        CATEGORIES.forEach(cat => {
+          const val = entryToEdit.hours[cat.code] || '';
+          document.getElementById(`cat-input-${cat.code}`).value = val;
+        });
+      } else {
+        document.getElementById('drawer-title').textContent = 'Log Daily Activity';
+        const mIdx = appState.selectedMonth === 'ALL' ? new Date().getMonth() : MONTHS.indexOf(appState.selectedMonth);
+        const mm = String(mIdx + 1).padStart(2, '0');
+        const defaultIso = `${appState.selectedYear}-${mm}-23`;
+        document.getElementById('form-start-date').value = defaultIso;
+        document.getElementById('form-end-date').value = defaultIso;
+        document.getElementById('form-end-date').min = defaultIso;
+      }
+
+      recalcDrawerTotal();
+      backdrop.classList.remove('hidden');
+      drawer.classList.remove('translate-x-full');
+    }
+
+    function closeLogDrawer() {
+      document.getElementById('log-drawer').classList.add('translate-x-full');
+      document.getElementById('drawer-backdrop').classList.add('hidden');
+    }
+
+    function recalcDrawerTotal() {
+      let sum = 0;
+      CATEGORIES.forEach(cat => {
+        const val = parseFloat(document.getElementById(`cat-input-${cat.code}`).value) || 0;
+        sum += val;
+      });
+      document.getElementById('drawer-total-hours').textContent = formatNum(sum);
+      document.getElementById('drawer-total-days').textContent = +(sum / 8).toFixed(3);
+    }
+
+    function handleSaveActivity(e) {
+      e.preventDefault();
+      const editId = document.getElementById('edit-entry-id').value;
+      const project = document.getElementById('form-project').value;
+      const startDate = document.getElementById('form-start-date').value;
+      const endDate = document.getElementById('form-end-date').value || startDate;
+      const status = document.getElementById('form-status').value;
+      const activity = document.getElementById('form-activity').value.trim();
+
+      if (endDate < startDate) {
+        showToast('End Date cannot be earlier than Start Date.', 'error');
+        return;
+      }
+
+      const hoursObj = {};
+      let totalHrs = 0;
+      CATEGORIES.forEach(cat => {
+        const val = parseFloat(document.getElementById(`cat-input-${cat.code}`).value) || 0;
+        if (val > 0) {
+          hoursObj[cat.code] = val;
+          totalHrs += val;
+        }
+      });
+
+      if (totalHrs <= 0) {
+        showToast('Please enter at least 0.5 hours in one category.', 'error');
+        return;
+      }
+
+      const executeSave = async () => {
+        const logYear = startDate.split('-')[0];
+        if (logYear && !appState.years.includes(logYear)) {
+          appState.years.push(logYear);
+          appState.years.sort();
+          syncPeriodSelectors();
+          await saveSettingsToCloud();
+        }
+
+        if (editId) {
+          const updatedEntry = { id: editId, project, startDate, endDate, activity, status, hours: hoursObj };
+          const idx = appState.logs.findIndex(item => item.id === editId);
+          if (idx !== -1) appState.logs[idx] = updatedEntry;
+          await saveLogToCloud(updatedEntry);
+          showToast('Activity updated & synced to cloud!');
+        } else {
+          const newEntry = {
+            id: Date.now().toString(),
+            project,
+            startDate,
+            endDate,
+            activity,
+            status,
+            hours: hoursObj
+          };
+          appState.logs.unshift(newEntry);
+          await saveLogToCloud(newEntry);
+          showToast('Activity logged & synced to cloud!');
+        }
+
+        renderApp();
+        closeLogDrawer();
+      };
+
+      if (editId) {
+        confirmAction(
+          'Confirm Activity Update',
+          `Save changes to "${activity}" (${formatNum(totalHrs)} hrs)?`,
+          executeSave
+        );
+      } else {
+        executeSave();
+      }
+    }
+
+    function editActivity(id) {
+      const entry = appState.logs.find(item => item.id === id);
+      if (entry) openLogDrawer(entry);
+    }
+
+    function confirmDeleteActivity(id) {
+      const entry = appState.logs.find(item => item.id === id);
+      if (!entry) return;
+
+      confirmAction(
+        'Delete Activity Entry',
+        `Are you sure you want to permanently delete "${entry.activity}" (${formatDisplayDateRange(entry.startDate, entry.endDate)})?`,
+        async () => {
+          appState.logs = appState.logs.filter(item => item.id !== id);
+          renderApp();
+          await deleteLogFromCloud(id);
+          showToast('Entry removed from cloud', 'info');
+        }
+      );
+    }
+
+    function cycleStatus(id) {
+      const order = ['Completed', 'In Progress', 'Upcoming'];
+      const entry = appState.logs.find(item => item.id === id);
+      if (entry) {
+        const nextIdx = (order.indexOf(entry.status) + 1) % order.length;
+        const nextStatus = order[nextIdx];
+        confirmAction(
+          'Change Activity Status',
+          `Change status of "${entry.activity}" from "${entry.status}" to "${nextStatus}"?`,
+          async () => {
+            entry.status = nextStatus;
+            renderApp();
+            await saveLogToCloud(entry);
+            showToast(`Status updated to ${nextStatus}`);
+          }
+        );
+      }
+    }
+
+    // =========================================================================
+    // 7. 2-STEP CONFIRMATION MODAL CONTROLLER
+    // =========================================================================
+    function confirmAction(title, message, onConfirm) {
+      document.getElementById('confirm-modal-title').textContent = title;
+      document.getElementById('confirm-modal-message').textContent = message;
+      pendingConfirmCallback = onConfirm;
+
+      const proceedBtn = document.getElementById('confirm-modal-proceed-btn');
+      proceedBtn.onclick = () => {
+        const cb = pendingConfirmCallback;
+        closeConfirmModal();
+        if (typeof cb === 'function') cb();
+      };
+
+      document.getElementById('confirm-modal').classList.remove('hidden');
+    }
+
+    function closeConfirmModal() {
+      document.getElementById('confirm-modal').classList.add('hidden');
+      pendingConfirmCallback = null;
+    }
+
+    function toggleHeaderMenu(e) {
+      if (e) e.stopPropagation();
+      const menu = document.getElementById('header-menu-dropdown');
+      if (menu) menu.classList.toggle('hidden');
+    }
+
+    function closeHeaderMenu() {
+      const menu = document.getElementById('header-menu-dropdown');
+      if (menu) menu.classList.add('hidden');
+    }
+
+    document.addEventListener('click', () => {
+      closeHeaderMenu();
+    });
+
+    // =========================================================================
+    // 8. EXPORT TO CSV & UTILITIES
+    // =========================================================================
+    function exportToCSV() {
+      const periodLogs = getLogsForCurrentPeriod();
+      const headers = ['Project / Portfolio', 'Date Range', 'Activity / Deliverable', 'BA', 'DA', 'DD', 'PR', 'SC', 'PD', 'GI', 'AI', 'Total Hours', 'Days', 'Status'];
+      const rows = periodLogs.map(log => {
+        let total = 0;
+        const catVals = CATEGORIES.map(c => {
+          const v = parseFloat(log.hours[c.code]) || 0;
+          total += v;
+          return v || '';
+        });
+        const days = +(total / 8).toFixed(3);
+        return [
+          `"${log.project.replace(/"/g, '""')}"`,
+          `"${formatDisplayDateRange(log.startDate, log.endDate).replace(/"/g, '""')}"`,
+          `"${log.activity.replace(/"/g, '""')}"`,
+          ...catVals,
+          total,
+          days,
+          `"${log.status}"`
+        ].join(',');
+      });
+
+      const csvContent = [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Productivity_Tracker_${appState.selectedYear}-${appState.selectedMonth}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast('CSV exported for Google Sheets!');
+    }
+
+    function openTagReferenceModal() {
+      document.getElementById('ref-modal').classList.remove('hidden');
+    }
+
+    function closeTagReferenceModal() {
+      document.getElementById('ref-modal').classList.add('hidden');
+    }
+
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('toast');
+      const icon = document.getElementById('toast-icon');
+      document.getElementById('toast-message').textContent = msg;
+
+      if (type === 'error') {
+        icon.className = 'ph-fill ph-warning-circle text-rose-400 text-lg';
+      } else if (type === 'info') {
+        icon.className = 'ph-fill ph-info text-sky-400 text-lg';
+      } else {
+        icon.className = 'ph-fill ph-check-circle text-emerald-400 text-lg';
+      }
+
+      toast.classList.remove('translate-y-24', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-24', 'opacity-0');
+      }, 2800);
+    }
+
+    function formatNum(n) {
+      return Number.isInteger(n) ? n : +n.toFixed(2);
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // =========================================================================
+    // 9. LANDING PAGE AUTHENTICATION GATEWAY
+    // =========================================================================
+    function toggleLoginPasswordVisibility() {
+      const pwdInput = document.getElementById('login-password');
+      const eyeIcon = document.getElementById('login-eye-icon');
+      if (!pwdInput || !eyeIcon) return;
+      if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+        eyeIcon.className = 'ph-bold ph-eye-slash text-base';
+      } else {
+        pwdInput.type = 'password';
+        eyeIcon.className = 'ph-bold ph-eye text-base';
+      }
+    }
+
+    function unlockDashboardUI() {
+      const gateway = document.getElementById('login-gateway');
+      const shell = document.getElementById('dashboard-shell');
+      if (gateway) gateway.classList.add('hidden');
+      if (shell) shell.classList.remove('hidden');
+
+      renderProfileHeader();
+      syncPeriodSelectors();
+      initFormElements();
+      renderApp();
+      if (!isCloudReady) {
+        initFirebaseSync();
+      }
+    }
+
+    function handleLoginSubmit(e) {
+      e.preventDefault();
+      const userVal = document.getElementById('login-username').value.trim().toLowerCase();
+      const passVal = document.getElementById('login-password').value.trim();
+      const errBox = document.getElementById('login-error-box');
+      const errText = document.getElementById('login-error-text');
+
+      if (userVal === AUTH_CREDENTIALS.code && passVal === AUTH_CREDENTIALS.pass) {
+        if (errBox) errBox.classList.add('hidden');
+        try {
+          sessionStorage.setItem(SESSION_AUTH_KEY, 'true');
+        } catch (err) { /* ignore storage restrictions */ }
+        unlockDashboardUI();
+        showToast('Welcome back, Gs. Annuar Faiz!');
+      } else {
+        if (errText) errText.textContent = 'Invalid login code or password. Please try again.';
+        if (errBox) errBox.classList.remove('hidden');
+        document.getElementById('login-password').value = '';
+        document.getElementById('login-password').focus();
+      }
+    }
+
+    function handleLogout() {
+      confirmAction(
+        'Lock Workspace',
+        'Return to the login screen and lock your dashboard?',
+        () => {
+          try {
+            sessionStorage.removeItem(SESSION_AUTH_KEY);
+          } catch (err) { /* ignore */ }
+          document.getElementById('login-form').reset();
+          document.getElementById('login-error-box').classList.add('hidden');
+          document.getElementById('dashboard-shell').classList.add('hidden');
+          document.getElementById('login-gateway').classList.remove('hidden');
+        }
+      );
+    }
+
+    window.handleLoginSubmit = handleLoginSubmit;
+    window.toggleLoginPasswordVisibility = toggleLoginPasswordVisibility;
+    window.handleLogout = handleLogout;
+    window.handlePeriodChange = handlePeriodChange;
+    window.openAddYearModal = openAddYearModal;
+    window.closeAddYearModal = closeAddYearModal;
+    window.handleAddYear = handleAddYear;
+    window.openFirebaseConfigModal = openFirebaseConfigModal;
+    window.closeFirebaseConfigModal = closeFirebaseConfigModal;
+    window.applyCustomFirebaseConfig = applyCustomFirebaseConfig;
+    window.openProjectManagerModal = openProjectManagerModal;
+    window.closeProjectManagerModal = closeProjectManagerModal;
+    window.handleAddProject = handleAddProject;
+    window.confirmRenameProject = confirmRenameProject;
+    window.confirmDeleteProject = confirmDeleteProject;
+    window.exportToCSV = exportToCSV;
+    window.openLogDrawer = openLogDrawer;
+    window.closeLogDrawer = closeLogDrawer;
+    window.syncEndDateMin = syncEndDateMin;
+    window.recalcDrawerTotal = recalcDrawerTotal;
+    window.handleSaveActivity = handleSaveActivity;
+    window.editActivity = editActivity;
+    window.confirmDeleteActivity = confirmDeleteActivity;
+    window.cycleStatus = cycleStatus;
+    window.updateCapacityField = updateCapacityField;
+    window.openTagReferenceModal = openTagReferenceModal;
+    window.closeTagReferenceModal = closeTagReferenceModal;
+    window.confirmAction = confirmAction;
+    window.closeConfirmModal = closeConfirmModal;
+    window.toggleHeaderMenu = toggleHeaderMenu;
+    window.closeHeaderMenu = closeHeaderMenu;
+    window.openProfileModal = openProfileModal;
+    window.closeProfileModal = closeProfileModal;
+    window.handleSaveProfile = handleSaveProfile;
+    window.resetDemoData = resetDemoData;
+    window.switchMobileChartTab = switchMobileChartTab;
+    window.renderApp = renderApp;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      let isUnlocked = false;
+      try {
+        isUnlocked = sessionStorage.getItem(SESSION_AUTH_KEY) === 'true';
+      } catch (err) { /* ignore */ }
+
+      if (isUnlocked) {
+        unlockDashboardUI();
+      } else {
+        const userInput = document.getElementById('login-username');
+        if (userInput) userInput.focus();
+      }
+    });
+  </script>
+</body>
+</html>
