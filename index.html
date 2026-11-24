@@ -119,18 +119,18 @@
       <!-- Error Alert Banner -->
       <div id="login-error-box" class="hidden p-3 rounded-2xl bg-rose-100/90 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-2">
         <i class="ph-fill ph-warning-circle text-base text-rose-600 shrink-0"></i>
-        <span id="login-error-text">Invalid login code or password.</span>
+        <span id="login-error-text">Invalid email or password.</span>
       </div>
 
-      <!-- Login Form -->
+      <!-- Login Form (Firebase Email / Password) -->
       <form id="login-form" onsubmit="handleLoginSubmit(event)" class="space-y-4">
         <div>
-          <label for="login-username" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-            Login Code
+          <label for="login-email" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+            Email Address
           </label>
           <div class="relative">
-            <i class="ph-duotone ph-user-circle absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-lg"></i>
-            <input id="login-username" type="text" required autocomplete="username" placeholder="Enter your login code"
+            <i class="ph-duotone ph-envelope-simple absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-lg"></i>
+            <input id="login-email" type="email" required autocomplete="email" placeholder="you@example.com"
               class="w-full rounded-2xl border border-slate-300/90 bg-slate-100/90 pl-10 pr-4 py-3 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-600 transition" />
           </div>
         </div>
@@ -150,9 +150,9 @@
           </div>
         </div>
 
-        <button type="submit"
+        <button id="login-submit-btn" type="submit"
           class="w-full py-3.5 px-5 rounded-2xl font-display text-sm font-bold text-white bg-gradient-to-r from-slate-900 via-indigo-900 to-brand-700 hover:opacity-95 active:scale-[0.99] transition shadow-md flex items-center justify-center gap-2 mt-2">
-          <span>Unlock Dashboard</span>
+          <span id="login-submit-label">Unlock Dashboard</span>
           <i class="ph-bold ph-arrow-right text-base"></i>
         </button>
       </form>
@@ -564,7 +564,7 @@
           <p class="text-xs text-slate-600 mt-0.5">Chronological work deliverables and Leave / Public Holiday records</p>
         </div>
 
-        <!-- Responsive Filters -->
+        <!-- Responsive Filters & Quick Log CTA -->
         <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
           <div class="relative col-span-2 sm:flex-initial">
             <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
@@ -583,6 +583,12 @@
             <option value="Upcoming">Upcoming</option>
             <option value="LEAVE_ONLY">Leave / PH Only</option>
           </select>
+
+          <button type="button" onclick="openLogDrawer()"
+            class="col-span-2 sm:col-span-1 inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl font-display text-xs font-bold text-white bg-gradient-to-r from-slate-900 via-indigo-900 to-brand-700 hover:opacity-95 active:scale-[0.98] transition shadow-sm shrink-0">
+            <i class="ph-bold ph-plus text-sm"></i>
+            <span>Log Activity</span>
+          </button>
         </div>
       </div>
 
@@ -617,6 +623,11 @@
         </div>
         <h3 class="font-display text-sm font-bold text-slate-900">No entries recorded for this period</h3>
         <p class="text-xs text-slate-600 mt-1 max-w-sm mx-auto">Adjust your filters, switch months, or tap "+ Log Activity" to record work or leave.</p>
+        <button type="button" onclick="openLogDrawer()"
+          class="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-display text-xs font-bold text-white bg-gradient-to-r from-slate-900 via-indigo-900 to-brand-700 hover:opacity-95 shadow-sm transition">
+          <i class="ph-bold ph-plus text-sm"></i>
+          <span>Log Activity</span>
+        </button>
       </div>
     </section>
 
@@ -1060,11 +1071,23 @@
   <!-- ===================================================================== -->
   <script type="module">
     import { initializeApp, getApps, deleteApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getDatabase, ref, set, remove, onValue, off } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signInWithEmailAndPassword,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import {
+      getDatabase,
+      ref,
+      set,
+      remove,
+      onValue,
+      off
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
     // =========================================================================
-    // 1. MASTER DEFINITIONS, DEFAULT STATE & FIREBASE RTDB CONFIG
+    // 1. MASTER DEFINITIONS, DEFAULT STATE & FIREBASE EMAIL/PASSWORD RTDB SYNC
     // =========================================================================
     const DEFAULT_FIREBASE_CONFIG = {
       apiKey: "AIzaSyCWKLsAbq5EY6LhvEsKszWyhUQo-oLUdY0",
@@ -1076,12 +1099,6 @@
       appId: "1:202908168797:web:09dc050baf2173586f93b4",
       measurementId: "G-831Y8Z3GYR"
     };
-
-    const AUTH_CREDENTIALS = {
-      code: 'annuarfaiz',
-      pass: '25102013'
-    };
-    const SESSION_AUTH_KEY = 'ru_studio_unlocked_v1';
 
     const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -1189,11 +1206,14 @@
       logs: JSON.parse(JSON.stringify(INITIAL_SAMPLE_LOGS))
     };
 
+    let firebaseApp = null;
+    let firebaseAuth = null;
     let rtdb = null;
     let currentUser = null;
     let activeLogsRef = null;
     let activeSettingsRef = null;
     let isCloudReady = false;
+    let isUiInitialized = false;
     let pendingConfirmCallback = null;
     let pendingBulkImportRows = [];
     let projectStackedChartInstance = null;
@@ -1201,20 +1221,10 @@
     let effortPulseChartInstance = null;
 
     // =========================================================================
-    // 2. FIREBASE REALTIME DATABASE CONNECTION & SYNC ENGINE
+    // 2. FIREBASE EMAIL/PASSWORD AUTH & REALTIME DATABASE SYNC ENGINE
     // =========================================================================
     function getFirebaseConfig() {
-      if (DEFAULT_FIREBASE_CONFIG && DEFAULT_FIREBASE_CONFIG.apiKey) {
-        return DEFAULT_FIREBASE_CONFIG;
-      }
-      if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-        try {
-          return JSON.parse(__firebase_config);
-        } catch (e) {
-          console.error('Invalid injected __firebase_config', e);
-        }
-      }
-      return null;
+      return DEFAULT_FIREBASE_CONFIG;
     }
 
     function getSanitizedAppId() {
@@ -1225,37 +1235,46 @@
       return `artifacts/${getSanitizedAppId()}/public/data`;
     }
 
-    async function initFirebaseSync() {
-      const config = getFirebaseConfig();
+    async function ensureFirebaseInitialized(customConfig = null) {
+      const config = customConfig || getFirebaseConfig();
       if (!config || !config.apiKey) return;
 
-      try {
-        const existingApps = getApps();
-        for (const a of existingApps) {
-          await deleteApp(a);
-        }
+      const existingApps = getApps();
+      for (const a of existingApps) {
+        await deleteApp(a);
+      }
 
-        const app = initializeApp(config);
-        const auth = getAuth(app);
-        rtdb = getDatabase(app);
+      firebaseApp = initializeApp(config);
+      firebaseAuth = getAuth(firebaseApp);
+      rtdb = getDatabase(firebaseApp, config.databaseURL || "https://productivity-tracker-556c4-default-rtdb.asia-southeast1.firebasedatabase.app/");
 
-        const isUsingDefaultConfig = DEFAULT_FIREBASE_CONFIG && config.projectId === DEFAULT_FIREBASE_CONFIG.projectId;
-        if (!isUsingDefaultConfig && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
-        }
-
-        currentUser = auth.currentUser;
-        if (!currentUser) return;
-
+      onAuthStateChanged(firebaseAuth, (user) => {
+        currentUser = user;
         const uidDisplay = document.getElementById('firebase-uid-display');
-        if (uidDisplay) uidDisplay.textContent = `UID: ${currentUser.uid.slice(0, 10)}…`;
+        if (uidDisplay) {
+          uidDisplay.textContent = user ? `UID: ${user.uid}` : 'Not signed in';
+        }
 
-        isCloudReady = true;
-        attachRealtimeListeners();
-      } catch (err) {
-        console.error('Firebase RTDB initialization error:', err);
+        if (user) {
+          isCloudReady = true;
+          unlockDashboardUI();
+          attachRealtimeListeners();
+        } else {
+          isCloudReady = false;
+          detachRealtimeListeners();
+          lockDashboardUI();
+        }
+      });
+    }
+
+    function detachRealtimeListeners() {
+      if (activeSettingsRef) {
+        off(activeSettingsRef);
+        activeSettingsRef = null;
+      }
+      if (activeLogsRef) {
+        off(activeLogsRef);
+        activeLogsRef = null;
       }
     }
 
@@ -1263,13 +1282,13 @@
       if (!rtdb || !currentUser) return;
 
       const basePath = getRtdbBasePath();
-      if (activeSettingsRef) off(activeSettingsRef);
-      if (activeLogsRef) off(activeLogsRef);
+      detachRealtimeListeners();
 
       activeSettingsRef = ref(rtdb, `${basePath}/settings`);
       activeLogsRef = ref(rtdb, `${basePath}/logs`);
 
       onValue(activeSettingsRef, async (snapshot) => {
+        if (!currentUser) return;
         if (snapshot.exists()) {
           const data = snapshot.val();
           if (data.profile) {
@@ -1278,7 +1297,7 @@
             appState.profile = { ...appState.profile, ...data.profile, subtitle: loadedSub };
             renderProfileHeader();
           }
-          if (Array.isArray(data.years) && data.years.length > 0) appState.years = data.years;
+          if (Array.isArray(data.years) && data.years.length > 0) appState.years = data.years.map(String);
           if (data.capacities) appState.capacities = data.capacities;
           if (Array.isArray(data.projects) && data.projects.length > 0) {
             appState.projects = data.projects.filter(p => p !== 'Public Holiday');
@@ -1291,9 +1310,11 @@
         }
       }, (err) => {
         console.error('RTDB settings listener error:', err);
+        showToast('Cloud sync error: check Firebase Database rules & UID.', 'error');
       });
 
       onValue(activeLogsRef, async (snapshot) => {
+        if (!currentUser) return;
         if (!snapshot.exists()) {
           for (const log of INITIAL_SAMPLE_LOGS) {
             await saveLogToCloud(log);
@@ -1312,6 +1333,7 @@
         }
       }, (err) => {
         console.error('RTDB logs listener error:', err);
+        showToast('Cloud sync error: check Firebase Database rules & UID.', 'error');
       });
     }
 
@@ -1365,6 +1387,10 @@
     function openFirebaseConfigModal() {
       const currentCfg = getFirebaseConfig();
       document.getElementById('firebase-config-textarea').value = currentCfg ? JSON.stringify(currentCfg, null, 2) : '';
+      const uidDisplay = document.getElementById('firebase-uid-display');
+      if (uidDisplay) {
+        uidDisplay.textContent = currentUser ? `UID: ${currentUser.uid}` : 'Not signed in';
+      }
       document.getElementById('firebase-modal').classList.remove('hidden');
     }
 
@@ -1372,7 +1398,7 @@
       document.getElementById('firebase-modal').classList.add('hidden');
     }
 
-    function applyCustomFirebaseConfig() {
+    async function applyCustomFirebaseConfig() {
       const raw = document.getElementById('firebase-config-textarea').value.trim();
       if (!raw) return;
       try {
@@ -1384,8 +1410,8 @@
         }
         Object.assign(DEFAULT_FIREBASE_CONFIG, parsed);
         closeFirebaseConfigModal();
-        showToast('Connecting to Firebase Realtime Database...');
-        initFirebaseSync();
+        showToast('Reconnecting Firebase client...');
+        await ensureFirebaseInitialized(DEFAULT_FIREBASE_CONFIG);
       } catch (e) {
         showToast('Invalid JSON format. Please paste valid Firebase config JSON.', 'error');
       }
@@ -3300,7 +3326,7 @@
     }
 
     // =========================================================================
-    // 10. LANDING PAGE AUTHENTICATION GATEWAY
+    // 10. FIREBASE EMAIL/PASSWORD AUTHENTICATION GATEWAY
     // =========================================================================
     function toggleLoginPasswordVisibility() {
       const pwdInput = document.getElementById('login-password');
@@ -3321,49 +3347,70 @@
       if (gateway) gateway.classList.add('hidden');
       if (shell) shell.classList.remove('hidden');
 
-      renderProfileHeader();
-      syncPeriodSelectors();
-      initFormElements();
-      renderApp();
-      if (!isCloudReady) {
-        initFirebaseSync();
+      if (!isUiInitialized) {
+        renderProfileHeader();
+        syncPeriodSelectors();
+        initFormElements();
+        isUiInitialized = true;
       }
+      renderApp();
     }
 
-    function handleLoginSubmit(e) {
+    function lockDashboardUI() {
+      const gateway = document.getElementById('login-gateway');
+      const shell = document.getElementById('dashboard-shell');
+      if (shell) shell.classList.add('hidden');
+      if (gateway) gateway.classList.remove('hidden');
+    }
+
+    async function handleLoginSubmit(e) {
       e.preventDefault();
-      const userVal = document.getElementById('login-username').value.trim().toLowerCase();
-      const passVal = document.getElementById('login-password').value.trim();
+      if (!firebaseAuth) {
+        await ensureFirebaseInitialized();
+      }
+      const emailVal = document.getElementById('login-email').value.trim();
+      const passVal = document.getElementById('login-password').value;
       const errBox = document.getElementById('login-error-box');
       const errText = document.getElementById('login-error-text');
+      const submitBtn = document.getElementById('login-submit-btn');
+      const submitLabel = document.getElementById('login-submit-label');
 
-      if (userVal === AUTH_CREDENTIALS.code && passVal === AUTH_CREDENTIALS.pass) {
-        if (errBox) errBox.classList.add('hidden');
-        try {
-          sessionStorage.setItem(SESSION_AUTH_KEY, 'true');
-        } catch (err) { /* ignore storage restrictions */ }
-        unlockDashboardUI();
-        showToast('Welcome back, Gs. Annuar Faiz!');
-      } else {
-        if (errText) errText.textContent = 'Invalid login code or password. Please try again.';
+      if (errBox) errBox.classList.add('hidden');
+      if (submitBtn) submitBtn.disabled = true;
+      if (submitLabel) submitLabel.textContent = 'Signing in...';
+
+      try {
+        await signInWithEmailAndPassword(firebaseAuth, emailVal, passVal);
+        document.getElementById('login-password').value = '';
+        showToast('Signed in to Productivity Tracker!');
+      } catch (err) {
+        if (errText) {
+          errText.textContent = err.message || 'Sign-in failed. Verify your email and password in Firebase Authentication.';
+        }
         if (errBox) errBox.classList.remove('hidden');
         document.getElementById('login-password').value = '';
         document.getElementById('login-password').focus();
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+        if (submitLabel) submitLabel.textContent = 'Unlock Dashboard';
       }
     }
 
     function handleLogout() {
       confirmAction(
         'Lock Workspace',
-        'Return to the login screen and lock your dashboard?',
-        () => {
+        'Sign out of your Firebase session and lock your dashboard?',
+        async () => {
           try {
-            sessionStorage.removeItem(SESSION_AUTH_KEY);
-          } catch (err) { /* ignore */ }
+            if (firebaseAuth) {
+              await signOut(firebaseAuth);
+            }
+          } catch (err) {
+            console.error('Sign out error:', err);
+          }
           document.getElementById('login-form').reset();
           document.getElementById('login-error-box').classList.add('hidden');
-          document.getElementById('dashboard-shell').classList.add('hidden');
-          document.getElementById('login-gateway').classList.remove('hidden');
+          lockDashboardUI();
         }
       );
     }
@@ -3412,18 +3459,10 @@
     window.switchMobileChartTab = switchMobileChartTab;
     window.renderApp = renderApp;
 
-    window.addEventListener('DOMContentLoaded', () => {
-      let isUnlocked = false;
-      try {
-        isUnlocked = sessionStorage.getItem(SESSION_AUTH_KEY) === 'true';
-      } catch (err) { /* ignore */ }
-
-      if (isUnlocked) {
-        unlockDashboardUI();
-      } else {
-        const userInput = document.getElementById('login-username');
-        if (userInput) userInput.focus();
-      }
+    window.addEventListener('DOMContentLoaded', async () => {
+      const emailInput = document.getElementById('login-email');
+      if (emailInput) emailInput.focus();
+      await ensureFirebaseInitialized();
     });
   </script>
 </body>
