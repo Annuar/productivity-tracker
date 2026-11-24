@@ -10,6 +10,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- SheetJS for Multi-Sheet Excel (.xlsx) Export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -58,7 +60,6 @@
     input[type="number"]::-webkit-outer-spin-button {
       opacity: 1;
     }
-    /* Deeper, low-glare slate backdrop with subtle ambient mesh */
     body {
       background-color: #CBD5E1;
       background-image:
@@ -67,7 +68,6 @@
         radial-gradient(at 50% 100%, rgba(15, 23, 42, 0.05) 0px, transparent 52%);
       background-attachment: fixed;
     }
-    /* Muted Frosted Liquid Glass Card Surface (low white glare) */
     .liquid-card {
       background: rgba(241, 245, 249, 0.72);
       backdrop-filter: blur(14px);
@@ -98,7 +98,6 @@
   <div id="login-gateway" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
     style="background-color: #CBD5E1; background-image: radial-gradient(at 15% 15%, rgba(79, 70, 229, 0.14) 0px, transparent 52%), radial-gradient(at 85% 20%, rgba(14, 165, 233, 0.12) 0px, transparent 50%), radial-gradient(at 50% 90%, rgba(15, 23, 42, 0.08) 0px, transparent 55%);">
     <div class="w-full max-w-md liquid-card rounded-3xl p-6 sm:p-8 shadow-2xl border border-white/70 space-y-6 my-auto">
-      <!-- Brand / Studio Identity -->
       <div class="text-center space-y-2.5">
         <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-900 to-brand-600 text-white flex items-center justify-center font-display font-bold text-lg shadow-md ring-4 ring-white/50 mx-auto">
           AF
@@ -111,18 +110,16 @@
             Productivity Tracker
           </h1>
           <p class="text-xs sm:text-sm text-slate-600 font-medium mt-1">
-            Sign in to access your productivity analytics &amp; daily activity log
+            Sign in with your authorized Firebase account
           </p>
         </div>
       </div>
 
-      <!-- Error Alert Banner -->
       <div id="login-error-box" class="hidden p-3 rounded-2xl bg-rose-100/90 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-2">
         <i class="ph-fill ph-warning-circle text-base text-rose-600 shrink-0"></i>
-        <span id="login-error-text">Invalid email or password.</span>
+        <span id="login-error-text">Authentication failed.</span>
       </div>
 
-      <!-- Login Form (Firebase Email / Password) -->
       <form id="login-form" onsubmit="handleLoginSubmit(event)" class="space-y-4">
         <div>
           <label for="login-email" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
@@ -157,13 +154,12 @@
         </button>
       </form>
 
-      <!-- Subtle Workspace Features Footer -->
       <div class="pt-4 border-t border-slate-300/60 flex items-center justify-between text-[11px] font-semibold text-slate-500">
         <span class="inline-flex items-center gap-1.5">
           <i class="ph-duotone ph-chart-polar text-brand-600 text-sm"></i> 8-Category Telemetry
         </span>
         <span class="inline-flex items-center gap-1.5">
-          <i class="ph-duotone ph-cloud-check text-emerald-600 text-sm"></i> Cloud Sync Ready
+          <i class="ph-duotone ph-cloud-check text-emerald-600 text-sm"></i> UID-Scoped RTDB
         </span>
       </div>
     </div>
@@ -174,491 +170,563 @@
   <!-- ===================================================================== -->
   <div id="dashboard-shell" class="hidden flex-1 flex flex-col">
 
-  <!-- Top Navigation Bar (Frosted Liquid Header) -->
-  <header class="liquid-header sticky top-0 z-30">
-    <div class="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-2.5 sm:py-0 sm:h-[70px] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-      <!-- Left: Clean Staff Identity -->
-      <div class="flex items-center justify-between sm:justify-start gap-3 min-w-0">
-        <div class="flex items-center gap-3 min-w-0">
-          <div id="header-avatar" class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-br from-slate-800 via-indigo-900 to-brand-600 text-white flex items-center justify-center font-display font-bold text-xs sm:text-sm shadow-sm ring-2 ring-white/50 shrink-0">
-            AF
+    <!-- Top Navigation Bar (Frosted Liquid Header) -->
+    <header class="liquid-header sticky top-0 z-30">
+      <div class="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-2.5 sm:py-0 sm:h-[70px] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <!-- Left: Clean Staff Identity -->
+        <div class="flex items-center justify-between sm:justify-start gap-3 min-w-0">
+          <div class="flex items-center gap-3 min-w-0">
+            <div id="header-avatar" class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-br from-slate-800 via-indigo-900 to-brand-600 text-white flex items-center justify-center font-display font-bold text-xs sm:text-sm shadow-sm ring-2 ring-white/50 shrink-0">
+              AF
+            </div>
+            <div class="min-w-0">
+              <h1 id="header-profile-name" class="font-display text-sm sm:text-base font-bold text-slate-900 tracking-tight truncate">Gs. Annuar Faiz</h1>
+              <p id="header-profile-subtitle" class="text-[11px] text-slate-600 font-medium truncate">Productivity Tracker</p>
+            </div>
           </div>
-          <div class="min-w-0">
-            <h1 id="header-profile-name" class="font-display text-sm sm:text-base font-bold text-slate-900 tracking-tight truncate">Gs. Annuar Faiz</h1>
-            <p id="header-profile-subtitle" class="text-[11px] text-slate-600 font-medium truncate">Productivity Tracker</p>
+
+          <!-- Mobile Menu Dropdown Trigger -->
+          <div class="relative sm:hidden shrink-0">
+            <button type="button" onclick="toggleHeaderMenu(event)" class="p-2 rounded-xl text-slate-700 bg-slate-100/80 border border-white/60 active:scale-95 transition" title="Menu">
+              <i class="ph-bold ph-dots-three-vertical text-base"></i>
+            </button>
           </div>
         </div>
 
-        <!-- Mobile Menu Dropdown Trigger -->
-        <div class="relative sm:hidden shrink-0">
-          <button type="button" onclick="toggleHeaderMenu(event)" class="p-2 rounded-xl text-slate-700 bg-slate-100/80 border border-white/60 active:scale-95 transition" title="Menu">
-            <i class="ph-bold ph-dots-three-vertical text-base"></i>
-          </button>
+        <!-- Right: Period Switcher, Unified Menu & Primary CTA -->
+        <div class="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto relative">
+          <!-- Frosted Period Switcher Pill -->
+          <div class="flex items-center justify-between sm:justify-start bg-slate-100/80 rounded-xl border border-white/60 p-1 shadow-2xs flex-1 sm:flex-initial">
+            <div class="flex items-center">
+              <select id="select-year" onchange="handlePeriodChange()" aria-label="Select Year"
+                class="bg-transparent font-display text-xs sm:text-sm font-bold text-slate-800 pl-2 pr-1 py-1 focus:outline-none cursor-pointer">
+              </select>
+              <button onclick="openAddYearModal()" title="Add New Year"
+                class="p-1.5 rounded-lg text-slate-600 hover:text-brand-600 hover:bg-slate-200/70 transition">
+                <i class="ph-bold ph-plus text-xs"></i>
+              </button>
+            </div>
+            <div class="h-4 w-[1px] bg-slate-300 mx-1"></div>
+            <select id="select-month" onchange="handlePeriodChange()" aria-label="Select Month or Report"
+              class="bg-transparent font-display text-xs sm:text-sm font-bold text-brand-700 px-2 py-1 focus:outline-none cursor-pointer flex-1 sm:flex-initial text-right sm:text-left">
+              <option value="ALL">All Months (Annual)</option>
+              <option value="Jan">January</option>
+              <option value="Feb">February</option>
+              <option value="Mar">March</option>
+              <option value="Apr">April</option>
+              <option value="May">May</option>
+              <option value="Jun">June</option>
+              <option value="Jul">July</option>
+              <option value="Aug">August</option>
+              <option value="Sep">September</option>
+              <option value="Oct">October</option>
+              <option value="Nov">November</option>
+              <option value="Dec">December</option>
+            </select>
+          </div>
+
+          <!-- Unified Menu Dropdown + Primary Action -->
+          <div class="hidden sm:flex items-center gap-2">
+            <div class="relative">
+              <button type="button" onclick="toggleHeaderMenu(event)" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100/80 border border-white/60 hover:bg-slate-100 active:scale-[0.98] transition shadow-2xs">
+                <i class="ph-bold ph-list text-base text-slate-700"></i>
+                <span>Menu</span>
+                <i class="ph-bold ph-caret-down text-[11px] text-slate-500"></i>
+              </button>
+            </div>
+
+            <button onclick="openLogDrawer()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-display font-bold text-white bg-gradient-to-r from-slate-900 via-indigo-900 to-brand-700 hover:opacity-95 active:scale-[0.98] transition shadow-sm">
+              <i class="ph-bold ph-plus text-sm"></i>
+              <span>Log Activity</span>
+            </button>
+          </div>
+
+          <!-- Shared Dropdown Menu Panel -->
+          <div id="header-menu-dropdown" onclick="event.stopPropagation()" class="hidden absolute right-3 sm:right-[138px] top-0 sm:top-full mt-2 w-60 bg-[#F8FAFC] rounded-2xl shadow-xl border border-slate-200/90 py-1.5 z-50 text-xs font-semibold text-slate-700">
+            <button onclick="closeHeaderMenu(); openProfileModal();" class="w-full px-4 py-2.5 text-left hover:bg-slate-200/60 flex items-center gap-2.5 transition">
+              <i class="ph-duotone ph-user-circle text-base text-brand-600"></i>
+              <span>Edit Profile &amp; Password</span>
+            </button>
+            <button onclick="closeHeaderMenu(); openProjectManagerModal();" class="w-full px-4 py-2.5 text-left hover:bg-slate-200/60 flex items-center gap-2.5 transition">
+              <i class="ph-duotone ph-folders text-base text-indigo-600"></i>
+              <span>Manage Projects</span>
+            </button>
+            <button onclick="closeHeaderMenu(); openHolidayLoaderModal();" class="w-full px-4 py-2.5 text-left hover:bg-slate-200/60 flex items-center gap-2.5 transition">
+              <i class="ph-duotone ph-calendar-star text-base text-amber-600"></i>
+              <span>MY Public Holidays (2026/27)</span>
+            </button>
+            <div class="my-1 border-t border-slate-200/80"></div>
+            <button onclick="closeHeaderMenu(); openBulkImportModal();" class="w-full px-4 py-2.5 text-left hover:bg-slate-200/60 flex items-center gap-2.5 transition">
+              <i class="ph-duotone ph-upload-simple text-base text-brand-600"></i>
+              <span>Bulk Import CSV</span>
+            </button>
+            <button onclick="closeHeaderMenu(); exportToExcel();" class="w-full px-4 py-2.5 text-left hover:bg-slate-200/60 flex items-center gap-2.5 transition">
+              <i class="ph-duotone ph-file-xls text-base text-emerald-700"></i>
+              <span>Export Excel Report (.xlsx)</span>
+            </button>
+            <button onclick="closeHeaderMenu(); exportToCSV();" class="w-full px-4 py-2.5 text-left hover:bg-slate-200/60 flex items-center gap-2.5 transition">
+              <i class="ph-duotone ph-export text-base text-slate-600"></i>
+              <span>Export to CSV</span>
+            </button>
+            <div class="my-1 border-t border-slate-200/80"></div>
+            <button onclick="closeHeaderMenu(); openTagReferenceModal();" class="w-full px-4 py-2.5 text-left hover:bg-slate-200/60 flex items-center gap-2.5 transition">
+              <i class="ph-duotone ph-book-open text-base text-sky-600"></i>
+              <span>8-Category Tag Guide</span>
+            </button>
+            <button onclick="closeHeaderMenu(); openFirebaseConfigModal();" class="w-full px-4 py-2.5 text-left hover:bg-slate-200/60 flex items-center gap-2.5 transition">
+              <i class="ph-duotone ph-cloud-check text-base text-emerald-600"></i>
+              <span>Cloud Sync Config</span>
+            </button>
+            <div class="my-1 border-t border-slate-200/80"></div>
+            <button onclick="closeHeaderMenu(); handleLogout();" class="w-full px-4 py-2.5 text-left hover:bg-rose-100/70 text-rose-700 flex items-center gap-2.5 transition">
+              <i class="ph-duotone ph-lock-simple text-base text-rose-600"></i>
+              <span>Lock Workspace</span>
+            </button>
+          </div>
         </div>
       </div>
+    </header>
 
-      <!-- Right: Period Switcher, Unified Menu & Primary CTA -->
-      <div class="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto relative">
-        <!-- Frosted Period Switcher Pill -->
-        <div class="flex items-center justify-between sm:justify-start bg-slate-100/80 rounded-xl border border-white/60 p-1 shadow-2xs flex-1 sm:flex-initial">
-          <div class="flex items-center">
-            <select id="select-year" onchange="handlePeriodChange()" aria-label="Select Year"
-              class="bg-transparent font-display text-xs sm:text-sm font-bold text-slate-800 pl-2 pr-1 py-1 focus:outline-none cursor-pointer">
-            </select>
-            <button onclick="openAddYearModal()" title="Add New Year"
-              class="p-1.5 rounded-lg text-slate-600 hover:text-brand-600 hover:bg-slate-200/70 transition">
-              <i class="ph-bold ph-plus text-xs"></i>
-            </button>
-          </div>
-          <div class="h-4 w-[1px] bg-slate-300 mx-1"></div>
-          <select id="select-month" onchange="handlePeriodChange()" aria-label="Select Month or Report"
-            class="bg-transparent font-display text-xs sm:text-sm font-bold text-brand-700 px-2 py-1 focus:outline-none cursor-pointer flex-1 sm:flex-initial text-right sm:text-left">
-            <option value="ALL">All Months (Annual)</option>
-            <option value="Jan">January</option>
-            <option value="Feb">February</option>
-            <option value="Mar">March</option>
-            <option value="Apr">April</option>
-            <option value="May">May</option>
-            <option value="Jun">June</option>
-            <option value="Jul">July</option>
-            <option value="Aug">August</option>
-            <option value="Sep">September</option>
-            <option value="Oct">October</option>
-            <option value="Nov">November</option>
-            <option value="Dec">December</option>
-          </select>
-        </div>
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-6 lg:px-8 py-5 sm:py-7 space-y-5 sm:space-y-6">
 
-        <!-- Unified Menu Dropdown + Primary Action -->
-        <div class="hidden sm:flex items-center gap-2">
-          <div class="relative">
-            <button type="button" onclick="toggleHeaderMenu(event)" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100/80 border border-white/60 hover:bg-slate-100 active:scale-[0.98] transition shadow-2xs">
-              <i class="ph-bold ph-list text-base text-slate-700"></i>
-              <span>Menu</span>
-              <i class="ph-bold ph-caret-down text-[11px] text-slate-500"></i>
-            </button>
+      <!-- 1. EXECUTIVE TELEMETRY HUB -->
+      <section class="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-4">
+
+        <!-- Left (5 cols): Hero Utilization & Capacity Balance Glass Card -->
+        <div class="lg:col-span-5 liquid-card rounded-3xl p-4 sm:p-6 flex flex-col justify-between relative overflow-hidden">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Utilization</span>
+              <div class="flex items-baseline gap-2.5 mt-1">
+                <span id="kpi-utilization" class="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight tabular-nums">0.0%</span>
+                <span id="kpi-util-badge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100/80 text-emerald-800 border border-emerald-200/80">Optimal</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="text-[11px] font-semibold text-slate-400 block">Logged Effort</span>
+              <span class="font-mono text-lg sm:text-xl font-bold text-brand-700 tabular-nums"><span id="kpi-workload">0</span>h</span>
+              <span class="text-[11px] font-medium text-slate-500 block tabular-nums">(<span id="kpi-days">0</span> days)</span>
+            </div>
           </div>
 
-          <button onclick="openLogDrawer()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-display font-bold text-white bg-gradient-to-r from-slate-900 via-indigo-900 to-brand-700 hover:opacity-95 active:scale-[0.98] transition shadow-sm">
-            <i class="ph-bold ph-plus text-sm"></i>
-            <span>Log Activity</span>
-          </button>
+          <!-- Smooth Progress Bar -->
+          <div class="my-4">
+            <div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-1.5">
+              <span>0%</span>
+              <span>Target Zone (85–100%)</span>
+              <span>120%+</span>
+            </div>
+            <div class="w-full h-2.5 bg-slate-300/75 rounded-full overflow-hidden p-0.5">
+              <div id="kpi-util-progress" class="h-full bg-emerald-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <!-- Compact Capacity Strip -->
+          <div class="grid grid-cols-3 gap-2 pt-3 border-t border-slate-300/60">
+            <div class="bg-slate-200/70 rounded-2xl p-2.5 border border-white/50" title="Auto-calculated from Monday–Friday working days in this month (8h/day)">
+              <div class="flex items-center justify-between">
+                <label for="input-gross" class="block text-[10px] font-bold uppercase tracking-wider text-slate-600">Gross Hrs</label>
+                <span id="gross-wd-badge" class="text-[9px] font-mono font-bold text-slate-500">21d</span>
+              </div>
+              <input id="input-gross" type="number" readonly
+                class="w-full mt-0.5 font-mono text-sm sm:text-base font-bold text-slate-700 bg-transparent focus:outline-none cursor-default tabular-nums" />
+            </div>
+            <div class="bg-slate-200/70 rounded-2xl p-2.5 border border-white/50" title="Auto-summed from logged Leave / Public Holiday entries">
+              <div class="flex items-center justify-between">
+                <label for="input-leave" class="block text-[10px] font-bold uppercase tracking-wider text-slate-600">Leave / PH</label>
+                <span class="text-[9px] font-mono font-bold text-amber-700/80">Auto</span>
+              </div>
+              <input id="input-leave" type="number" readonly value="0"
+                class="w-full mt-0.5 font-mono text-sm sm:text-base font-bold text-amber-800 bg-transparent focus:outline-none cursor-default tabular-nums" />
+            </div>
+            <div class="bg-slate-200/70 rounded-2xl p-2.5 border border-white/50">
+              <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-600">Net Cap.</span>
+              <span id="kpi-net-capacity" class="block mt-0.5 font-mono text-sm sm:text-base font-bold text-slate-800 tabular-nums">160h</span>
+            </div>
+          </div>
         </div>
 
-        <!-- Shared Dropdown Menu Panel (Anchored cleanly below Menu button) -->
-        <div id="header-menu-dropdown" onclick="event.stopPropagation()" class="hidden absolute right-3 sm:right-[138px] top-0 sm:top-full mt-2 w-56 bg-[#F8FAFC] rounded-2xl shadow-xl border border-slate-200/90 py-1.5 z-50 text-xs font-semibold text-slate-700">
-          <button onclick="closeHeaderMenu(); openProfileModal();" class="w-full px-4 py-2.5 text-left hover:bg-slate-200/60 flex items-center gap-2.5 transition">
-            <i class="ph-duotone ph-user-circle text-base text-brand-600"></i>
-            <span>Edit Profile</span>
-          </button>
-          <button onclick="closeHeaderMenu(); openProjectManagerModal();" class="w-full px-4 py-2.5 text-left hover:bg-slate-200/60 flex items-center gap-2.5 transition">
-            <i class="ph-duotone ph-folders text-base text-indigo-600"></i>
+        <!-- Right (7 cols): Smart Executive Insights -->
+        <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-3.5">
+          <div class="liquid-card rounded-3xl p-4 sm:p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Primary Focus</span>
+              <div class="w-8 h-8 rounded-xl bg-indigo-100/80 text-indigo-700 flex items-center justify-center">
+                <i class="ph-duotone ph-target text-lg"></i>
+              </div>
+            </div>
+            <div class="my-3">
+              <h3 id="insight-top-project" class="font-display text-sm sm:text-base font-bold text-slate-900 line-clamp-2 leading-snug">—</h3>
+              <p id="insight-top-project-sub" class="text-xs text-slate-500 mt-1 tabular-nums">0 hrs (0% share)</p>
+            </div>
+            <div class="text-[11px] font-semibold text-indigo-700 bg-indigo-50/80 px-2.5 py-1 rounded-xl border border-indigo-100 w-fit">
+              Highest Effort Portfolio
+            </div>
+          </div>
+
+          <div class="liquid-card rounded-3xl p-4 sm:p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Core Discipline</span>
+              <div class="w-8 h-8 rounded-xl bg-sky-100/80 text-sky-700 flex items-center justify-center">
+                <i class="ph-duotone ph-sparkle text-lg"></i>
+              </div>
+            </div>
+            <div class="my-3">
+              <h3 id="insight-top-category" class="font-display text-sm sm:text-base font-bold text-slate-900 line-clamp-2 leading-snug">—</h3>
+              <p id="insight-top-category-sub" class="text-xs text-slate-500 mt-1 tabular-nums">0 hrs across tasks</p>
+            </div>
+            <button onclick="openTagReferenceModal()" class="text-[11px] font-semibold text-sky-700 bg-sky-50/80 hover:bg-sky-100/80 px-2.5 py-1 rounded-xl border border-sky-100 w-fit inline-flex items-center gap-1 transition">
+              <span>View 8-Tag Guide</span> <i class="ph-bold ph-arrow-up-right"></i>
+            </button>
+          </div>
+
+          <div class="liquid-card rounded-3xl p-4 sm:p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Task Velocity</span>
+              <div class="w-8 h-8 rounded-xl bg-emerald-100/80 text-emerald-700 flex items-center justify-center">
+                <i class="ph-duotone ph-check-circle text-lg"></i>
+              </div>
+            </div>
+            <div class="my-3">
+              <div class="flex items-baseline gap-1.5">
+                <span id="insight-completed-ratio" class="font-display text-2xl font-extrabold text-slate-900 tabular-nums">0/0</span>
+                <span class="text-xs font-semibold text-slate-500">completed</span>
+              </div>
+              <p id="insight-pipeline-sub" class="text-xs text-slate-500 mt-1 tabular-nums">0 in progress · 0 upcoming</p>
+            </div>
+            <div class="text-[11px] font-semibold text-emerald-700 bg-emerald-50/80 px-2.5 py-1 rounded-xl border border-emerald-100 w-fit tabular-nums">
+              <span id="insight-active-projects">0</span> Active Portfolios
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 1B. Multi-Month Annual Breakdown Table -->
+      <section id="annual-breakdown-section" class="hidden liquid-card rounded-3xl overflow-hidden">
+        <div class="px-4 sm:px-6 py-4 border-b border-slate-300/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-200/40">
+          <div>
+            <h2 class="font-display text-sm sm:text-base font-bold text-slate-900">Multi-Month Annual Summary (<span id="annual-year-label">2026</span>)</h2>
+            <p class="text-xs text-slate-600 mt-0.5">Tap any month row to inspect its detailed breakdown</p>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs sm:text-sm tabular-nums">
+            <thead>
+              <tr class="bg-slate-300/45 border-b border-slate-300/70 text-slate-600 font-bold uppercase text-[10px] sm:text-[11px] tracking-wider">
+                <th class="py-3 px-4 sm:px-5">Month</th>
+                <th class="py-3 px-2.5 text-right">Gross</th>
+                <th class="py-3 px-2.5 text-right">Leave</th>
+                <th class="py-3 px-2.5 text-right">Net</th>
+                <th class="py-3 px-2.5 text-right">Logged</th>
+                <th class="py-3 px-2.5 text-right hidden sm:table-cell">Days</th>
+                <th class="py-3 px-4 sm:px-5 text-right">Util %</th>
+              </tr>
+            </thead>
+            <tbody id="annual-breakdown-body" class="divide-y divide-slate-300/50">
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 2. VISUAL ANALYTICS STUDIO -->
+      <section class="liquid-card rounded-3xl p-4 sm:p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+          <div>
+            <h2 class="font-display text-base sm:text-lg font-bold text-slate-900">Workload Analytics (<span id="chart-period-label">Nov 2026</span>)</h2>
+            <p class="text-xs text-slate-600">Interactive portfolio allocation, category balance, and timeline pulse</p>
+          </div>
+
+          <div class="inline-flex bg-slate-300/65 p-1 rounded-xl border border-white/50 lg:hidden self-start sm:self-auto">
+            <button type="button" id="tab-btn-projects" onclick="switchMobileChartTab('projects')"
+              class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-900 shadow-2xs transition">
+              Portfolios
+            </button>
+            <button type="button" id="tab-btn-categories" onclick="switchMobileChartTab('categories')"
+              class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 transition">
+              Categories
+            </button>
+            <button type="button" id="tab-btn-timeline" onclick="switchMobileChartTab('timeline')"
+              class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 transition">
+              Pulse
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <!-- Chart 1: Project Effort Stacked Bar -->
+          <div id="chart-panel-projects" class="lg:col-span-6 flex flex-col justify-between bg-slate-200/55 rounded-2xl p-4 border border-white/50">
+            <div class="flex items-center justify-between mb-3">
+              <span class="font-display text-xs font-bold uppercase tracking-wider text-slate-600">Portfolio Effort Breakdown</span>
+              <span class="font-mono text-[11px] font-semibold text-slate-500">Hours by Tag</span>
+            </div>
+            <div class="relative w-full h-60 sm:h-64">
+              <canvas id="projectStackedChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 2: 8-Category Donut + Legend -->
+          <div id="chart-panel-categories" class="hidden lg:flex lg:col-span-6 flex-col justify-between bg-slate-200/55 rounded-2xl p-4 border border-white/50">
+            <div class="flex items-center justify-between mb-3">
+              <span class="font-display text-xs font-bold uppercase tracking-wider text-slate-600">8-Category Share</span>
+              <button onclick="openTagReferenceModal()" class="text-[11px] font-bold text-brand-700 hover:text-brand-900 transition">
+                Tag Definitions &rarr;
+              </button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center my-auto">
+              <div class="sm:col-span-5 relative h-44">
+                <canvas id="categoryDonutChart"></canvas>
+              </div>
+              <div id="category-legend" class="sm:col-span-7 grid grid-cols-2 gap-1.5">
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart 3: Workload Rhythm / Timeline Pulse Chart -->
+          <div id="chart-panel-timeline" class="hidden lg:flex lg:col-span-12 flex-col justify-between bg-slate-200/55 rounded-2xl p-4 border border-white/50">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <div>
+                <span class="font-display text-xs font-bold uppercase tracking-wider text-slate-600">Effort &amp; Absence Pulse</span>
+                <span id="pulse-subtitle" class="text-[11px] text-slate-500 ml-2">Pro-rata working-day distribution</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold text-indigo-800 bg-indigo-100/80 px-2 py-0.5 rounded-md border border-indigo-200/80">
+                  <span class="w-2 h-2 rounded-full bg-indigo-600"></span> Work Effort
+                </span>
+                <span class="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold text-amber-800 bg-amber-100/80 px-2 py-0.5 rounded-md border border-amber-200/80">
+                  <span class="w-2 h-2 rounded-sm bg-amber-500"></span> Leave / PH
+                </span>
+                <span class="hidden sm:inline-block font-mono text-[11px] font-semibold text-slate-600 bg-slate-100/80 px-2 py-0.5 rounded-md border border-slate-300/80">8h = 1 Day</span>
+              </div>
+            </div>
+            <div class="relative w-full h-44 sm:h-48">
+              <canvas id="effortPulseChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. PORTFOLIO CATEGORY MATRIX -->
+      <section class="liquid-card rounded-3xl overflow-hidden">
+        <div class="px-4 sm:px-6 py-4 border-b border-slate-300/60 flex items-center justify-between gap-2 bg-slate-200/40">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <h2 class="font-display text-sm sm:text-base font-bold text-slate-900 truncate">Portfolio Category Matrix</h2>
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100/85 text-indigo-800 border border-indigo-200/80 shrink-0">
+                <i class="ph-fill ph-lightning text-xs"></i> Live Sync
+              </span>
+            </div>
+            <p class="text-xs text-slate-600 mt-0.5 hidden sm:block">Automatically aggregated from work activity logs (excludes Leave / Public Holidays)</p>
+          </div>
+          <button onclick="openProjectManagerModal()" class="text-xs font-bold text-slate-700 hover:text-brand-700 bg-slate-100/85 hover:bg-slate-100 border border-slate-300/80 px-3 py-1.5 rounded-xl inline-flex items-center gap-1.5 shrink-0 transition shadow-2xs">
+            <i class="ph-bold ph-sliders-horizontal text-brand-600"></i>
             <span>Manage Projects</span>
           </button>
-          <div class="my-1 border-t border-slate-200/80"></div>
-          <button onclick="closeHeaderMenu(); openBulkImportModal();" class="w-full px-4 py-2.5 text-left hover:bg-slate-200/60 flex items-center gap-2.5 transition">
-            <i class="ph-duotone ph-upload-simple text-base text-brand-600"></i>
-            <span>Bulk Import CSV</span>
-          </button>
-          <button onclick="closeHeaderMenu(); exportToCSV();" class="w-full px-4 py-2.5 text-left hover:bg-slate-200/60 flex items-center gap-2.5 transition">
-            <i class="ph-duotone ph-export text-base text-slate-600"></i>
-            <span>Export to CSV</span>
-          </button>
-          <div class="my-1 border-t border-slate-200/80"></div>
-          <button onclick="closeHeaderMenu(); openTagReferenceModal();" class="w-full px-4 py-2.5 text-left hover:bg-slate-200/60 flex items-center gap-2.5 transition">
-            <i class="ph-duotone ph-book-open text-base text-sky-600"></i>
-            <span>8-Category Tag Guide</span>
-          </button>
-          <button onclick="closeHeaderMenu(); openFirebaseConfigModal();" class="w-full px-4 py-2.5 text-left hover:bg-slate-200/60 flex items-center gap-2.5 transition">
-            <i class="ph-duotone ph-cloud-check text-base text-emerald-600"></i>
-            <span>Cloud Sync Config</span>
-          </button>
-          <div class="my-1 border-t border-slate-200/80"></div>
-          <button onclick="closeHeaderMenu(); handleLogout();" class="w-full px-4 py-2.5 text-left hover:bg-rose-100/70 text-rose-700 flex items-center gap-2.5 transition">
-            <i class="ph-duotone ph-lock-simple text-base text-rose-600"></i>
-            <span>Lock Workspace</span>
-          </button>
         </div>
-      </div>
-    </div>
-  </header>
 
-  <!-- Main Content Container -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-6 lg:px-8 py-5 sm:py-7 space-y-5 sm:space-y-6">
+        <div id="matrix-mobile-cards" class="md:hidden divide-y divide-slate-300/50">
+        </div>
 
-    <!-- 1. EXECUTIVE TELEMETRY HUB (Hero Utilization Card + Capacity Bento + Smart Insights) -->
-    <section class="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-4">
+        <div class="hidden md:block overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs sm:text-sm tabular-nums">
+            <thead>
+              <tr class="bg-slate-800 text-slate-100 font-display font-bold text-xs tracking-wide">
+                <th class="py-3.5 px-5 sticky left-0 bg-slate-800 z-10 min-w-[220px]">Project / Portfolio</th>
+                <th class="py-3.5 px-3 text-center" title="Business Analysis & Solution Planning">BA</th>
+                <th class="py-3.5 px-3 text-center" title="Data Analysis & KPI Framework">DA</th>
+                <th class="py-3.5 px-3 text-center" title="Dashboard Design & Development">DD</th>
+                <th class="py-3.5 px-3 text-center" title="Performance Reporting & Optimization">PR</th>
+                <th class="py-3.5 px-3 text-center" title="Stakeholder Consultation & Advisory">SC</th>
+                <th class="py-3.5 px-3 text-center" title="Project Delivery, Documentation, Testing & Assurance">PD</th>
+                <th class="py-3.5 px-3 text-center" title="Geospatial Integration & Smart City">GI</th>
+                <th class="py-3.5 px-3 text-center" title="AI, Automation, Learning & Innovation">AI</th>
+                <th class="py-3.5 px-5 text-right bg-slate-900">Total Hrs</th>
+              </tr>
+            </thead>
+            <tbody id="matrix-tbody" class="divide-y divide-slate-300/55 bg-slate-100/50">
+            </tbody>
+            <tfoot id="matrix-tfoot" class="bg-slate-300/65 font-bold text-slate-900 border-t border-slate-300">
+            </tfoot>
+          </table>
+        </div>
+      </section>
 
-      <!-- Left (5 cols): Hero Utilization & Capacity Balance Glass Card -->
-      <div class="lg:col-span-5 liquid-card rounded-3xl p-4 sm:p-6 flex flex-col justify-between relative overflow-hidden">
-        <div class="flex items-start justify-between gap-3">
-          <div>
-            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Utilization</span>
-            <div class="flex items-baseline gap-2.5 mt-1">
-              <span id="kpi-utilization" class="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight tabular-nums">0.0%</span>
-              <span id="kpi-util-badge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100/80 text-emerald-800 border border-emerald-200/80">Optimal</span>
+      <!-- 3B. EXECUTIVE WEEKLY / MONTHLY TIMESHEET SUMMARY GENERATOR -->
+      <section class="liquid-card rounded-3xl overflow-hidden">
+        <div class="px-4 sm:px-6 py-4 border-b border-slate-300/60 flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-slate-200/40">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-indigo-100/90 text-indigo-700 flex items-center justify-center shrink-0">
+              <i class="ph-duotone ph-article text-lg"></i>
+            </div>
+            <div>
+              <h2 class="font-display text-sm sm:text-base font-bold text-slate-900">Executive Timesheet Summary</h2>
+              <p class="text-xs text-slate-600 mt-0.5">Styled portfolio breakdown &amp; instant formatted report for Teams or Email</p>
             </div>
           </div>
-          <div class="text-right">
-            <span class="text-[11px] font-semibold text-slate-400 block">Logged Effort</span>
-            <span class="font-mono text-lg sm:text-xl font-bold text-brand-700 tabular-nums"><span id="kpi-workload">0</span>h</span>
-            <span class="text-[11px] font-medium text-slate-500 block tabular-nums">(<span id="kpi-days">0</span> days)</span>
-          </div>
-        </div>
 
-        <!-- Smooth Progress Bar -->
-        <div class="my-4">
-          <div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-1.5">
-            <span>0%</span>
-            <span>Target Zone (85–100%)</span>
-            <span>120%+</span>
-          </div>
-          <div class="w-full h-2.5 bg-slate-300/75 rounded-full overflow-hidden p-0.5">
-            <div id="kpi-util-progress" class="h-full bg-emerald-500 rounded-full transition-all duration-500" style="width: 0%"></div>
-          </div>
-        </div>
-
-        <!-- Compact Capacity Strip (Auto-Calculated from Calendar + Activity Logs) -->
-        <div class="grid grid-cols-3 gap-2 pt-3 border-t border-slate-300/60">
-          <div class="bg-slate-200/70 rounded-2xl p-2.5 border border-white/50" title="Auto-calculated from Monday–Friday working days in this month (8h/day)">
-            <div class="flex items-center justify-between">
-              <label for="input-gross" class="block text-[10px] font-bold uppercase tracking-wider text-slate-600">Gross Hrs</label>
-              <span id="gross-wd-badge" class="text-[9px] font-mono font-bold text-slate-500">21d</span>
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- Timeframe Scope Pills -->
+            <div class="inline-flex bg-slate-300/65 p-1 rounded-xl border border-white/50">
+              <button type="button" id="summary-scope-period" onclick="setTimesheetSummaryScope('period')"
+                class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-900 shadow-2xs transition">
+                Selected Period
+              </button>
+              <button type="button" id="summary-scope-biweekly" onclick="setTimesheetSummaryScope('biweekly')"
+                class="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-700 transition">
+                Bi-Weekly (14d)
+              </button>
+              <button type="button" id="summary-scope-weekly" onclick="setTimesheetSummaryScope('weekly')"
+                class="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-700 transition">
+                Weekly (7d)
+              </button>
+              <button type="button" id="summary-scope-custom" onclick="setTimesheetSummaryScope('custom')"
+                class="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-700 transition">
+                Custom Range
+              </button>
             </div>
-            <input id="input-gross" type="number" readonly
-              class="w-full mt-0.5 font-mono text-sm sm:text-base font-bold text-slate-700 bg-transparent focus:outline-none cursor-default tabular-nums" />
-          </div>
-          <div class="bg-slate-200/70 rounded-2xl p-2.5 border border-white/50" title="Auto-summed from logged Leave / Public Holiday entries">
-            <div class="flex items-center justify-between">
-              <label for="input-leave" class="block text-[10px] font-bold uppercase tracking-wider text-slate-600">Leave / PH</label>
-              <span class="text-[9px] font-mono font-bold text-amber-700/80">Auto</span>
-            </div>
-            <input id="input-leave" type="number" readonly value="0"
-              class="w-full mt-0.5 font-mono text-sm sm:text-base font-bold text-amber-800 bg-transparent focus:outline-none cursor-default tabular-nums" />
-          </div>
-          <div class="bg-slate-200/70 rounded-2xl p-2.5 border border-white/50">
-            <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-600">Net Cap.</span>
-            <span id="kpi-net-capacity" class="block mt-0.5 font-mono text-sm sm:text-base font-bold text-slate-800 tabular-nums">160h</span>
-          </div>
-        </div>
-      </div>
 
-      <!-- Right (7 cols): Smart Executive Insights & Actionable Highlights -->
-      <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-3.5">
-        <!-- Insight Card 1: Top Portfolio Focus -->
-        <div class="liquid-card rounded-3xl p-4 sm:p-5 flex flex-col justify-between">
-          <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Primary Focus</span>
-            <div class="w-8 h-8 rounded-xl bg-indigo-100/80 text-indigo-700 flex items-center justify-center">
-              <i class="ph-duotone ph-target text-lg"></i>
-            </div>
-          </div>
-          <div class="my-3">
-            <h3 id="insight-top-project" class="font-display text-sm sm:text-base font-bold text-slate-900 line-clamp-2 leading-snug">—</h3>
-            <p id="insight-top-project-sub" class="text-xs text-slate-500 mt-1 tabular-nums">0 hrs (0% share)</p>
-          </div>
-          <div class="text-[11px] font-semibold text-indigo-700 bg-indigo-50/80 px-2.5 py-1 rounded-xl border border-indigo-100 w-fit">
-            Highest Effort Portfolio
-          </div>
-        </div>
+            <!-- Expand / Collapse All Toggle Button -->
+            <button type="button" id="summary-expand-all-btn" onclick="toggleAllSummaryGroups()"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold text-slate-700 bg-slate-100/90 border border-slate-300/90 hover:bg-white active:scale-95 transition shadow-2xs">
+              <i id="summary-expand-all-icon" class="ph-bold ph-arrows-out-line-vertical text-sm text-brand-600"></i>
+              <span id="summary-expand-all-label">Expand All</span>
+            </button>
 
-        <!-- Insight Card 2: Dominant Skill / Scope -->
-        <div class="liquid-card rounded-3xl p-4 sm:p-5 flex flex-col justify-between">
-          <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Core Discipline</span>
-            <div class="w-8 h-8 rounded-xl bg-sky-100/80 text-sky-700 flex items-center justify-center">
-              <i class="ph-duotone ph-sparkle text-lg"></i>
-            </div>
-          </div>
-          <div class="my-3">
-            <h3 id="insight-top-category" class="font-display text-sm sm:text-base font-bold text-slate-900 line-clamp-2 leading-snug">—</h3>
-            <p id="insight-top-category-sub" class="text-xs text-slate-500 mt-1 tabular-nums">0 hrs across tasks</p>
-          </div>
-          <button onclick="openTagReferenceModal()" class="text-[11px] font-semibold text-sky-700 bg-sky-50/80 hover:bg-sky-100/80 px-2.5 py-1 rounded-xl border border-sky-100 w-fit inline-flex items-center gap-1 transition">
-            <span>View 8-Tag Guide</span> <i class="ph-bold ph-arrow-up-right"></i>
-          </button>
-        </div>
-
-        <!-- Insight Card 3: Delivery & Pipeline Velocity -->
-        <div class="liquid-card rounded-3xl p-4 sm:p-5 flex flex-col justify-between">
-          <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Task Velocity</span>
-            <div class="w-8 h-8 rounded-xl bg-emerald-100/80 text-emerald-700 flex items-center justify-center">
-              <i class="ph-duotone ph-check-circle text-lg"></i>
-            </div>
-          </div>
-          <div class="my-3">
-            <div class="flex items-baseline gap-1.5">
-              <span id="insight-completed-ratio" class="font-display text-2xl font-extrabold text-slate-900 tabular-nums">0/0</span>
-              <span class="text-xs font-semibold text-slate-500">completed</span>
-            </div>
-            <p id="insight-pipeline-sub" class="text-xs text-slate-500 mt-1 tabular-nums">0 in progress · 0 upcoming</p>
-          </div>
-          <div class="text-[11px] font-semibold text-emerald-700 bg-emerald-50/80 px-2.5 py-1 rounded-xl border border-emerald-100 w-fit tabular-nums">
-            <span id="insight-active-projects">0</span> Active Portfolios
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 1B. Multi-Month Annual Breakdown Table (Visible only when "All Months" is selected) -->
-    <section id="annual-breakdown-section" class="hidden liquid-card rounded-3xl overflow-hidden">
-      <div class="px-4 sm:px-6 py-4 border-b border-slate-300/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-200/40">
-        <div>
-          <h2 class="font-display text-sm sm:text-base font-bold text-slate-900">Multi-Month Annual Summary (<span id="annual-year-label">2026</span>)</h2>
-          <p class="text-xs text-slate-600 mt-0.5">Tap any month row to inspect its detailed breakdown</p>
-        </div>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse text-xs sm:text-sm tabular-nums">
-          <thead>
-            <tr class="bg-slate-300/45 border-b border-slate-300/70 text-slate-600 font-bold uppercase text-[10px] sm:text-[11px] tracking-wider">
-              <th class="py-3 px-4 sm:px-5">Month</th>
-              <th class="py-3 px-2.5 text-right">Gross</th>
-              <th class="py-3 px-2.5 text-right">Leave</th>
-              <th class="py-3 px-2.5 text-right">Net</th>
-              <th class="py-3 px-2.5 text-right">Logged</th>
-              <th class="py-3 px-2.5 text-right hidden sm:table-cell">Days</th>
-              <th class="py-3 px-4 sm:px-5 text-right">Util %</th>
-            </tr>
-          </thead>
-          <tbody id="annual-breakdown-body" class="divide-y divide-slate-300/50">
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- 2. VISUAL ANALYTICS STUDIO (3-Chart Suite with Mobile Pill Tabs) -->
-    <section class="liquid-card rounded-3xl p-4 sm:p-6">
-      <!-- Header & Mobile View Switcher -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-        <div>
-          <h2 class="font-display text-base sm:text-lg font-bold text-slate-900">Workload Analytics (<span id="chart-period-label">Nov 2026</span>)</h2>
-          <p class="text-xs text-slate-600">Interactive portfolio allocation, category balance, and timeline pulse</p>
-        </div>
-
-        <!-- Mobile Chart Pill Switcher (3 clean views on small screens) -->
-        <div class="inline-flex bg-slate-300/65 p-1 rounded-xl border border-white/50 lg:hidden self-start sm:self-auto">
-          <button type="button" id="tab-btn-projects" onclick="switchMobileChartTab('projects')"
-            class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-900 shadow-2xs transition">
-            Portfolios
-          </button>
-          <button type="button" id="tab-btn-categories" onclick="switchMobileChartTab('categories')"
-            class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 transition">
-            Categories
-          </button>
-          <button type="button" id="tab-btn-timeline" onclick="switchMobileChartTab('timeline')"
-            class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 transition">
-            Pulse
-          </button>
-        </div>
-      </div>
-
-      <!-- Desktop 12-Col Bento Grid for 3 Charts -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        <!-- Chart 1 (6 cols): Project Effort Stacked Bar -->
-        <div id="chart-panel-projects" class="lg:col-span-6 flex flex-col justify-between bg-slate-200/55 rounded-2xl p-4 border border-white/50">
-          <div class="flex items-center justify-between mb-3">
-            <span class="font-display text-xs font-bold uppercase tracking-wider text-slate-600">Portfolio Effort Breakdown</span>
-            <span class="font-mono text-[11px] font-semibold text-slate-500">Hours by Tag</span>
-          </div>
-          <div class="relative w-full h-60 sm:h-64">
-            <canvas id="projectStackedChart"></canvas>
-          </div>
-        </div>
-
-        <!-- Chart 2 (6 cols): 8-Category Donut + Legend -->
-        <div id="chart-panel-categories" class="hidden lg:flex lg:col-span-6 flex-col justify-between bg-slate-200/55 rounded-2xl p-4 border border-white/50">
-          <div class="flex items-center justify-between mb-3">
-            <span class="font-display text-xs font-bold uppercase tracking-wider text-slate-600">8-Category Share</span>
-            <button onclick="openTagReferenceModal()" class="text-[11px] font-bold text-brand-700 hover:text-brand-900 transition">
-              Tag Definitions &rarr;
+            <button type="button" onclick="copyTimesheetSummary()"
+              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-display text-xs font-bold text-white bg-slate-900 hover:bg-brand-700 active:scale-95 transition shadow-2xs">
+              <i class="ph-bold ph-copy text-sm"></i>
+              <span>Copy Summary</span>
             </button>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center my-auto">
-            <div class="sm:col-span-5 relative h-44">
-              <canvas id="categoryDonutChart"></canvas>
-            </div>
-            <div id="category-legend" class="sm:col-span-7 grid grid-cols-2 gap-1.5">
-              <!-- Legend pills injected by JS -->
-            </div>
-          </div>
         </div>
 
-        <!-- Chart 3 (12 cols): Workload Rhythm / Timeline Pulse Chart (Work + Leave/PH Overlay) -->
-        <div id="chart-panel-timeline" class="hidden lg:flex lg:col-span-12 flex-col justify-between bg-slate-200/55 rounded-2xl p-4 border border-white/50">
-          <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-            <div>
-              <span class="font-display text-xs font-bold uppercase tracking-wider text-slate-600">Effort &amp; Absence Pulse</span>
-              <span id="pulse-subtitle" class="text-[11px] text-slate-500 ml-2">Pro-rata working-day distribution</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold text-indigo-800 bg-indigo-100/80 px-2 py-0.5 rounded-md border border-indigo-200/80">
-                <span class="w-2 h-2 rounded-full bg-indigo-600"></span> Work Effort
-              </span>
-              <span class="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold text-amber-800 bg-amber-100/80 px-2 py-0.5 rounded-md border border-amber-200/80">
-                <span class="w-2 h-2 rounded-sm bg-amber-500"></span> Leave / PH
-              </span>
-              <span class="hidden sm:inline-block font-mono text-[11px] font-semibold text-slate-600 bg-slate-100/80 px-2 py-0.5 rounded-md border border-slate-300/80">8h = 1 Day</span>
-            </div>
-          </div>
-          <div class="relative w-full h-44 sm:h-48">
-            <canvas id="effortPulseChart"></canvas>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 3. PORTFOLIO CATEGORY MATRIX (Mobile Accordion Cards + Desktop Heat-Mapped Matrix) -->
-    <section class="liquid-card rounded-3xl overflow-hidden">
-      <div class="px-4 sm:px-6 py-4 border-b border-slate-300/60 flex items-center justify-between gap-2 bg-slate-200/40">
-        <div class="min-w-0">
+        <!-- Custom Date Range Bar (Shown only when Custom Range is selected) -->
+        <div id="summary-custom-range-bar" class="hidden px-4 sm:px-6 py-3 bg-indigo-50/75 border-b border-indigo-200/70 flex flex-wrap items-center gap-3">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-950 flex items-center gap-1.5">
+            <i class="ph-duotone ph-calendar-blank text-base text-brand-600"></i> Custom Window:
+          </span>
           <div class="flex items-center gap-2">
-            <h2 class="font-display text-sm sm:text-base font-bold text-slate-900 truncate">Portfolio Category Matrix</h2>
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100/85 text-indigo-800 border border-indigo-200/80 shrink-0">
-              <i class="ph-fill ph-lightning text-xs"></i> Live Sync
-            </span>
+            <input type="date" id="summary-custom-start" onchange="renderTimesheetSummary()"
+              class="rounded-xl border border-indigo-200 bg-white px-2.5 py-1.5 font-mono text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500" />
+            <span class="text-xs font-semibold text-slate-500">to</span>
+            <input type="date" id="summary-custom-end" onchange="renderTimesheetSummary()"
+              class="rounded-xl border border-indigo-200 bg-white px-2.5 py-1.5 font-mono text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500" />
           </div>
-          <p class="text-xs text-slate-600 mt-0.5 hidden sm:block">Automatically aggregated from work activity logs (excludes Leave / Public Holidays)</p>
-        </div>
-        <button onclick="openProjectManagerModal()" class="text-xs font-bold text-slate-700 hover:text-brand-700 bg-slate-100/85 hover:bg-slate-100 border border-slate-300/80 px-3 py-1.5 rounded-xl inline-flex items-center gap-1.5 shrink-0 transition shadow-2xs">
-          <i class="ph-bold ph-sliders-horizontal text-brand-600"></i>
-          <span>Manage Projects</span>
-        </button>
-      </div>
-
-      <!-- MOBILE VIEW: Zero-Horizontal-Scroll Cards -->
-      <div id="matrix-mobile-cards" class="md:hidden divide-y divide-slate-300/50">
-      </div>
-
-      <!-- DESKTOP VIEW: Heat-Mapped Pivot Table -->
-      <div class="hidden md:block overflow-x-auto">
-        <table class="w-full text-left border-collapse text-xs sm:text-sm tabular-nums">
-          <thead>
-            <tr class="bg-slate-800 text-slate-100 font-display font-bold text-xs tracking-wide">
-              <th class="py-3.5 px-5 sticky left-0 bg-slate-800 z-10 min-w-[220px]">Project / Portfolio</th>
-              <th class="py-3.5 px-3 text-center" title="Business Analysis & Solution Planning">BA</th>
-              <th class="py-3.5 px-3 text-center" title="Data Analysis & KPI Framework">DA</th>
-              <th class="py-3.5 px-3 text-center" title="Dashboard Design & Development">DD</th>
-              <th class="py-3.5 px-3 text-center" title="Performance Reporting & Optimization">PR</th>
-              <th class="py-3.5 px-3 text-center" title="Stakeholder Consultation & Advisory">SC</th>
-              <th class="py-3.5 px-3 text-center" title="Project Delivery, Documentation, Testing & Assurance">PD</th>
-              <th class="py-3.5 px-3 text-center" title="Geospatial Integration & Smart City">GI</th>
-              <th class="py-3.5 px-3 text-center" title="AI, Automation, Learning & Innovation">AI</th>
-              <th class="py-3.5 px-5 text-right bg-slate-900">Total Hrs</th>
-            </tr>
-          </thead>
-          <tbody id="matrix-tbody" class="divide-y divide-slate-300/55 bg-slate-100/50">
-          </tbody>
-          <tfoot id="matrix-tfoot" class="bg-slate-300/65 font-bold text-slate-900 border-t border-slate-300">
-          </tfoot>
-        </table>
-      </div>
-    </section>
-
-    <!-- 4. ACTIVITY TAGGING LOG FEED (Work & Leave/PH Unified Chronological Feed) -->
-    <section class="liquid-card rounded-3xl overflow-hidden">
-      <div class="px-4 sm:px-6 py-4 border-b border-slate-300/60 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-200/40">
-        <div>
-          <h2 class="font-display text-sm sm:text-base font-bold text-slate-900">Activity &amp; Absence Log (<span id="log-period-label">Nov 2026</span>)</h2>
-          <p class="text-xs text-slate-600 mt-0.5">Chronological work deliverables and Leave / Public Holiday records</p>
         </div>
 
-        <!-- Responsive Filters & Quick Log CTA -->
-        <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
-          <div class="relative col-span-2 sm:flex-initial">
-            <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
-            <input id="filter-search" type="text" placeholder="Search deliverable or leave..." oninput="renderApp()"
-              class="w-full sm:w-48 pl-8 pr-3 py-2 text-xs font-medium bg-slate-100/85 border border-slate-300/90 rounded-xl focus:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500 transition" />
+        <!-- Styled Visual Preview Container -->
+        <div class="p-4 sm:p-5 space-y-3">
+          <!-- Summary Telemetry Header Strip -->
+          <div id="summary-visual-header" class="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 rounded-2xl bg-slate-200/70 border border-white/60">
           </div>
 
-          <select id="filter-project" onchange="renderApp()" class="w-full sm:w-auto text-xs font-semibold bg-slate-100/85 border border-slate-300/90 rounded-xl px-2.5 py-2 text-slate-700 focus:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500 transition truncate">
-            <option value="ALL">All Projects &amp; Leave</option>
-          </select>
+          <!-- Collapsible Project Accordion Groups -->
+          <div id="summary-visual-groups" class="space-y-2.5">
+          </div>
 
-          <select id="filter-status" onchange="renderApp()" class="w-full sm:w-auto text-xs font-semibold bg-slate-100/85 border border-slate-300/90 rounded-xl px-2.5 py-2 text-slate-700 focus:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
-            <option value="ALL">All Status</option>
-            <option value="Completed">Completed</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Upcoming">Upcoming</option>
-            <option value="LEAVE_ONLY">Leave / PH Only</option>
-          </select>
+          <!-- Hidden Plain-Text / Markdown Buffer for Clipboard Copy -->
+          <textarea id="timesheet-summary-output" class="sr-only" aria-hidden="true" tabindex="-1"></textarea>
+        </div>
+      </section>
 
-          <button type="button" onclick="openLogDrawer()"
-            class="col-span-2 sm:col-span-1 inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl font-display text-xs font-bold text-white bg-gradient-to-r from-slate-900 via-indigo-900 to-brand-700 hover:opacity-95 active:scale-[0.98] transition shadow-sm shrink-0">
+      <!-- 4. ACTIVITY TAGGING LOG FEED -->
+      <section class="liquid-card rounded-3xl overflow-hidden">
+        <div class="px-4 sm:px-6 py-4 border-b border-slate-300/60 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-200/40">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <h2 class="font-display text-sm sm:text-base font-bold text-slate-900">Activity &amp; Absence Log (<span id="log-period-label">Nov 2026</span>)</h2>
+              <p class="text-xs text-slate-600 mt-0.5">Chronological work deliverables and Leave / Public Holiday records</p>
+            </div>
+            <button onclick="openLogDrawer()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-display font-bold text-white bg-gradient-to-r from-slate-900 via-indigo-900 to-brand-700 hover:opacity-95 active:scale-[0.98] transition shadow-sm shrink-0">
+              <i class="ph-bold ph-plus text-sm"></i>
+              <span>Log Activity</span>
+            </button>
+          </div>
+
+          <!-- Responsive Filters -->
+          <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
+            <div class="relative col-span-2 sm:flex-initial">
+              <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+              <input id="filter-search" type="text" placeholder="Search deliverable or leave..." oninput="renderApp()"
+                class="w-full sm:w-48 pl-8 pr-3 py-2 text-xs font-medium bg-slate-100/85 border border-slate-300/90 rounded-xl focus:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500 transition" />
+            </div>
+
+            <select id="filter-project" onchange="renderApp()" class="w-full sm:w-auto text-xs font-semibold bg-slate-100/85 border border-slate-300/90 rounded-xl px-2.5 py-2 text-slate-700 focus:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500 transition truncate">
+              <option value="ALL">All Projects &amp; Leave</option>
+            </select>
+
+            <select id="filter-status" onchange="renderApp()" class="w-full sm:w-auto text-xs font-semibold bg-slate-100/85 border border-slate-300/90 rounded-xl px-2.5 py-2 text-slate-700 focus:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
+              <option value="ALL">All Status</option>
+              <option value="Completed">Completed</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Upcoming">Upcoming</option>
+              <option value="LEAVE_ONLY">Leave / PH Only</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="log-mobile-cards" class="md:hidden divide-y divide-slate-300/50">
+        </div>
+
+        <div class="hidden md:block overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs sm:text-sm">
+            <thead>
+              <tr class="bg-slate-300/45 border-b border-slate-300/70 text-slate-600 font-bold uppercase text-[11px] tracking-wider">
+                <th class="py-3.5 px-5 min-w-[185px]">Project / Absence</th>
+                <th class="py-3.5 px-3 min-w-[155px]">Date Range</th>
+                <th class="py-3.5 px-4 min-w-[260px]">Activity / Remarks</th>
+                <th class="py-3.5 px-3 min-w-[185px]">Category / Type</th>
+                <th class="py-3.5 px-3 text-right">Hours</th>
+                <th class="py-3.5 px-3 text-right">Days</th>
+                <th class="py-3.5 px-3 text-center">Status</th>
+                <th class="py-3.5 px-5 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="log-tbody" class="divide-y divide-slate-300/55 bg-slate-100/50">
+            </tbody>
+          </table>
+        </div>
+
+        <div id="empty-state" class="hidden py-12 px-4 text-center bg-slate-200/35">
+          <div class="w-12 h-12 rounded-2xl bg-slate-300/70 text-slate-600 flex items-center justify-center mx-auto mb-3">
+            <i class="ph-duotone ph-clipboard-text text-2xl"></i>
+          </div>
+          <h3 class="font-display text-sm font-bold text-slate-900">No entries recorded for this period</h3>
+          <p class="text-xs text-slate-600 mt-1 max-w-sm mx-auto">Adjust your filters, switch months, or tap "+ Log Activity" to record work or leave.</p>
+          <button onclick="openLogDrawer()" class="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-display font-bold text-white bg-slate-900 hover:bg-brand-700 transition">
             <i class="ph-bold ph-plus text-sm"></i>
-            <span>Log Activity</span>
+            <span>+ Log Activity</span>
           </button>
         </div>
-      </div>
+      </section>
 
-      <!-- MOBILE VIEW: Native Touch-Friendly Feed Cards -->
-      <div id="log-mobile-cards" class="md:hidden divide-y divide-slate-300/50">
-      </div>
+    </main>
 
-      <!-- DESKTOP VIEW: Structured Table -->
-      <div class="hidden md:block overflow-x-auto">
-        <table class="w-full text-left border-collapse text-xs sm:text-sm">
-          <thead>
-            <tr class="bg-slate-300/45 border-b border-slate-300/70 text-slate-600 font-bold uppercase text-[11px] tracking-wider">
-              <th class="py-3.5 px-5 min-w-[185px]">Project / Absence</th>
-              <th class="py-3.5 px-3 min-w-[155px]">Date Range</th>
-              <th class="py-3.5 px-4 min-w-[260px]">Activity / Remarks</th>
-              <th class="py-3.5 px-3 min-w-[185px]">Category / Type</th>
-              <th class="py-3.5 px-3 text-right">Hours</th>
-              <th class="py-3.5 px-3 text-right">Days</th>
-              <th class="py-3.5 px-3 text-center">Status</th>
-              <th class="py-3.5 px-5 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="log-tbody" class="divide-y divide-slate-300/55 bg-slate-100/50">
-          </tbody>
-        </table>
-      </div>
+    <!-- MOBILE STICKY FROSTED BOTTOM ACTION BAR -->
+    <nav class="md:hidden fixed bottom-0 inset-x-0 z-30 liquid-header border-t border-slate-300/70 px-3 py-2 flex items-center justify-between gap-2 shadow-[0_-6px_24px_rgba(15,23,42,0.06)]">
+      <button onclick="openProjectManagerModal()" class="flex-1 flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-700 hover:bg-white/60 active:scale-95 transition">
+        <i class="ph-duotone ph-folders text-lg text-brand-600"></i>
+        <span class="text-[10px] font-bold mt-0.5">Projects</span>
+      </button>
 
-      <!-- Empty State -->
-      <div id="empty-state" class="hidden py-12 px-4 text-center bg-slate-200/35">
-        <div class="w-12 h-12 rounded-2xl bg-slate-300/70 text-slate-600 flex items-center justify-center mx-auto mb-3">
-          <i class="ph-duotone ph-clipboard-text text-2xl"></i>
-        </div>
-        <h3 class="font-display text-sm font-bold text-slate-900">No entries recorded for this period</h3>
-        <p class="text-xs text-slate-600 mt-1 max-w-sm mx-auto">Adjust your filters, switch months, or tap "+ Log Activity" to record work or leave.</p>
-        <button type="button" onclick="openLogDrawer()"
-          class="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-display text-xs font-bold text-white bg-gradient-to-r from-slate-900 via-indigo-900 to-brand-700 hover:opacity-95 shadow-sm transition">
-          <i class="ph-bold ph-plus text-sm"></i>
-          <span>Log Activity</span>
-        </button>
-      </div>
-    </section>
+      <button onclick="openLogDrawer()" class="flex-[2] flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl font-display text-xs font-bold text-white bg-gradient-to-r from-slate-900 via-indigo-900 to-brand-700 shadow-md active:scale-95 transition">
+        <i class="ph-bold ph-plus text-sm"></i>
+        <span>Log Activity</span>
+      </button>
 
-  </main>
-
-  <!-- MOBILE STICKY FROSTED BOTTOM ACTION BAR -->
-  <nav class="md:hidden fixed bottom-0 inset-x-0 z-30 liquid-header border-t border-slate-300/70 px-3 py-2 flex items-center justify-between gap-2 shadow-[0_-6px_24px_rgba(15,23,42,0.06)]">
-    <button onclick="openProjectManagerModal()" class="flex-1 flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-700 hover:bg-white/60 active:scale-95 transition">
-      <i class="ph-duotone ph-folders text-lg text-brand-600"></i>
-      <span class="text-[10px] font-bold mt-0.5">Projects</span>
-    </button>
-
-    <button onclick="openLogDrawer()" class="flex-[2] flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl font-display text-xs font-bold text-white bg-gradient-to-r from-slate-900 via-indigo-900 to-brand-700 shadow-md active:scale-95 transition">
-      <i class="ph-bold ph-plus text-sm"></i>
-      <span>Log Activity</span>
-    </button>
-
-    <button onclick="openBulkImportModal()" class="flex-1 flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-700 hover:bg-white/60 active:scale-95 transition">
-      <i class="ph-duotone ph-upload-simple text-lg text-slate-600"></i>
-      <span class="text-[10px] font-bold mt-0.5">Import</span>
-    </button>
-  </nav>
+      <button onclick="openBulkImportModal()" class="flex-1 flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-700 hover:bg-white/60 active:scale-95 transition">
+        <i class="ph-duotone ph-upload-simple text-lg text-slate-600"></i>
+        <span class="text-[10px] font-bold mt-0.5">Import</span>
+      </button>
+    </nav>
 
   </div><!-- End #dashboard-shell -->
 
   <!-- ===================================================================== -->
-  <!-- QUICK-LOG SLIDE-OVER DRAWER (WORK ACTIVITY vs LEAVE / PUBLIC HOLIDAY) -->
+  <!-- QUICK-LOG SLIDE-OVER DRAWER                                           -->
   <!-- ===================================================================== -->
   <div id="drawer-backdrop" onclick="closeLogDrawer()" class="fixed inset-0 bg-slate-900/45 backdrop-blur-xs z-40 hidden transition-opacity"></div>
   <aside id="log-drawer" class="fixed inset-y-0 right-0 w-full max-w-lg bg-[#F8FAFC] shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-out flex flex-col border-l border-slate-200">
-    <!-- Drawer Header -->
     <div class="px-4 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-100/80">
       <div>
         <h3 id="drawer-title" class="font-display text-base font-bold text-slate-900">Log Daily Entry</h3>
@@ -669,12 +737,10 @@
       </button>
     </div>
 
-    <!-- Drawer Form -->
     <form id="activity-form" onsubmit="handleSaveActivity(event)" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
       <input type="hidden" id="edit-entry-id" value="" />
       <input type="hidden" id="form-entry-type" value="work" />
 
-      <!-- Entry Type Mode Switcher -->
       <div>
         <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Entry Classification</label>
         <div class="grid grid-cols-2 gap-1.5 p-1 bg-slate-200/80 rounded-2xl border border-slate-300/70">
@@ -691,7 +757,6 @@
         </div>
       </div>
 
-      <!-- WORK-ONLY: Project Selection -->
       <div id="drawer-work-project-group">
         <div class="flex items-center justify-between mb-1.5">
           <label for="form-project" class="block text-xs font-bold uppercase tracking-wider text-slate-600">Project / Portfolio</label>
@@ -703,7 +768,6 @@
         </select>
       </div>
 
-      <!-- LEAVE-ONLY: Absence Type -->
       <div id="drawer-leave-type-group" class="hidden">
         <label for="form-leave-type" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Absence / Holiday Type</label>
         <select id="form-leave-type" class="w-full rounded-xl border border-amber-300 bg-amber-50/40 px-3.5 py-2.5 text-sm font-semibold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
@@ -714,7 +778,6 @@
         </select>
       </div>
 
-      <!-- Calendar Date Range (Start Date to End Date) -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label for="form-start-date" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Start Date</label>
@@ -728,7 +791,6 @@
         </div>
       </div>
 
-      <!-- LEAVE-ONLY: Editable Absence Hours (Auto-filled from working days, editable for half-day) -->
       <div id="drawer-leave-hours-group" class="hidden p-4 rounded-2xl bg-amber-50/85 border border-amber-200/90 space-y-2.5">
         <div class="flex items-center justify-between gap-2">
           <div>
@@ -751,7 +813,6 @@
         </div>
       </div>
 
-      <!-- WORK-ONLY: Status -->
       <div id="drawer-work-status-group">
         <label for="form-status" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Status</label>
         <select id="form-status" class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600">
@@ -761,14 +822,12 @@
         </select>
       </div>
 
-      <!-- Deliverable / Remarks Description -->
       <div>
         <label id="form-activity-label" for="form-activity" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Activity / Deliverable</label>
         <textarea id="form-activity" rows="2" required placeholder="e.g., Enhancement and optimization of dashboards..."
           class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600"></textarea>
       </div>
 
-      <!-- WORK-ONLY: 8 Category Hour Inputs -->
       <div id="drawer-work-categories-group">
         <div class="flex items-center justify-between mb-2">
           <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Category Hours Breakdown</label>
@@ -780,7 +839,6 @@
       </div>
     </form>
 
-    <!-- Drawer Sticky Footer -->
     <div class="px-4 sm:px-6 py-4 border-t border-slate-200 bg-slate-100/80 flex items-center justify-between gap-4">
       <div>
         <span id="drawer-footer-label" class="text-xs font-medium text-slate-500 block">Calculated Effort</span>
@@ -809,7 +867,7 @@
       <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-100/80">
         <div>
           <h3 class="font-display text-base font-bold text-slate-900">Bulk Import Activity &amp; Absence Logs (CSV)</h3>
-          <p class="text-xs text-slate-500">Upload historical months (e.g., October) directly into Firebase Realtime Database</p>
+          <p class="text-xs text-slate-500">Upload historical months directly into Firebase Realtime Database</p>
         </div>
         <button onclick="closeBulkImportModal()" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200/70">
           <i class="ph-bold ph-x text-base"></i>
@@ -817,7 +875,6 @@
       </div>
 
       <div class="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1">
-        <!-- Step 1: Download Template & Upload Zone -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-indigo-50/70 border border-indigo-200/80">
           <div class="space-y-0.5">
             <h4 class="font-display text-xs font-bold text-indigo-950">Step 1: Prepare your CSV spreadsheet</h4>
@@ -829,7 +886,6 @@
           </button>
         </div>
 
-        <!-- Step 2: File Dropzone -->
         <label for="bulk-csv-file-input"
           class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-300 hover:border-brand-500 rounded-2xl bg-white hover:bg-indigo-50/30 cursor-pointer transition text-center">
           <div class="w-11 h-11 rounded-2xl bg-indigo-100/80 text-brand-600 flex items-center justify-center mb-2">
@@ -840,7 +896,6 @@
           <input id="bulk-csv-file-input" type="file" accept=".csv,text/csv" onchange="handleBulkCsvFileSelect(event)" class="hidden" />
         </label>
 
-        <!-- Step 3: Parsed Preview Table -->
         <div id="bulk-preview-container" class="hidden space-y-2.5">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <span id="bulk-preview-summary" class="font-display text-xs font-bold text-slate-800">0 valid rows ready to import</span>
@@ -877,13 +932,59 @@
   </div>
 
   <!-- ===================================================================== -->
-  <!-- PROJECT / PORTFOLIO MANAGER MODAL (ADD / EDIT / DELETE)               -->
+  <!-- MALAYSIAN PUBLIC HOLIDAY AUTO-LOADER MODAL (SELANGOR & KL/PUTRAJAYA)  -->
+  <!-- ===================================================================== -->
+  <div id="holiday-modal" onclick="closeHolidayLoaderModal()" class="fixed inset-0 bg-slate-900/45 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div onclick="event.stopPropagation()" class="bg-[#F8FAFC] rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl border border-white flex flex-col max-h-[88vh]">
+      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-100/80">
+        <div>
+          <h3 class="font-display text-base font-bold text-slate-900">Malaysian Public Holiday Auto-Loader</h3>
+          <p class="text-xs text-slate-500">Selangor &amp; Federal Territory (KL / Putrajaya) holidays for 2026 &amp; 2027</p>
+        </div>
+        <button onclick="closeHolidayLoaderModal()" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200/70">
+          <i class="ph-bold ph-x text-base"></i>
+        </button>
+      </div>
+
+      <div class="px-6 py-3 bg-amber-50/70 border-b border-amber-200/70 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <label for="holiday-year-select" class="text-xs font-bold text-amber-950">Year:</label>
+          <select id="holiday-year-select" onchange="renderHolidayChecklist()"
+            class="rounded-xl border border-amber-300 bg-white px-3 py-1.5 font-mono text-xs font-bold text-slate-900 focus:outline-none">
+            <option value="2026">2026</option>
+            <option value="2027">2027</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-2 text-xs">
+          <button type="button" onclick="toggleAllHolidayCheckboxes(true)" class="px-2.5 py-1 rounded-lg font-bold bg-white border border-amber-300 text-amber-900 hover:bg-amber-100 transition">Select All Missing</button>
+          <button type="button" onclick="toggleAllHolidayCheckboxes(false)" class="px-2.5 py-1 rounded-lg font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 transition">Clear</button>
+        </div>
+      </div>
+
+      <div id="holiday-checklist-body" class="p-4 sm:p-6 overflow-y-auto divide-y divide-slate-200/80 flex-1">
+      </div>
+
+      <div class="px-6 py-3.5 border-t border-slate-200 bg-slate-100/80 flex items-center justify-between gap-2">
+        <span id="holiday-selected-count" class="text-xs font-semibold text-slate-600">0 holidays selected</span>
+        <div class="flex gap-2">
+          <button type="button" onclick="closeHolidayLoaderModal()" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100">Cancel</button>
+          <button type="button" onclick="confirmImportSelectedHolidays()"
+            class="px-5 py-2 rounded-xl font-display text-xs sm:text-sm font-bold text-white bg-amber-600 hover:bg-amber-700 shadow-sm transition">
+            Add Selected Holidays
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- PROJECT / PORTFOLIO MANAGER MODAL                                     -->
   <!-- ===================================================================== -->
   <div id="project-modal" onclick="closeProjectManagerModal()" class="fixed inset-0 bg-slate-900/45 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
     <div onclick="event.stopPropagation()" class="bg-[#F8FAFC] rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-white flex flex-col max-h-[85vh]">
       <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-100/80">
         <div>
-          <h3 class="font-display text-base font-bold text-slate-900">Manage Projects & Portfolios</h3>
+          <h3 class="font-display text-base font-bold text-slate-900">Manage Projects &amp; Portfolios</h3>
           <p class="text-xs text-slate-500">Add, rename, or remove projects across your matrix and logs</p>
         </div>
         <button onclick="closeProjectManagerModal()" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200/70">
@@ -934,7 +1035,7 @@
   </div>
 
   <!-- ===================================================================== -->
-  <!-- FIREBASE CLOUD CONFIG MODAL (FOR GITHUB PAGES & CROSS-DEVICE SYNC)    -->
+  <!-- FIREBASE CLOUD CONFIG MODAL                                           -->
   <!-- ===================================================================== -->
   <div id="firebase-modal" onclick="closeFirebaseConfigModal()" class="fixed inset-0 bg-slate-900/45 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
     <div onclick="event.stopPropagation()" class="bg-[#F8FAFC] rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-white">
@@ -958,10 +1059,10 @@
             class="w-full rounded-xl border border-slate-300 bg-white p-3 font-mono text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600"></textarea>
         </div>
         <div class="flex items-center justify-between pt-1">
-          <span id="firebase-uid-display" class="text-[11px] font-mono text-slate-400">Not signed in</span>
+          <span id="firebase-uid-display" class="text-[11px] font-mono text-slate-500">Not signed in</span>
           <div class="flex gap-2">
             <button type="button" onclick="closeFirebaseConfigModal()" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100">Close</button>
-            <button type="button" onclick="applyCustomFirebaseConfig()" class="px-4 py-2 rounded-xl font-display text-sm font-bold text-white bg-slate-900 hover:bg-brand-700">Connect & Sync</button>
+            <button type="button" onclick="applyCustomFirebaseConfig()" class="px-4 py-2 rounded-xl font-display text-sm font-bold text-white bg-slate-900 hover:bg-brand-700">Connect &amp; Sync</button>
           </div>
         </div>
       </div>
@@ -1021,19 +1122,21 @@
   </div>
 
   <!-- ===================================================================== -->
-  <!-- EDIT PROFILE MODAL                                                    -->
+  <!-- EDIT PROFILE & ACCOUNT SECURITY MODAL                                 -->
   <!-- ===================================================================== -->
   <div id="profile-modal" onclick="closeProfileModal()" class="fixed inset-0 bg-slate-900/45 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
-    <div onclick="event.stopPropagation()" class="bg-[#F8FAFC] rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-white">
+    <div onclick="event.stopPropagation()" class="bg-[#F8FAFC] rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-white max-h-[90vh] overflow-y-auto">
       <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-100/80">
         <div>
-          <h3 class="font-display text-base font-bold text-slate-900">Edit Profile</h3>
-          <p class="text-xs text-slate-500">Personalize your dashboard header across devices</p>
+          <h3 class="font-display text-base font-bold text-slate-900">Edit Profile &amp; Account Security</h3>
+          <p class="text-xs text-slate-500">Update display identity or change your Firebase password</p>
         </div>
         <button onclick="closeProfileModal()" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200/70">
           <i class="ph-bold ph-x text-base"></i>
         </button>
       </div>
+
+      <!-- Display Profile Form -->
       <form onsubmit="handleSaveProfile(event)" class="p-6 space-y-4">
         <div class="grid grid-cols-4 gap-3">
           <div class="col-span-3">
@@ -1052,16 +1155,53 @@
           <input id="profile-subtitle-input" type="text" placeholder="e.g., Productivity Tracker"
             class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600" />
         </div>
-        <div class="flex justify-end gap-2 pt-2">
-          <button type="button" onclick="closeProfileModal()" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100">Cancel</button>
-          <button type="submit" class="px-4 py-2 rounded-xl font-display text-sm font-bold text-white bg-slate-900 hover:bg-brand-700">Save Profile</button>
+        <div class="flex justify-end gap-2">
+          <button type="submit" class="px-4 py-2 rounded-xl font-display text-xs sm:text-sm font-bold text-white bg-slate-900 hover:bg-brand-700 transition">
+            Save Profile
+          </button>
         </div>
       </form>
+
+      <!-- Account Password Reset Section -->
+      <div class="px-6 pb-6 pt-4 border-t border-slate-200 bg-slate-100/50 space-y-3">
+        <div>
+          <h4 class="font-display text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+            <i class="ph-duotone ph-shield-check text-brand-600 text-base"></i> Change Account Password
+          </h4>
+          <p id="profile-email-display" class="text-[11px] font-mono text-slate-500 mt-0.5">Signed in</p>
+        </div>
+
+        <form onsubmit="handleChangePassword(event)" class="space-y-3">
+          <div>
+            <label for="current-password-input" class="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Current Password</label>
+            <input id="current-password-input" type="password" required autocomplete="current-password" placeholder="Enter current password"
+              class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600" />
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label for="new-password-input" class="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">New Password</label>
+              <input id="new-password-input" type="password" minlength="6" required autocomplete="new-password" placeholder="Min 6 characters"
+                class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600" />
+            </div>
+            <div>
+              <label for="confirm-new-password-input" class="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Confirm New</label>
+              <input id="confirm-new-password-input" type="password" minlength="6" required autocomplete="new-password" placeholder="Re-enter password"
+                class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600" />
+            </div>
+          </div>
+          <div class="flex justify-end gap-2 pt-1">
+            <button type="button" onclick="closeProfileModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100">Close</button>
+            <button type="submit" class="px-4 py-2 rounded-xl font-display text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition">
+              Update Password
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 
   <!-- Toast Notification -->
-  <div id="toast" class="fixed bottom-20 md:bottom-5 right-4 sm:right-5 z-50 transform translate-y-24 opacity-0 transition-all duration-300 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl text-xs font-semibold flex items-center gap-2 max-w-[90vw]">
+  <div id="toast" class="fixed bottom-20 md:bottom-5 right-4 sm:right-5 z-[70] transform translate-y-24 opacity-0 transition-all duration-300 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl text-xs font-semibold flex items-center gap-2 max-w-[90vw]">
     <i id="toast-icon" class="ph-fill ph-check-circle text-emerald-400 text-lg shrink-0"></i>
     <span id="toast-message">Saved!</span>
   </div>
@@ -1075,7 +1215,10 @@
       getAuth,
       onAuthStateChanged,
       signInWithEmailAndPassword,
-      signOut
+      signOut,
+      updatePassword,
+      EmailAuthProvider,
+      reauthenticateWithCredential
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import {
       getDatabase,
@@ -1112,6 +1255,54 @@
       { code: 'GI', name: 'Geospatial Integration & Smart City', color: '#e11d48', badgeBg: 'bg-rose-100/90 text-rose-800 border-rose-200', useWhen: 'Maps, spatial analysis, location intelligence and Smart City support' },
       { code: 'AI', name: 'AI, Automation, Learning & Innovation', color: '#475569', badgeBg: 'bg-slate-200 text-slate-800 border-slate-300', useWhen: 'AI use cases, automation, POCs, learning and innovation activities' }
     ];
+
+    // Malaysian Public Holidays (Selangor & Federal Territory KL/Putrajaya)
+    const MALAYSIA_PUBLIC_HOLIDAYS = {
+      '2026': [
+        { date: '2026-01-01', name: 'New Year\'s Day' },
+        { date: '2026-02-01', name: 'Federal Territory Day / Thaipusam' },
+        { date: '2026-02-02', name: 'Thaipusam / FT Day Replacement' },
+        { date: '2026-02-17', name: 'Chinese New Year (Day 1)' },
+        { date: '2026-02-18', name: 'Chinese New Year (Day 2)' },
+        { date: '2026-03-07', name: 'Nuzul Al-Quran' },
+        { date: '2026-03-20', name: 'Hari Raya Aidilfitri (Day 1)' },
+        { date: '2026-03-21', name: 'Hari Raya Aidilfitri (Day 2)' },
+        { date: '2026-05-01', name: 'Labour Day' },
+        { date: '2026-05-27', name: 'Hari Raya Aidiladha' },
+        { date: '2026-05-31', name: 'Wesak Day' },
+        { date: '2026-06-01', name: 'Agong\'s Birthday & Wesak Replacement' },
+        { date: '2026-06-17', name: 'Awal Muharram (Maal Hijrah)' },
+        { date: '2026-08-25', name: 'Maulidur Rasul' },
+        { date: '2026-08-31', name: 'Merdeka Day (National Day)' },
+        { date: '2026-09-16', name: 'Malaysia Day' },
+        { date: '2026-11-08', name: 'Deepavali' },
+        { date: '2026-11-09', name: 'Deepavali Replacement Holiday' },
+        { date: '2026-12-11', name: 'Sultan of Selangor\'s Birthday' },
+        { date: '2026-12-25', name: 'Christmas Day' }
+      ],
+      '2027': [
+        { date: '2027-01-01', name: 'New Year\'s Day' },
+        { date: '2027-01-22', name: 'Thaipusam' },
+        { date: '2027-02-01', name: 'Federal Territory Day' },
+        { date: '2027-02-06', name: 'Chinese New Year (Day 1)' },
+        { date: '2027-02-07', name: 'Chinese New Year (Day 2)' },
+        { date: '2027-02-08', name: 'Chinese New Year Replacement Holiday' },
+        { date: '2027-02-24', name: 'Nuzul Al-Quran' },
+        { date: '2027-03-10', name: 'Hari Raya Aidilfitri (Day 1)' },
+        { date: '2027-03-11', name: 'Hari Raya Aidilfitri (Day 2)' },
+        { date: '2027-05-01', name: 'Labour Day' },
+        { date: '2027-05-17', name: 'Hari Raya Aidiladha' },
+        { date: '2027-05-20', name: 'Wesak Day' },
+        { date: '2027-06-06', name: 'Awal Muharram (Maal Hijrah)' },
+        { date: '2027-06-07', name: 'Agong\'s Birthday' },
+        { date: '2027-08-15', name: 'Maulidur Rasul' },
+        { date: '2027-08-31', name: 'Merdeka Day (National Day)' },
+        { date: '2027-09-16', name: 'Malaysia Day' },
+        { date: '2027-10-28', name: 'Deepavali' },
+        { date: '2027-12-11', name: 'Sultan of Selangor\'s Birthday' },
+        { date: '2027-12-25', name: 'Christmas Day' }
+      ]
+    };
 
     const DEFAULT_PROJECTS = [
       'MPAG Phase 3: Kebersihan & Kesihatan',
@@ -1170,24 +1361,7 @@
       { id: '1', entryType: 'work', project: 'Ad-hoc', startDate: '2026-11-02', endDate: '2026-11-02', activity: 'TAD On-boarding', status: 'Completed', hours: { SC: 1 } },
       { id: '2', entryType: 'work', project: 'PD Bi-Weekly', startDate: '2026-11-03', endDate: '2026-11-03', activity: 'Bi-weekly report', status: 'Completed', hours: { SC: 1 } },
       { id: '3', entryType: 'work', project: 'MPAG Phase 3: Kebersihan & Kesihatan', startDate: '2026-11-03', endDate: '2026-11-20', activity: 'Enhancement and optimization of Kesihatan and Kebersihan dashboards, including widget logic refinement & filter standardization.', status: 'Completed', hours: { BA: 4, DD: 28, PR: 16 } },
-      { id: '4', entryType: 'work', project: 'MPAG Web Map Editor', startDate: '2026-11-03', endDate: '2026-11-03', activity: 'Planning, requirements review, feature documentation.', status: 'Completed', hours: { BA: 2 } },
-      { id: '5', entryType: 'work', project: 'MPAG Web Map Editor', startDate: '2026-11-03', endDate: '2026-11-20', activity: 'Map Web Editor requirements and features documentation', status: 'In Progress', hours: { BA: 8, SC: 8, PD: 80 } },
-      { id: '6', entryType: 'work', project: 'Learning', startDate: '2026-11-05', endDate: '2026-11-05', activity: 'LinkedIn Learning: Critical Thinking for More Effective Communication', status: 'Completed', hours: { AI: 2 } },
-      { id: '7', entryType: 'work', project: 'Ad-hoc', startDate: '2026-11-06', endDate: '2026-11-06', activity: 'Discussion - Review Job Scope with Supervisor', status: 'Completed', hours: { SC: 0.5 } },
-      { id: '8', entryType: 'work', project: 'MPAG Web Map Editor', startDate: '2026-11-10', endDate: '2026-11-10', activity: 'Checkpoint - Planning, requirements review', status: 'Completed', hours: { BA: 1 } },
-      { id: '9', entryType: 'work', project: 'UPEN Dashboard AI CCTV', startDate: '2026-11-11', endDate: '2026-11-11', activity: 'Discuss AI CCTV use cases across 11 PBTs', status: 'Completed', hours: { BA: 2, SC: 3 } },
-      { id: '10', entryType: 'work', project: 'MPAG Web Map Editor', startDate: '2026-11-13', endDate: '2026-11-13', activity: 'Checkpoint - Planning, requirements review', status: 'Completed', hours: { BA: 1 } },
-      { id: '11', entryType: 'work', project: 'Learning', startDate: '2026-11-16', endDate: '2026-11-16', activity: 'TMLearn Course: AI @ Work Readiness Survey', status: 'Completed', hours: { AI: 1 } },
-      { id: '12', entryType: 'work', project: 'PD Bi-Weekly', startDate: '2026-11-17', endDate: '2026-11-17', activity: 'Bi-weekly report', status: 'Completed', hours: { SC: 1 } },
-      { id: '13', entryType: 'work', project: 'MPAG Web Map Editor', startDate: '2026-11-17', endDate: '2026-11-17', activity: 'Checkpoint - Planning, requirements review', status: 'Completed', hours: { BA: 1 } },
-      { id: '14', entryType: 'work', project: 'Ad-hoc', startDate: '2026-11-18', endDate: '2026-11-18', activity: 'Resource Utilization Preparation', status: 'Completed', hours: { PR: 12, SC: 1, AI: 3 } },
-      { id: '15', entryType: 'work', project: 'STM Dashboard', startDate: '2026-11-19', endDate: '2026-11-19', activity: 'STM Dashboard comparison to existing lifetech reports to STM', status: 'Completed', hours: { DA: 0.5, DD: 1, SC: 1, PD: 1.5 } },
-      { id: '16', entryType: 'work', project: 'UPEN Dashboard AI CCTV', startDate: '2026-11-20', endDate: '2026-11-20', activity: 'Define dashboard standardization requirements', status: 'In Progress', hours: { DD: 4, SC: 3 } },
-      { id: '17', entryType: 'work', project: 'MPAG Web Map Editor', startDate: '2026-11-20', endDate: '2026-11-20', activity: 'Checkpoint - Planning, requirements review', status: 'Completed', hours: { BA: 1 } },
-      { id: '18', entryType: 'work', project: 'Learning', startDate: '2026-11-20', endDate: '2026-11-20', activity: 'TMLearn Course: SOCSO Compliance and Incident Reporting Awareness', status: 'Upcoming', hours: { AI: 2 } },
-      { id: '19', entryType: 'work', project: 'STM Dashboard', startDate: '2026-11-23', endDate: '2026-11-23', activity: 'STM Dashboard Workshop', status: 'Upcoming', hours: { BA: 2, SC: 0.5, PD: 1.5 } },
-      { id: '20', entryType: 'work', project: 'MPAG Phase 3: Kebersihan & Kesihatan', startDate: '2026-11-26', endDate: '2026-11-26', activity: 'UAT with MPAG', status: 'Upcoming', hours: { SC: 2, PD: 2 } },
-      { id: '21', entryType: 'leave', leaveType: 'Public Holiday', project: 'Leave / Public Holiday', startDate: '2026-11-09', endDate: '2026-11-09', activity: 'Public Holiday', status: 'Absence', hours: {}, leaveHours: 8 }
+      { id: '21', entryType: 'leave', leaveType: 'Public Holiday', project: 'Leave / Public Holiday', startDate: '2026-11-09', endDate: '2026-11-09', activity: 'Deepavali Replacement Holiday', status: 'Absence', hours: {}, leaveHours: 8 }
     ];
 
     let appState = {
@@ -1203,7 +1377,9 @@
         '2026-Nov': { gross: 168, leave: 8 }
       },
       projects: [...DEFAULT_PROJECTS],
-      logs: JSON.parse(JSON.stringify(INITIAL_SAMPLE_LOGS))
+      logs: JSON.parse(JSON.stringify(INITIAL_SAMPLE_LOGS)),
+      summaryScope: 'period',
+      expandedSummaryProjects: {}
     };
 
     let firebaseApp = null;
@@ -1221,7 +1397,7 @@
     let effortPulseChartInstance = null;
 
     // =========================================================================
-    // 2. FIREBASE EMAIL/PASSWORD AUTH & REALTIME DATABASE SYNC ENGINE
+    // 2. FIREBASE REALTIME DATABASE CONNECTION & SYNC ENGINE
     // =========================================================================
     function getFirebaseConfig() {
       return DEFAULT_FIREBASE_CONFIG;
@@ -1254,6 +1430,10 @@
         if (uidDisplay) {
           uidDisplay.textContent = user ? `UID: ${user.uid}` : 'Not signed in';
         }
+        const emailDisplay = document.getElementById('profile-email-display');
+        if (emailDisplay) {
+          emailDisplay.textContent = user ? `Account: ${user.email}` : 'Not signed in';
+        }
 
         if (user) {
           isCloudReady = true;
@@ -1275,6 +1455,299 @@
       if (activeLogsRef) {
         off(activeLogsRef);
         activeLogsRef = null;
+      }
+    }
+
+    function setTimesheetSummaryScope(scope) {
+      appState.summaryScope = scope;
+      const scopes = ['period', 'biweekly', 'weekly', 'custom'];
+      scopes.forEach(s => {
+        const btn = document.getElementById(`summary-scope-${s}`);
+        if (!btn) return;
+        btn.className = s === scope
+          ? 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-900 shadow-2xs transition'
+          : 'px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-700 transition';
+      });
+
+      const customBar = document.getElementById('summary-custom-range-bar');
+      if (customBar) {
+        if (scope === 'custom') {
+          customBar.classList.remove('hidden');
+          const startEl = document.getElementById('summary-custom-start');
+          const endEl = document.getElementById('summary-custom-end');
+          if (startEl && !startEl.value) {
+            const now = new Date();
+            const weekAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+            const fmt = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            startEl.value = fmt(weekAgo);
+            if (endEl) endEl.value = fmt(now);
+          }
+        } else {
+          customBar.classList.add('hidden');
+        }
+      }
+
+      renderTimesheetSummary();
+    }
+
+    function toggleSummaryProjectGroup(groupKey) {
+      appState.expandedSummaryProjects[groupKey] = !appState.expandedSummaryProjects[groupKey];
+      renderTimesheetSummary();
+    }
+
+    function toggleAllSummaryGroups() {
+      const keys = Object.keys(appState._lastSummaryGroupKeys || {});
+      if (keys.length === 0) return;
+      const anyCollapsed = keys.some(k => !appState.expandedSummaryProjects[k]);
+      keys.forEach(k => {
+        appState.expandedSummaryProjects[k] = anyCollapsed;
+      });
+      renderTimesheetSummary();
+    }
+
+    function renderTimesheetSummary() {
+      const outEl = document.getElementById('timesheet-summary-output');
+      const headerEl = document.getElementById('summary-visual-header');
+      const groupsEl = document.getElementById('summary-visual-groups');
+      if (!outEl || !headerEl || !groupsEl) return;
+
+      const scope = appState.summaryScope || 'period';
+      let targetLogs = [];
+      let titleLabel = '';
+
+      if (scope === 'period') {
+        targetLogs = getLogsForCurrentPeriod();
+        titleLabel = appState.selectedMonth === 'ALL'
+          ? `Annual Summary (${appState.selectedYear})`
+          : `${appState.selectedMonth} ${appState.selectedYear}`;
+      } else if (scope === 'custom') {
+        const sIso = document.getElementById('summary-custom-start')?.value || '';
+        const eIso = document.getElementById('summary-custom-end')?.value || sIso;
+        if (sIso) {
+          targetLogs = appState.logs.filter(l => {
+            const lStart = l.startDate || '';
+            const lEnd = l.endDate || lStart;
+            return lStart <= (eIso || sIso) && lEnd >= sIso;
+          });
+          titleLabel = `${formatDisplayDateRange(sIso, eIso || sIso)}`;
+        } else {
+          targetLogs = getLogsForCurrentPeriod();
+          titleLabel = 'Custom Range';
+        }
+      } else {
+        const daysBack = scope === 'weekly' ? 7 : 14;
+        const now = new Date();
+        const cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysBack);
+        const cutoffIso = `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, '0')}-${String(cutoff.getDate()).padStart(2, '0')}`;
+        targetLogs = appState.logs.filter(l => (l.endDate || l.startDate || '') >= cutoffIso);
+        titleLabel = scope === 'weekly'
+          ? `Last 7 Days (from ${formatDisplayDateRange(cutoffIso, cutoffIso)})`
+          : `Bi-Weekly / Last 14 Days (from ${formatDisplayDateRange(cutoffIso, cutoffIso)})`;
+      }
+
+      const workLogs = targetLogs.filter(l => !isLeaveEntry(l));
+      const leaveLogs = targetLogs.filter(isLeaveEntry);
+
+      let totalWork = 0;
+      let completedCount = 0;
+      const grouped = {};
+      workLogs.forEach(l => {
+        const hrs = getLogWorkHours(l);
+        totalWork += hrs;
+        if (l.status === 'Completed') completedCount++;
+        const p = l.project || 'General';
+        if (!grouped[p]) grouped[p] = { hrs: 0, entries: [] };
+        grouped[p].hrs += hrs;
+        grouped[p].entries.push({ ...l, _computedHrs: hrs });
+      });
+
+      let totalLeave = 0;
+      leaveLogs.forEach(l => { totalLeave += getLogLeaveHours(l); });
+
+      const projKeys = Object.keys(grouped).sort((a, b) => grouped[b].hrs - grouped[a].hrs);
+
+      // Track active group keys for Expand All / Collapse All button
+      const currentKeys = {};
+      projKeys.forEach(p => { currentKeys[p] = true; });
+      if (leaveLogs.length > 0) currentKeys['__LEAVE__'] = true;
+      appState._lastSummaryGroupKeys = currentKeys;
+
+      const allKeysList = Object.keys(currentKeys);
+      const allExpanded = allKeysList.length > 0 && allKeysList.every(k => !!appState.expandedSummaryProjects[k]);
+      const expandBtnLabel = document.getElementById('summary-expand-all-label');
+      const expandBtnIcon = document.getElementById('summary-expand-all-icon');
+      if (expandBtnLabel) expandBtnLabel.textContent = allExpanded ? 'Collapse All' : 'Expand All';
+      if (expandBtnIcon) {
+        expandBtnIcon.className = allExpanded
+          ? 'ph-bold ph-arrows-in-line-vertical text-sm text-brand-600'
+          : 'ph-bold ph-arrows-out-line-vertical text-sm text-brand-600';
+      }
+
+      // 1. Render Visual Header Strip
+      headerEl.innerHTML = `
+        <div class="flex items-center gap-2 text-xs font-semibold text-slate-800">
+          <span class="font-display font-bold text-slate-900">${escapeHtml(titleLabel)}</span>
+          <span class="text-slate-400">•</span>
+          <span class="text-slate-600">${projKeys.length} Portfolio${projKeys.length === 1 ? '' : 's'}</span>
+          <span class="text-slate-400">•</span>
+          <span class="text-emerald-700 font-bold">${completedCount}/${workLogs.length} Completed</span>
+        </div>
+        <div class="flex items-center gap-2 font-mono text-xs tabular-nums">
+          <span class="px-2.5 py-0.5 rounded-lg bg-indigo-100/90 text-indigo-800 border border-indigo-200/80 font-bold">
+            Work: ${formatNum(totalWork)}h (${+(totalWork / 8).toFixed(2)}d)
+          </span>
+          ${totalLeave > 0 ? `
+            <span class="px-2.5 py-0.5 rounded-lg bg-amber-100/90 text-amber-900 border border-amber-200/80 font-bold">
+              Leave/PH: ${formatNum(totalLeave)}h
+            </span>` : ''}
+        </div>
+      `;
+
+      // 2. Render Collapsible Visual Project Groups (Default Collapsed)
+      const statusBadgeMap = {
+        'Completed': 'bg-emerald-100/90 text-emerald-800 border-emerald-200',
+        'In Progress': 'bg-amber-100/90 text-amber-800 border-amber-200',
+        'Upcoming': 'bg-sky-100/90 text-sky-800 border-sky-200'
+      };
+
+      if (projKeys.length === 0 && leaveLogs.length === 0) {
+        groupsEl.innerHTML = `
+          <div class="py-8 text-center rounded-2xl bg-slate-100/60 border border-slate-300/60 text-xs text-slate-500">
+            No deliverables or absence entries recorded for this timeframe.
+          </div>
+        `;
+      } else {
+        const workGroupsHtml = projKeys.map(proj => {
+          const group = grouped[proj];
+          const theme = getProjectTheme(proj);
+          const isExpanded = !!appState.expandedSummaryProjects[proj];
+          const sharePct = totalWork > 0 ? Math.round((group.hrs / totalWork) * 100) : 0;
+
+          const itemsHtml = group.entries.map(item => {
+            const stBadge = statusBadgeMap[item.status] || 'bg-slate-200 text-slate-700 border-slate-300';
+            const catTags = CATEGORIES.filter(c => (parseFloat((item.hours || {})[c.code]) || 0) > 0)
+              .map(c => `<span class="px-1.5 py-0.5 rounded font-mono text-[10px] font-bold border ${c.badgeBg}">${c.code}:${formatNum(item.hours[c.code])}h</span>`)
+              .join('');
+
+            return `
+              <div class="py-2.5 px-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white/75 hover:bg-white transition">
+                <div class="space-y-1 min-w-0">
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${stBadge}">${escapeHtml(item.status)}</span>
+                    <span class="font-mono text-[11px] text-slate-500">${escapeHtml(formatDisplayDateRange(item.startDate, item.endDate))}</span>
+                    <div class="flex flex-wrap gap-1">${catTags}</div>
+                  </div>
+                  <p class="text-xs text-slate-800 leading-relaxed">${escapeHtml(item.activity)}</p>
+                </div>
+                <div class="font-mono text-xs font-bold text-slate-900 shrink-0 self-end sm:self-center tabular-nums">
+                  ${formatNum(item._computedHrs)}h
+                </div>
+              </div>
+            `;
+          }).join('');
+
+          return `
+            <div class="rounded-2xl border border-slate-300/75 overflow-hidden bg-slate-100/65">
+              <button type="button" onclick="toggleSummaryProjectGroup('${escapeHtml(proj).replace(/'/g, "\\'")}')"
+                class="w-full px-3.5 py-2.5 flex items-center justify-between gap-2 hover:bg-slate-200/60 transition text-left">
+                <div class="flex items-center gap-2 min-w-0">
+                  <i class="ph-bold ${isExpanded ? 'ph-caret-down' : 'ph-caret-right'} text-xs text-slate-500 shrink-0"></i>
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg font-display text-xs font-bold border truncate ${theme.badge}">
+                    <span class="w-2 h-2 rounded-full shrink-0" style="background-color: ${theme.dot};"></span>
+                    <span class="truncate">${escapeHtml(proj)}</span>
+                  </span>
+                  <span class="text-[11px] text-slate-500 font-medium shrink-0">(${group.entries.length} item${group.entries.length === 1 ? '' : 's'})</span>
+                </div>
+                <div class="flex items-center gap-2 font-mono text-xs shrink-0 tabular-nums">
+                  <span class="text-[11px] text-slate-500">${sharePct}%</span>
+                  <span class="font-bold text-slate-900 bg-white/80 px-2 py-0.5 rounded-lg border border-slate-300/70">${formatNum(group.hrs)}h</span>
+                </div>
+              </button>
+              <div class="${isExpanded ? 'divide-y divide-slate-200/80 border-t border-slate-300/60' : 'hidden'}">
+                ${itemsHtml}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        let leaveGroupHtml = '';
+        if (leaveLogs.length > 0) {
+          const isLeaveExpanded = !!appState.expandedSummaryProjects['__LEAVE__'];
+          const leaveItemsHtml = leaveLogs.map(l => `
+            <div class="py-2 px-3.5 flex items-center justify-between gap-2 bg-amber-50/60 text-xs">
+              <div class="min-w-0">
+                <span class="font-bold text-amber-900">${escapeHtml(l.leaveType || 'Absence')}:</span>
+                <span class="text-slate-700 ml-1">${escapeHtml(l.activity)}</span>
+                <span class="font-mono text-[11px] text-slate-500 ml-1.5">(${escapeHtml(formatDisplayDateRange(l.startDate, l.endDate))})</span>
+              </div>
+              <span class="font-mono font-bold text-amber-900 shrink-0">-${formatNum(getLogLeaveHours(l))}h</span>
+            </div>
+          `).join('');
+
+          leaveGroupHtml = `
+            <div class="rounded-2xl border border-amber-300/80 overflow-hidden bg-amber-50/40">
+              <button type="button" onclick="toggleSummaryProjectGroup('__LEAVE__')"
+                class="w-full px-3.5 py-2.5 flex items-center justify-between gap-2 hover:bg-amber-100/50 transition text-left">
+                <div class="flex items-center gap-2">
+                  <i class="ph-bold ${isLeaveExpanded ? 'ph-caret-down' : 'ph-caret-right'} text-xs text-amber-700"></i>
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg font-display text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                    <i class="ph-fill ph-calendar-x text-amber-600"></i> Leave / Public Holidays
+                  </span>
+                </div>
+                <span class="font-mono text-xs font-bold text-amber-900 bg-white/80 px-2 py-0.5 rounded-lg border border-amber-300/70">-${formatNum(totalLeave)}h</span>
+              </button>
+              <div class="${isLeaveExpanded ? 'divide-y divide-amber-200/70 border-t border-amber-200/80' : 'hidden'}">
+                ${leaveItemsHtml}
+              </div>
+            </div>
+          `;
+        }
+
+        groupsEl.innerHTML = workGroupsHtml + leaveGroupHtml;
+      }
+
+      // 3. Universal Clean Plain-Text Summary (Pastes cleanly into Teams, WhatsApp, Email, Docs)
+      const lines = [
+        `PRODUCTIVITY & DELIVERABLES SUMMARY — ${appState.profile.name}`,
+        `Period: ${titleLabel}`,
+        `Total Work Effort: ${formatNum(totalWork)} hrs (${+(totalWork / 8).toFixed(2)} days) | Completed: ${completedCount}/${workLogs.length}`,
+        `------------------------------------------------------------`
+      ];
+
+      if (projKeys.length === 0) {
+        lines.push('No work deliverables logged in this timeframe.');
+      } else {
+        projKeys.forEach(p => {
+          lines.push(`\n• ${p} (${formatNum(grouped[p].hrs)} hrs)`);
+          grouped[p].entries.forEach(it => {
+            lines.push(`  - [${it.status}] ${it.activity} (${formatDisplayDateRange(it.startDate, it.endDate)} · ${formatNum(it._computedHrs)}h)`);
+          });
+        });
+      }
+
+      if (leaveLogs.length > 0) {
+        lines.push(`\n• Leave / Public Holidays (${formatNum(totalLeave)} hrs)`);
+        leaveLogs.forEach(l => {
+          lines.push(`  - ${l.leaveType || 'Absence'}: ${l.activity} (${formatDisplayDateRange(l.startDate, l.endDate)} · ${formatNum(getLogLeaveHours(l))}h)`);
+        });
+      }
+
+      outEl.value = lines.join('\n').trim();
+    }
+
+    function copyTimesheetSummary() {
+      const outEl = document.getElementById('timesheet-summary-output');
+      if (!outEl) return;
+      outEl.classList.remove('sr-only');
+      outEl.select();
+      outEl.setSelectionRange(0, 99999);
+      try {
+        document.execCommand('copy');
+        showToast('Summary copied to clipboard!');
+      } catch (err) {
+        showToast('Unable to copy summary.', 'error');
+      } finally {
+        outEl.classList.add('sr-only');
       }
     }
 
@@ -1417,6 +1890,9 @@
       }
     }
 
+    // =========================================================================
+    // 3. PROFILE & PASSWORD CHANGE HANDLERS
+    // =========================================================================
     function renderProfileHeader() {
       const name = appState.profile?.name || 'Gs. Annuar Faiz';
       const initials = appState.profile?.initials || 'AF';
@@ -1435,6 +1911,9 @@
       document.getElementById('profile-name-input').value = appState.profile.name || '';
       document.getElementById('profile-initials-input').value = appState.profile.initials || '';
       document.getElementById('profile-subtitle-input').value = appState.profile.subtitle || '';
+      document.getElementById('current-password-input').value = '';
+      document.getElementById('new-password-input').value = '';
+      document.getElementById('confirm-new-password-input').value = '';
       document.getElementById('profile-modal').classList.remove('hidden');
     }
 
@@ -1462,8 +1941,48 @@
       );
     }
 
+    function handleChangePassword(e) {
+      e.preventDefault();
+      if (!currentUser || !currentUser.email) {
+        showToast('No signed-in email account found.', 'error');
+        return;
+      }
+      const currentPwd = document.getElementById('current-password-input').value;
+      const newPwd = document.getElementById('new-password-input').value;
+      const confirmPwd = document.getElementById('confirm-new-password-input').value;
+
+      if (newPwd.length < 6) {
+        showToast('New password must be at least 6 characters.', 'error');
+        return;
+      }
+      if (newPwd !== confirmPwd) {
+        showToast('New passwords do not match.', 'error');
+        return;
+      }
+
+      confirmAction(
+        'Confirm Password Change',
+        'Update your Firebase sign-in password now?',
+        async () => {
+          try {
+            const cred = EmailAuthProvider.credential(currentUser.email, currentPwd);
+            await reauthenticateWithCredential(currentUser, cred);
+            await updatePassword(currentUser, newPwd);
+            document.getElementById('current-password-input').value = '';
+            document.getElementById('new-password-input').value = '';
+            document.getElementById('confirm-new-password-input').value = '';
+            closeProfileModal();
+            showToast('Password updated successfully!');
+          } catch (err) {
+            console.error('Password update error:', err);
+            showToast(err.message || 'Failed to update password. Check your current password.', 'error');
+          }
+        }
+      );
+    }
+
     // =========================================================================
-    // 3. DATE, WORKING DAYS, LEAVE PRO-RATA & PERIOD HELPERS
+    // 4. DATE, WORKING DAYS, LEAVE PRO-RATA & PERIOD HELPERS
     // =========================================================================
     function getMonthWorkingDays(yearStr, monthShort) {
       const year = parseInt(yearStr, 10);
@@ -1604,7 +2123,130 @@
     }
 
     // =========================================================================
-    // 4. PROJECT / PORTFOLIO MANAGEMENT
+    // 5. MALAYSIAN PUBLIC HOLIDAY AUTO-LOADER (SELANGOR & KL/PUTRAJAYA)
+    // =========================================================================
+    function openHolidayLoaderModal() {
+      const yrSelect = document.getElementById('holiday-year-select');
+      yrSelect.value = MALAYSIA_PUBLIC_HOLIDAYS[appState.selectedYear] ? appState.selectedYear : '2026';
+      renderHolidayChecklist();
+      document.getElementById('holiday-modal').classList.remove('hidden');
+    }
+
+    function closeHolidayLoaderModal() {
+      document.getElementById('holiday-modal').classList.add('hidden');
+    }
+
+    function renderHolidayChecklist() {
+      const yr = document.getElementById('holiday-year-select').value;
+      const list = MALAYSIA_PUBLIC_HOLIDAYS[yr] || [];
+      const existingLeaveDates = new Set();
+
+      appState.logs.filter(isLeaveEntry).forEach(l => {
+        getLogDateSpanList(l.startDate, l.endDate).forEach(d => existingLeaveDates.add(d));
+      });
+
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const container = document.getElementById('holiday-checklist-body');
+
+      container.innerHTML = list.map((h, idx) => {
+        const [y, m, d] = h.date.split('-').map(Number);
+        const dt = new Date(y, m - 1, d);
+        const dow = dt.getDay();
+        const isWeekend = dow === 0 || dow === 6;
+        const alreadyLogged = existingLeaveDates.has(h.date);
+        const shouldDefaultCheck = !alreadyLogged && !isWeekend;
+
+        return `
+          <label class="py-2.5 flex items-center justify-between gap-3 cursor-pointer hover:bg-slate-100/80 px-2 rounded-xl transition ${alreadyLogged ? 'opacity-60' : ''}">
+            <div class="flex items-center gap-3 min-w-0">
+              <input type="checkbox" data-holiday-idx="${idx}" ${shouldDefaultCheck ? 'checked' : ''} ${alreadyLogged ? 'disabled' : ''}
+                onchange="updateHolidaySelectedCount()"
+                class="holiday-checkbox w-4 h-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500" />
+              <div class="min-w-0">
+                <p class="text-xs sm:text-sm font-semibold text-slate-900 truncate">${escapeHtml(h.name)}</p>
+                <p class="font-mono text-[11px] text-slate-500">${formatDisplayDateRange(h.date, h.date)} (${dayNames[dow]})</p>
+              </div>
+            </div>
+            <div class="shrink-0">
+              ${alreadyLogged
+                ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Already Logged</span>'
+                : isWeekend
+                ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-200 text-slate-600">Weekend</span>'
+                : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-200">8h Weekday</span>'}
+            </div>
+          </label>
+        `;
+      }).join('');
+
+      updateHolidaySelectedCount();
+    }
+
+    function toggleAllHolidayCheckboxes(checked) {
+      document.querySelectorAll('.holiday-checkbox:not(:disabled)').forEach(cb => {
+        cb.checked = checked;
+      });
+      updateHolidaySelectedCount();
+    }
+
+    function updateHolidaySelectedCount() {
+      const count = document.querySelectorAll('.holiday-checkbox:checked').length;
+      document.getElementById('holiday-selected-count').textContent = `${count} holiday${count === 1 ? '' : 's'} selected`;
+    }
+
+    function confirmImportSelectedHolidays() {
+      const yr = document.getElementById('holiday-year-select').value;
+      const list = MALAYSIA_PUBLIC_HOLIDAYS[yr] || [];
+      const selected = [];
+
+      document.querySelectorAll('.holiday-checkbox:checked').forEach(cb => {
+        const idx = parseInt(cb.dataset.holidayIdx, 10);
+        if (list[idx]) selected.push(list[idx]);
+      });
+
+      if (selected.length === 0) {
+        showToast('Please select at least one holiday.', 'error');
+        return;
+      }
+
+      confirmAction(
+        'Add Public Holidays to Absence Log',
+        `Add ${selected.length} Malaysian Public Holiday${selected.length === 1 ? '' : 's'} (${yr}) as 8-hour absence entries?`,
+        async () => {
+          if (!appState.years.includes(yr)) {
+            appState.years.push(yr);
+            appState.years.sort();
+            syncPeriodSelectors();
+            await saveSettingsToCloud();
+          }
+
+          for (let i = 0; i < selected.length; i++) {
+            const h = selected[i];
+            const entry = {
+              id: `ph_${h.date.replace(/-/g, '')}_${Date.now()}_${i}`,
+              entryType: 'leave',
+              leaveType: 'Public Holiday',
+              leaveHours: 8,
+              project: 'Leave / Public Holiday',
+              startDate: h.date,
+              endDate: h.date,
+              activity: h.name,
+              status: 'Absence',
+              hours: {}
+            };
+            appState.logs.unshift(entry);
+            await saveLogToCloud(entry);
+          }
+
+          appState.logs.sort((a, b) => (b.startDate || '').localeCompare(a.startDate || ''));
+          renderApp();
+          closeHolidayLoaderModal();
+          showToast(`Added ${selected.length} Public Holiday${selected.length === 1 ? '' : 's'}!`);
+        }
+      );
+    }
+
+    // =========================================================================
+    // 6. PROJECT / PORTFOLIO MANAGEMENT
     // =========================================================================
     function syncProjectDropdowns() {
       const formProj = document.getElementById('form-project');
@@ -1734,7 +2376,7 @@
     }
 
     // =========================================================================
-    // 5. CORE RENDERING ENGINE, SMART INSIGHTS & 3-CHART SUITE
+    // 7. CORE RENDERING ENGINE, CHARTS & TIMESHEET SUMMARY GENERATOR
     // =========================================================================
     function switchMobileChartTab(tab) {
       const panels = {
@@ -1796,7 +2438,8 @@
       renderSmartInsights(matrix, catTotals, grandTotalHours, workLogs);
       renderAnnualBreakdown(isAnnual);
       renderVisualCharts(matrix, catTotals, grandTotalHours, periodLogs, isAnnual);
-      renderMatrix(matrix, catTotals, grandTotalHours);
+      renderMatrix(matrix, catTotals, grandTotalHours, isAnnual);
+      renderTimesheetSummary();
       renderActivityLog(periodLogs);
     }
 
@@ -2250,12 +2893,15 @@
       });
     }
 
-    function renderMatrix(matrix, catTotals, grandTotal) {
+    function renderMatrix(matrix, catTotals, grandTotal, isAnnual = false) {
       const tbody = document.getElementById('matrix-tbody');
       const tfoot = document.getElementById('matrix-tfoot');
       const mobileCards = document.getElementById('matrix-mobile-cards');
 
-      const allMatrixProjects = Object.keys(matrix);
+      // Show all projects in Annual view, but only projects with logged hours (> 0) in monthly view
+      const allMatrixProjects = isAnnual
+        ? Object.keys(matrix)
+        : Object.keys(matrix).filter(p => matrix[p].total > 0);
 
       if (mobileCards) {
         const activeTotalPills = CATEGORIES.filter(c => catTotals[c.code] > 0).map(c => `
@@ -2264,7 +2910,7 @@
           </span>
         `).join('');
 
-        const projectCardsHtml = allMatrixProjects.map(proj => {
+        const projectCardsHtml = allMatrixProjects.length > 0 ? allMatrixProjects.map(proj => {
           const row = matrix[proj];
           const projTheme = getProjectTheme(proj);
           const activeTags = CATEGORIES.filter(c => row[c.code] > 0).map(c => `
@@ -2289,7 +2935,11 @@
               </div>
             </div>
           `;
-        }).join('');
+        }).join('') : `
+          <div class="p-6 text-center text-xs text-slate-500 bg-slate-100/40">
+            No project hours logged for ${escapeHtml(appState.selectedMonth)} ${escapeHtml(appState.selectedYear)}.
+          </div>
+        `;
 
         mobileCards.innerHTML = `
           ${projectCardsHtml}
@@ -2312,7 +2962,7 @@
         });
       });
 
-      tbody.innerHTML = allMatrixProjects.map(proj => {
+      tbody.innerHTML = allMatrixProjects.length > 0 ? allMatrixProjects.map(proj => {
         const row = matrix[proj];
         const projTheme = getProjectTheme(proj);
         const cells = CATEGORIES.map(cat => {
@@ -2339,18 +2989,11 @@
             <td class="py-3 px-5 text-right font-mono font-bold text-slate-900 bg-slate-300/45">${formatNum(row.total)}</td>
           </tr>
         `;
-      }).join('');
-
-      const footCells = CATEGORIES.map(cat => {
-        const val = catTotals[cat.code];
-        return `<td class="py-3.5 px-3 text-center font-mono text-slate-800">${formatNum(val)}</td>`;
-      }).join('');
-
-      tfoot.innerHTML = `
+      }).join('') : `
         <tr>
-          <td class="py-3.5 px-5 sticky left-0 bg-slate-300 z-10 font-display text-slate-900">Category Total</td>
-          ${footCells}
-          <td class="py-3.5 px-5 text-right font-mono text-brand-900 bg-indigo-200/75 font-extrabold">${formatNum(grandTotal)}</td>
+          <td colspan="10" class="py-8 px-5 text-center text-xs text-slate-500">
+            No project hours logged for ${escapeHtml(appState.selectedMonth)} ${escapeHtml(appState.selectedYear)}.
+          </td>
         </tr>
       `;
     }
@@ -2598,7 +3241,7 @@
     }
 
     // =========================================================================
-    // 6. QUICK-LOG DRAWER (WORK vs LEAVE/PH) & CONFIRMATION HANDLERS
+    // 8. QUICK-LOG DRAWER & CONFIRMATION HANDLERS
     // =========================================================================
     function initFormElements() {
       syncProjectDropdowns();
@@ -2748,9 +3391,11 @@
         }
       } else {
         document.getElementById('drawer-title').textContent = 'Log Daily Entry';
-        const mIdx = appState.selectedMonth === 'ALL' ? new Date().getMonth() : MONTHS.indexOf(appState.selectedMonth);
+        const now = new Date();
+        const mIdx = appState.selectedMonth === 'ALL' ? now.getMonth() : MONTHS.indexOf(appState.selectedMonth);
         const mm = String(mIdx + 1).padStart(2, '0');
-        const defaultIso = `${appState.selectedYear}-${mm}-24`;
+        const dd = String(Math.min(now.getDate(), 28)).padStart(2, '0');
+        const defaultIso = `${appState.selectedYear}-${mm}-${dd}`;
         document.getElementById('form-start-date').value = defaultIso;
         document.getElementById('form-end-date').value = defaultIso;
         document.getElementById('form-end-date').min = defaultIso;
@@ -2927,7 +3572,7 @@
     }
 
     // =========================================================================
-    // 7. BULK CSV IMPORT ENGINE (TEMPLATE, PARSER, PREVIEW & CLOUD UPLOAD)
+    // 9. BULK CSV IMPORT & MULTI-SHEET EXCEL (.XLSX) + CSV EXPORT
     // =========================================================================
     function openBulkImportModal() {
       pendingBulkImportRows = [];
@@ -2989,12 +3634,10 @@
     function normalizeFlexibleDateToken(token) {
       const t = (token || '').trim();
       if (!t) return null;
-      // YYYY-MM-DD
       if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(t)) {
         const [y, m, d] = t.split('-');
         return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
       }
-      // DD/MM/YYYY or D/M/YYYY
       if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(t)) {
         const [d, m, y] = t.split('/');
         return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
@@ -3011,7 +3654,6 @@
         const e = normalizeFlexibleDateToken(parts[1]);
         if (s && e) return { startDate: s, endDate: e >= s ? e : s };
       }
-      // Check YYYY-MM-DD to YYYY-MM-DD
       const isoRangeMatch = cleaned.match(/^(\d{4}-\d{1,2}-\d{1,2})\s*(?:–|-|to)\s*(\d{4}-\d{1,2}-\d{1,2})$/i);
       if (isoRangeMatch) {
         const s = normalizeFlexibleDateToken(isoRangeMatch[1]);
@@ -3193,7 +3835,6 @@
             await saveSettingsToCloud();
           }
 
-          // Switch view automatically to the first imported row's year & month so user sees it immediately
           const firstYm = getLogYearMonth(pendingBulkImportRows[0]);
           appState.selectedYear = firstYm.year;
           appState.selectedMonth = firstYm.month;
@@ -3207,47 +3848,139 @@
       );
     }
 
-    // =========================================================================
-    // 8. 2-STEP CONFIRMATION MODAL CONTROLLER
-    // =========================================================================
-    function confirmAction(title, message, onConfirm) {
-      document.getElementById('confirm-modal-title').textContent = title;
-      document.getElementById('confirm-modal-message').textContent = message;
-      pendingConfirmCallback = onConfirm;
+    function exportToExcel() {
+      if (typeof XLSX === 'undefined') {
+        showToast('Excel generator still loading. Please try again in a moment.', 'error');
+        return;
+      }
 
-      const proceedBtn = document.getElementById('confirm-modal-proceed-btn');
-      proceedBtn.onclick = () => {
-        const cb = pendingConfirmCallback;
-        closeConfirmModal();
-        if (typeof cb === 'function') cb();
-      };
+      const wb = XLSX.utils.book_new();
+      const periodLogs = getLogsForCurrentPeriod();
+      const workLogs = periodLogs.filter(l => !isLeaveEntry(l));
+      const isAnnual = appState.selectedMonth === 'ALL';
+      const periodLabel = isAnnual ? `All Months (${appState.selectedYear})` : `${appState.selectedMonth} ${appState.selectedYear}`;
 
-      document.getElementById('confirm-modal').classList.remove('hidden');
+      // Sheet 1: Executive Summary & Portfolio Matrix
+      const matrix = {};
+      appState.projects.forEach(p => {
+        matrix[p] = { BA: 0, DA: 0, DD: 0, PR: 0, SC: 0, PD: 0, GI: 0, AI: 0, total: 0 };
+      });
+      const catTotals = { BA: 0, DA: 0, DD: 0, PR: 0, SC: 0, PD: 0, GI: 0, AI: 0 };
+      let grandTotal = 0;
+
+      workLogs.forEach(log => {
+        if (!matrix[log.project]) {
+          matrix[log.project] = { BA: 0, DA: 0, DD: 0, PR: 0, SC: 0, PD: 0, GI: 0, AI: 0, total: 0 };
+        }
+        CATEGORIES.forEach(c => {
+          const h = parseFloat((log.hours || {})[c.code]) || 0;
+          matrix[log.project][c.code] += h;
+          matrix[log.project].total += h;
+          catTotals[c.code] += h;
+          grandTotal += h;
+        });
+      });
+
+      const summaryRows = [
+        ['PRODUCTIVITY & UTILIZATION REPORT'],
+        ['Staff Name', appState.profile.name],
+        ['Role / Workspace', appState.profile.subtitle],
+        ['Reporting Period', periodLabel],
+        ['Generated On', new Date().toLocaleString()],
+        [],
+        ['PORTFOLIO BY CATEGORY MATRIX'],
+        ['Project / Portfolio', 'BA', 'DA', 'DD', 'PR', 'SC', 'PD', 'GI', 'AI', 'Total Hours', 'Days (8h)']
+      ];
+
+      Object.keys(matrix).forEach(proj => {
+        const r = matrix[proj];
+        summaryRows.push([
+          proj,
+          r.BA, r.DA, r.DD, r.PR, r.SC, r.PD, r.GI, r.AI,
+          +r.total.toFixed(2),
+          +(r.total / 8).toFixed(3)
+        ]);
+      });
+
+      summaryRows.push([
+        'CATEGORY TOTAL',
+        catTotals.BA, catTotals.DA, catTotals.DD, catTotals.PR, catTotals.SC, catTotals.PD, catTotals.GI, catTotals.AI,
+        +grandTotal.toFixed(2),
+        +(grandTotal / 8).toFixed(3)
+      ]);
+
+      const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
+      wsSummary['!cols'] = [
+        { wch: 38 }, { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 8 },
+        { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 13 }, { wch: 12 }
+      ];
+      XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+
+      // Sheet 2: Annual Breakdown
+      const annualRows = [
+        [`ANNUAL CAPACITY & UTILIZATION BREAKDOWN (${appState.selectedYear})`],
+        [],
+        ['Month', 'Gross Hours', 'Leave / PH Hours', 'Net Capacity', 'Logged Work Hours', 'Work Days', 'Utilization (%)']
+      ];
+
+      MONTHS.forEach(m => {
+        const autoGross = getAutoGrossHours(appState.selectedYear, m);
+        const leaveHrs = getLoggedLeaveHoursForMonth(appState.selectedYear, m);
+        const net = Math.max(0, autoGross - leaveHrs);
+        let mWork = 0;
+        appState.logs.filter(l => !isLeaveEntry(l) && getLogYearMonth(l).year === appState.selectedYear && getLogYearMonth(l).month === m)
+          .forEach(l => { mWork += getLogWorkHours(l); });
+        const util = net > 0 ? +((mWork / net) * 100).toFixed(1) : 0;
+        annualRows.push([
+          `${m} ${appState.selectedYear}`,
+          autoGross,
+          leaveHrs,
+          net,
+          +mWork.toFixed(2),
+          +(mWork / 8).toFixed(2),
+          util
+        ]);
+      });
+
+      const wsAnnual = XLSX.utils.aoa_to_sheet(annualRows);
+      wsAnnual['!cols'] = [{ wch: 16 }, { wch: 14 }, { wch: 18 }, { wch: 14 }, { wch: 18 }, { wch: 12 }, { wch: 16 }];
+      XLSX.utils.book_append_sheet(wb, wsAnnual, 'Annual Breakdown');
+
+      // Sheet 3: Activity & Absence Log
+      const logRows = [
+        ['Entry Type', 'Project / Absence Type', 'Date Range', 'Activity / Remarks', 'BA', 'DA', 'DD', 'PR', 'SC', 'PD', 'GI', 'AI', 'Leave / PH Hours', 'Work Hours', 'Days', 'Status']
+      ];
+
+      periodLogs.forEach(log => {
+        const leaveFlag = isLeaveEntry(log);
+        const wHrs = getLogWorkHours(log);
+        const lHrs = getLogLeaveHours(log);
+        const total = leaveFlag ? lHrs : wHrs;
+        logRows.push([
+          leaveFlag ? 'Leave / PH' : 'Work',
+          leaveFlag ? (log.leaveType || 'Public Holiday') : log.project,
+          formatDisplayDateRange(log.startDate, log.endDate),
+          log.activity || '',
+          ...CATEGORIES.map(c => leaveFlag ? 0 : (parseFloat((log.hours || {})[c.code]) || 0)),
+          lHrs,
+          wHrs,
+          +(total / 8).toFixed(3),
+          leaveFlag ? 'Absence' : log.status
+        ]);
+      });
+
+      const wsLogs = XLSX.utils.aoa_to_sheet(logRows);
+      wsLogs['!cols'] = [
+        { wch: 12 }, { wch: 32 }, { wch: 22 }, { wch: 48 },
+        { wch: 6 }, { wch: 6 }, { wch: 6 }, { wch: 6 }, { wch: 6 }, { wch: 6 }, { wch: 6 }, { wch: 6 },
+        { wch: 16 }, { wch: 13 }, { wch: 10 }, { wch: 14 }
+      ];
+      XLSX.utils.book_append_sheet(wb, wsLogs, 'Activity Log');
+
+      XLSX.writeFile(wb, `Productivity_Tracker_Report_${appState.selectedYear}-${appState.selectedMonth}.xlsx`);
+      showToast('Multi-sheet Excel report (.xlsx) exported!');
     }
 
-    function closeConfirmModal() {
-      document.getElementById('confirm-modal').classList.add('hidden');
-      pendingConfirmCallback = null;
-    }
-
-    function toggleHeaderMenu(e) {
-      if (e) e.stopPropagation();
-      const menu = document.getElementById('header-menu-dropdown');
-      if (menu) menu.classList.toggle('hidden');
-    }
-
-    function closeHeaderMenu() {
-      const menu = document.getElementById('header-menu-dropdown');
-      if (menu) menu.classList.add('hidden');
-    }
-
-    document.addEventListener('click', () => {
-      closeHeaderMenu();
-    });
-
-    // =========================================================================
-    // 9. EXPORT TO CSV & UTILITIES
-    // =========================================================================
     function exportToCSV() {
       const periodLogs = getLogsForCurrentPeriod();
       const headers = ['Entry Type', 'Project / Absence Type', 'Date Range', 'Activity / Remarks', 'BA', 'DA', 'DD', 'PR', 'SC', 'PD', 'GI', 'AI', 'Leave / PH Hours', 'Work Hours', 'Days', 'Status'];
@@ -3288,6 +4021,44 @@
       showToast('CSV exported with work & absence logs!');
     }
 
+    // =========================================================================
+    // 10. CONFIRMATION MODAL, AUTH GATEWAY & UTILITIES
+    // =========================================================================
+    function confirmAction(title, message, onConfirm) {
+      document.getElementById('confirm-modal-title').textContent = title;
+      document.getElementById('confirm-modal-message').textContent = message;
+      pendingConfirmCallback = onConfirm;
+
+      const proceedBtn = document.getElementById('confirm-modal-proceed-btn');
+      proceedBtn.onclick = () => {
+        const cb = pendingConfirmCallback;
+        closeConfirmModal();
+        if (typeof cb === 'function') cb();
+      };
+
+      document.getElementById('confirm-modal').classList.remove('hidden');
+    }
+
+    function closeConfirmModal() {
+      document.getElementById('confirm-modal').classList.add('hidden');
+      pendingConfirmCallback = null;
+    }
+
+    function toggleHeaderMenu(e) {
+      if (e) e.stopPropagation();
+      const menu = document.getElementById('header-menu-dropdown');
+      if (menu) menu.classList.toggle('hidden');
+    }
+
+    function closeHeaderMenu() {
+      const menu = document.getElementById('header-menu-dropdown');
+      if (menu) menu.classList.add('hidden');
+    }
+
+    document.addEventListener('click', () => {
+      closeHeaderMenu();
+    });
+
     function openTagReferenceModal() {
       document.getElementById('ref-modal').classList.remove('hidden');
     }
@@ -3312,7 +4083,7 @@
       toast.classList.remove('translate-y-24', 'opacity-0');
       setTimeout(() => {
         toast.classList.add('translate-y-24', 'opacity-0');
-      }, 2800);
+      }, 3000);
     }
 
     function formatNum(n) {
@@ -3325,9 +4096,6 @@
       return div.innerHTML;
     }
 
-    // =========================================================================
-    // 10. FIREBASE EMAIL/PASSWORD AUTHENTICATION GATEWAY
-    // =========================================================================
     function toggleLoginPasswordVisibility() {
       const pwdInput = document.getElementById('login-password');
       const eyeIcon = document.getElementById('login-eye-icon');
@@ -3415,6 +4183,7 @@
       );
     }
 
+    // Expose functions globally for inline HTML handlers
     window.handleLoginSubmit = handleLoginSubmit;
     window.toggleLoginPasswordVisibility = toggleLoginPasswordVisibility;
     window.handleLogout = handleLogout;
@@ -3422,6 +4191,12 @@
     window.openAddYearModal = openAddYearModal;
     window.closeAddYearModal = closeAddYearModal;
     window.handleAddYear = handleAddYear;
+    window.openHolidayLoaderModal = openHolidayLoaderModal;
+    window.closeHolidayLoaderModal = closeHolidayLoaderModal;
+    window.renderHolidayChecklist = renderHolidayChecklist;
+    window.toggleAllHolidayCheckboxes = toggleAllHolidayCheckboxes;
+    window.updateHolidaySelectedCount = updateHolidaySelectedCount;
+    window.confirmImportSelectedHolidays = confirmImportSelectedHolidays;
     window.openFirebaseConfigModal = openFirebaseConfigModal;
     window.closeFirebaseConfigModal = closeFirebaseConfigModal;
     window.applyCustomFirebaseConfig = applyCustomFirebaseConfig;
@@ -3435,7 +4210,12 @@
     window.downloadImportTemplateCSV = downloadImportTemplateCSV;
     window.handleBulkCsvFileSelect = handleBulkCsvFileSelect;
     window.confirmAndRunBulkImport = confirmAndRunBulkImport;
+    window.exportToExcel = exportToExcel;
     window.exportToCSV = exportToCSV;
+    window.setTimesheetSummaryScope = setTimesheetSummaryScope;
+    window.toggleSummaryProjectGroup = toggleSummaryProjectGroup;
+    window.toggleAllSummaryGroups = toggleAllSummaryGroups;
+    window.copyTimesheetSummary = copyTimesheetSummary;
     window.openLogDrawer = openLogDrawer;
     window.closeLogDrawer = closeLogDrawer;
     window.setDrawerEntryType = setDrawerEntryType;
@@ -3456,6 +4236,7 @@
     window.openProfileModal = openProfileModal;
     window.closeProfileModal = closeProfileModal;
     window.handleSaveProfile = handleSaveProfile;
+    window.handleChangePassword = handleChangePassword;
     window.switchMobileChartTab = switchMobileChartTab;
     window.renderApp = renderApp;
 
