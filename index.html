@@ -281,7 +281,7 @@
   <!-- Main Content Container -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-6 lg:px-8 py-5 sm:py-7 space-y-5 sm:space-y-6">
 
-    <!-- 1. EXECUTIVE TELEMETRY HUB (Rearranged: Hero Utilization Card + Capacity Bento + Smart Insights) -->
+    <!-- 1. EXECUTIVE TELEMETRY HUB (Hero Utilization Card + Capacity Bento + Smart Insights) -->
     <section class="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-4">
 
       <!-- Left (5 cols): Hero Utilization & Capacity Balance Glass Card -->
@@ -313,7 +313,7 @@
           </div>
         </div>
 
-        <!-- Compact Capacity Inputs Strip -->
+        <!-- Compact Capacity Strip (Auto-Calculated from Calendar + Activity Logs) -->
         <div class="grid grid-cols-3 gap-2 pt-3 border-t border-slate-300/60">
           <div class="bg-slate-200/70 rounded-2xl p-2.5 border border-white/50" title="Auto-calculated from Monday–Friday working days in this month (8h/day)">
             <div class="flex items-center justify-between">
@@ -323,14 +323,17 @@
             <input id="input-gross" type="number" readonly
               class="w-full mt-0.5 font-mono text-sm sm:text-base font-bold text-slate-700 bg-transparent focus:outline-none cursor-default tabular-nums" />
           </div>
-          <div class="bg-slate-200/70 rounded-2xl p-2.5 border border-white/50">
-            <label for="input-leave" class="block text-[10px] font-bold uppercase tracking-wider text-slate-600">Leave / PH</label>
-            <input id="input-leave" type="number" step="0.5" min="0" value="8" onchange="updateCapacityField('leave', this.value)"
-              class="w-full mt-0.5 font-mono text-sm sm:text-base font-bold text-amber-800 bg-transparent focus:outline-none focus:text-brand-700 tabular-nums" />
+          <div class="bg-slate-200/70 rounded-2xl p-2.5 border border-white/50" title="Auto-summed from logged Leave / Public Holiday entries">
+            <div class="flex items-center justify-between">
+              <label for="input-leave" class="block text-[10px] font-bold uppercase tracking-wider text-slate-600">Leave / PH</label>
+              <span class="text-[9px] font-mono font-bold text-amber-700/80">Auto</span>
+            </div>
+            <input id="input-leave" type="number" readonly value="0"
+              class="w-full mt-0.5 font-mono text-sm sm:text-base font-bold text-amber-800 bg-transparent focus:outline-none cursor-default tabular-nums" />
           </div>
           <div class="bg-slate-200/70 rounded-2xl p-2.5 border border-white/50">
             <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-600">Net Cap.</span>
-            <span id="kpi-net-capacity" class="block mt-0.5 font-mono text-sm sm:text-base font-bold text-slate-800 tabular-nums">160</span>
+            <span id="kpi-net-capacity" class="block mt-0.5 font-mono text-sm sm:text-base font-bold text-slate-800 tabular-nums">160h</span>
           </div>
         </div>
       </div>
@@ -477,16 +480,24 @@
           </div>
         </div>
 
-        <!-- Chart 3 (12 cols): Workload Rhythm / Timeline Pulse Area Chart -->
+        <!-- Chart 3 (12 cols): Workload Rhythm / Timeline Pulse Chart (Work + Leave/PH Overlay) -->
         <div id="chart-panel-timeline" class="hidden lg:flex lg:col-span-12 flex-col justify-between bg-slate-200/55 rounded-2xl p-4 border border-white/50">
-          <div class="flex items-center justify-between mb-2">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
             <div>
-              <span class="font-display text-xs font-bold uppercase tracking-wider text-slate-600">Effort Distribution Pulse</span>
-              <span id="pulse-subtitle" class="text-[11px] text-slate-500 ml-2">Logged hours across active dates</span>
+              <span class="font-display text-xs font-bold uppercase tracking-wider text-slate-600">Effort &amp; Absence Pulse</span>
+              <span id="pulse-subtitle" class="text-[11px] text-slate-500 ml-2">Pro-rata working-day distribution</span>
             </div>
-            <span class="font-mono text-[11px] font-semibold text-indigo-800 bg-indigo-100/80 px-2 py-0.5 rounded-md border border-indigo-200/80">8h = 1 Standard Day</span>
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold text-indigo-800 bg-indigo-100/80 px-2 py-0.5 rounded-md border border-indigo-200/80">
+                <span class="w-2 h-2 rounded-full bg-indigo-600"></span> Work Effort
+              </span>
+              <span class="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold text-amber-800 bg-amber-100/80 px-2 py-0.5 rounded-md border border-amber-200/80">
+                <span class="w-2 h-2 rounded-sm bg-amber-500"></span> Leave / PH
+              </span>
+              <span class="hidden sm:inline-block font-mono text-[11px] font-semibold text-slate-600 bg-slate-100/80 px-2 py-0.5 rounded-md border border-slate-300/80">8h = 1 Day</span>
+            </div>
           </div>
-          <div class="relative w-full h-40 sm:h-44">
+          <div class="relative w-full h-44 sm:h-48">
             <canvas id="effortPulseChart"></canvas>
           </div>
         </div>
@@ -503,7 +514,7 @@
               <i class="ph-fill ph-lightning text-xs"></i> Live Sync
             </span>
           </div>
-          <p class="text-xs text-slate-600 mt-0.5 hidden sm:block">Automatically aggregated from your Activity Tagging Log with intensity heat-mapping</p>
+          <p class="text-xs text-slate-600 mt-0.5 hidden sm:block">Automatically aggregated from work activity logs (excludes Leave / Public Holidays)</p>
         </div>
         <button onclick="openProjectManagerModal()" class="text-xs font-bold text-slate-700 hover:text-brand-700 bg-slate-100/85 hover:bg-slate-100 border border-slate-300/80 px-3 py-1.5 rounded-xl inline-flex items-center gap-1.5 shrink-0 transition shadow-2xs">
           <i class="ph-bold ph-sliders-horizontal text-brand-600"></i>
@@ -540,24 +551,24 @@
       </div>
     </section>
 
-    <!-- 4. ACTIVITY TAGGING LOG FEED (Mobile Feed Cards + Desktop Table) -->
+    <!-- 4. ACTIVITY TAGGING LOG FEED (Work & Leave/PH Unified Chronological Feed) -->
     <section class="liquid-card rounded-3xl overflow-hidden">
       <div class="px-4 sm:px-6 py-4 border-b border-slate-300/60 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-200/40">
         <div>
-          <h2 class="font-display text-sm sm:text-base font-bold text-slate-900">Activity Tagging Log (<span id="log-period-label">Nov 2026</span>)</h2>
-          <p class="text-xs text-slate-600 mt-0.5">Chronological work log with multi-category effort allocation</p>
+          <h2 class="font-display text-sm sm:text-base font-bold text-slate-900">Activity &amp; Absence Log (<span id="log-period-label">Nov 2026</span>)</h2>
+          <p class="text-xs text-slate-600 mt-0.5">Chronological work deliverables and Leave / Public Holiday records</p>
         </div>
 
         <!-- Responsive Filters -->
         <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
           <div class="relative col-span-2 sm:flex-initial">
             <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
-            <input id="filter-search" type="text" placeholder="Search deliverable..." oninput="renderApp()"
+            <input id="filter-search" type="text" placeholder="Search deliverable or leave..." oninput="renderApp()"
               class="w-full sm:w-48 pl-8 pr-3 py-2 text-xs font-medium bg-slate-100/85 border border-slate-300/90 rounded-xl focus:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500 transition" />
           </div>
 
           <select id="filter-project" onchange="renderApp()" class="w-full sm:w-auto text-xs font-semibold bg-slate-100/85 border border-slate-300/90 rounded-xl px-2.5 py-2 text-slate-700 focus:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500 transition truncate">
-            <option value="ALL">All Projects</option>
+            <option value="ALL">All Projects &amp; Leave</option>
           </select>
 
           <select id="filter-status" onchange="renderApp()" class="w-full sm:w-auto text-xs font-semibold bg-slate-100/85 border border-slate-300/90 rounded-xl px-2.5 py-2 text-slate-700 focus:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
@@ -565,6 +576,7 @@
             <option value="Completed">Completed</option>
             <option value="In Progress">In Progress</option>
             <option value="Upcoming">Upcoming</option>
+            <option value="LEAVE_ONLY">Leave / PH Only</option>
           </select>
         </div>
       </div>
@@ -578,10 +590,10 @@
         <table class="w-full text-left border-collapse text-xs sm:text-sm">
           <thead>
             <tr class="bg-slate-300/45 border-b border-slate-300/70 text-slate-600 font-bold uppercase text-[11px] tracking-wider">
-              <th class="py-3.5 px-5 min-w-[185px]">Project / Portfolio</th>
+              <th class="py-3.5 px-5 min-w-[185px]">Project / Absence</th>
               <th class="py-3.5 px-3 min-w-[155px]">Date Range</th>
-              <th class="py-3.5 px-4 min-w-[260px]">Activity / Deliverable</th>
-              <th class="py-3.5 px-3 min-w-[185px]">Category Breakdown</th>
+              <th class="py-3.5 px-4 min-w-[260px]">Activity / Remarks</th>
+              <th class="py-3.5 px-3 min-w-[185px]">Category / Type</th>
               <th class="py-3.5 px-3 text-right">Hours</th>
               <th class="py-3.5 px-3 text-right">Days</th>
               <th class="py-3.5 px-3 text-center">Status</th>
@@ -598,8 +610,8 @@
         <div class="w-12 h-12 rounded-2xl bg-slate-300/70 text-slate-600 flex items-center justify-center mx-auto mb-3">
           <i class="ph-duotone ph-clipboard-text text-2xl"></i>
         </div>
-        <h3 class="font-display text-sm font-bold text-slate-900">No activities recorded for this period</h3>
-        <p class="text-xs text-slate-600 mt-1 max-w-sm mx-auto">Adjust your filters, switch months, or tap "+ Log Activity" to record your work.</p>
+        <h3 class="font-display text-sm font-bold text-slate-900">No entries recorded for this period</h3>
+        <p class="text-xs text-slate-600 mt-1 max-w-sm mx-auto">Adjust your filters, switch months, or tap "+ Log Activity" to record work or leave.</p>
       </div>
     </section>
 
@@ -626,15 +638,15 @@
   </div><!-- End #dashboard-shell -->
 
   <!-- ===================================================================== -->
-  <!-- QUICK-LOG SLIDE-OVER DRAWER (WITH START/END CALENDAR PICKERS)         -->
+  <!-- QUICK-LOG SLIDE-OVER DRAWER (WORK ACTIVITY vs LEAVE / PUBLIC HOLIDAY) -->
   <!-- ===================================================================== -->
   <div id="drawer-backdrop" onclick="closeLogDrawer()" class="fixed inset-0 bg-slate-900/45 backdrop-blur-xs z-40 hidden transition-opacity"></div>
   <aside id="log-drawer" class="fixed inset-y-0 right-0 w-full max-w-lg bg-[#F8FAFC] shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-out flex flex-col border-l border-slate-200">
     <!-- Drawer Header -->
     <div class="px-4 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-100/80">
       <div>
-        <h3 id="drawer-title" class="font-display text-base font-bold text-slate-900">Log Daily Activity</h3>
-        <p class="text-xs text-slate-500">Enter hours directly under each applicable category</p>
+        <h3 id="drawer-title" class="font-display text-base font-bold text-slate-900">Log Daily Entry</h3>
+        <p id="drawer-subtitle" class="text-xs text-slate-500">Record project effort or Leave / Public Holiday</p>
       </div>
       <button onclick="closeLogDrawer()" class="p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-200/70 transition">
         <i class="ph-bold ph-x text-lg"></i>
@@ -644,16 +656,45 @@
     <!-- Drawer Form -->
     <form id="activity-form" onsubmit="handleSaveActivity(event)" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
       <input type="hidden" id="edit-entry-id" value="" />
+      <input type="hidden" id="form-entry-type" value="work" />
 
-      <!-- Project Selection -->
+      <!-- Entry Type Mode Switcher -->
       <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Entry Classification</label>
+        <div class="grid grid-cols-2 gap-1.5 p-1 bg-slate-200/80 rounded-2xl border border-slate-300/70">
+          <button type="button" id="entry-type-btn-work" onclick="setDrawerEntryType('work')"
+            class="py-2 px-3 rounded-xl font-display text-xs font-bold bg-white text-slate-900 shadow-xs flex items-center justify-center gap-1.5 transition">
+            <i class="ph-duotone ph-briefcase text-base text-brand-600"></i>
+            <span>Work Activity</span>
+          </button>
+          <button type="button" id="entry-type-btn-leave" onclick="setDrawerEntryType('leave')"
+            class="py-2 px-3 rounded-xl font-display text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5 transition">
+            <i class="ph-duotone ph-calendar-x text-base text-amber-600"></i>
+            <span>Leave / Public Holiday</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- WORK-ONLY: Project Selection -->
+      <div id="drawer-work-project-group">
         <div class="flex items-center justify-between mb-1.5">
           <label for="form-project" class="block text-xs font-bold uppercase tracking-wider text-slate-600">Project / Portfolio</label>
           <button type="button" onclick="closeLogDrawer(); openProjectManagerModal();" class="text-[11px] font-bold text-brand-700 hover:text-brand-900">
             + Manage Projects
           </button>
         </div>
-        <select id="form-project" required class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600">
+        <select id="form-project" class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600">
+        </select>
+      </div>
+
+      <!-- LEAVE-ONLY: Absence Type -->
+      <div id="drawer-leave-type-group" class="hidden">
+        <label for="form-leave-type" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Absence / Holiday Type</label>
+        <select id="form-leave-type" class="w-full rounded-xl border border-amber-300 bg-amber-50/40 px-3.5 py-2.5 text-sm font-semibold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+          <option value="Public Holiday">Public Holiday</option>
+          <option value="Annual Leave">Annual Leave</option>
+          <option value="Medical Leave (MC)">Medical Leave (MC)</option>
+          <option value="Unpaid / Other Leave">Unpaid / Other Leave</option>
         </select>
       </div>
 
@@ -661,18 +702,41 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label for="form-start-date" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Start Date</label>
-          <input id="form-start-date" type="date" required onchange="syncEndDateMin()"
+          <input id="form-start-date" type="date" required onchange="handleDrawerDateChange()"
             class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600" />
         </div>
         <div>
           <label for="form-end-date" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">End Date</label>
-          <input id="form-end-date" type="date" required
+          <input id="form-end-date" type="date" required onchange="handleDrawerDateChange()"
             class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600" />
         </div>
       </div>
 
-      <!-- Status -->
-      <div>
+      <!-- LEAVE-ONLY: Editable Absence Hours (Auto-filled from working days, editable for half-day) -->
+      <div id="drawer-leave-hours-group" class="hidden p-4 rounded-2xl bg-amber-50/85 border border-amber-200/90 space-y-2.5">
+        <div class="flex items-center justify-between gap-2">
+          <div>
+            <label for="form-leave-hours" class="block text-xs font-bold uppercase tracking-wider text-amber-900">Absence Duration (Hours)</label>
+            <p id="leave-auto-hint" class="text-[11px] text-amber-800/80 mt-0.5">Auto-filled from working days (editable for half-day)</p>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <input id="form-leave-hours" type="number" step="0.5" min="0.5" placeholder="8" oninput="recalcDrawerTotal()"
+              class="w-24 text-right font-mono font-bold text-base bg-white border border-amber-300 rounded-xl px-3 py-2 text-amber-950 focus:outline-none focus:ring-2 focus:ring-amber-500 tabular-nums" />
+            <span class="font-mono text-xs font-bold text-amber-900">hrs</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 pt-1">
+          <button type="button" onclick="setQuickLeaveHours(4)" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-amber-300 text-amber-900 hover:bg-amber-100 transition">
+            Half Day (4h)
+          </button>
+          <button type="button" onclick="autoFillLeaveHoursFromDates()" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-amber-300 text-amber-900 hover:bg-amber-100 transition">
+            Full Working Days
+          </button>
+        </div>
+      </div>
+
+      <!-- WORK-ONLY: Status -->
+      <div id="drawer-work-status-group">
         <label for="form-status" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Status</label>
         <select id="form-status" class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600">
           <option value="Completed">Completed</option>
@@ -681,15 +745,15 @@
         </select>
       </div>
 
-      <!-- Deliverable Description -->
+      <!-- Deliverable / Remarks Description -->
       <div>
-        <label for="form-activity" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Activity / Deliverable</label>
+        <label id="form-activity-label" for="form-activity" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Activity / Deliverable</label>
         <textarea id="form-activity" rows="2" required placeholder="e.g., Enhancement and optimization of dashboards..."
           class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600"></textarea>
       </div>
 
-      <!-- 8 Category Hour Inputs -->
-      <div>
+      <!-- WORK-ONLY: 8 Category Hour Inputs -->
+      <div id="drawer-work-categories-group">
         <div class="flex items-center justify-between mb-2">
           <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Category Hours Breakdown</label>
           <span class="text-[11px] font-medium text-slate-500">Enter hours (e.g. 0.5, 2, 8)</span>
@@ -703,7 +767,7 @@
     <!-- Drawer Sticky Footer -->
     <div class="px-4 sm:px-6 py-4 border-t border-slate-200 bg-slate-100/80 flex items-center justify-between gap-4">
       <div>
-        <span class="text-xs font-medium text-slate-500 block">Calculated Effort</span>
+        <span id="drawer-footer-label" class="text-xs font-medium text-slate-500 block">Calculated Effort</span>
         <div class="font-mono text-base font-bold text-slate-900 tabular-nums">
           <span id="drawer-total-hours" class="text-brand-700">0</span> hrs
           <span class="text-xs font-medium text-slate-500 ml-1">(<span id="drawer-total-days">0</span> days)</span>
@@ -714,7 +778,7 @@
         <button type="button" onclick="closeLogDrawer()" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100 transition">
           Cancel
         </button>
-        <button type="submit" form="activity-form" class="px-5 py-2.5 rounded-xl font-display text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-slate-900 via-indigo-900 to-brand-700 hover:opacity-95 shadow-sm transition">
+        <button type="submit" form="activity-form" id="drawer-submit-btn" class="px-5 py-2.5 rounded-xl font-display text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-slate-900 via-indigo-900 to-brand-700 hover:opacity-95 shadow-sm transition">
           Save Log
         </button>
       </div>
@@ -960,8 +1024,7 @@
       'TM Smartmap',
       'PD Bi-Weekly',
       'Learning',
-      'Ad-hoc',
-      'Public Holiday'
+      'Ad-hoc'
     ];
 
     const PROJECT_PALETTE = [
@@ -990,27 +1053,44 @@
       return PROJECT_PALETTE[Math.abs(hash) % PROJECT_PALETTE.length];
     }
 
+    function isLeaveEntry(log) {
+      return log && (log.entryType === 'leave' || (log.leaveHours && log.leaveHours > 0));
+    }
+
+    function getLogWorkHours(log) {
+      if (isLeaveEntry(log)) return 0;
+      let sum = 0;
+      CATEGORIES.forEach(c => { sum += parseFloat((log.hours || {})[c.code]) || 0; });
+      return sum;
+    }
+
+    function getLogLeaveHours(log) {
+      if (!isLeaveEntry(log)) return 0;
+      return parseFloat(log.leaveHours) || 0;
+    }
+
     const INITIAL_SAMPLE_LOGS = [
-      { id: '1', project: 'Ad-hoc', startDate: '2026-11-02', endDate: '2026-11-02', activity: 'TAD On-boarding', status: 'Completed', hours: { SC: 1 } },
-      { id: '2', project: 'PD Bi-Weekly', startDate: '2026-11-03', endDate: '2026-11-03', activity: 'Bi-weekly report', status: 'Completed', hours: { SC: 1 } },
-      { id: '3', project: 'MPAG Phase 3: Kebersihan & Kesihatan', startDate: '2026-11-03', endDate: '2026-11-20', activity: 'Enhancement and optimization of Kesihatan and Kebersihan dashboards, including widget logic refinement & filter standardization.', status: 'Completed', hours: { BA: 4, DD: 28, PR: 16 } },
-      { id: '4', project: 'MPAG Web Map Editor', startDate: '2026-11-03', endDate: '2026-11-03', activity: 'Planning, requirements review, feature documentation.', status: 'Completed', hours: { BA: 2 } },
-      { id: '5', project: 'MPAG Web Map Editor', startDate: '2026-11-03', endDate: '2026-11-20', activity: 'Map Web Editor requirements and features documentation', status: 'In Progress', hours: { BA: 8, SC: 8, PD: 80 } },
-      { id: '6', project: 'Learning', startDate: '2026-11-05', endDate: '2026-11-05', activity: 'LinkedIn Learning: Critical Thinking for More Effective Communication', status: 'Completed', hours: { AI: 2 } },
-      { id: '7', project: 'Ad-hoc', startDate: '2026-11-06', endDate: '2026-11-06', activity: 'Discussion - Review Job Scope with Supervisor', status: 'Completed', hours: { SC: 0.5 } },
-      { id: '8', project: 'MPAG Web Map Editor', startDate: '2026-11-10', endDate: '2026-11-10', activity: 'Checkpoint - Planning, requirements review', status: 'Completed', hours: { BA: 1 } },
-      { id: '9', project: 'UPEN Dashboard AI CCTV', startDate: '2026-11-11', endDate: '2026-11-11', activity: 'Discuss AI CCTV use cases across 11 PBTs', status: 'Completed', hours: { BA: 2, SC: 3 } },
-      { id: '10', project: 'MPAG Web Map Editor', startDate: '2026-11-13', endDate: '2026-11-13', activity: 'Checkpoint - Planning, requirements review', status: 'Completed', hours: { BA: 1 } },
-      { id: '11', project: 'Learning', startDate: '2026-11-16', endDate: '2026-11-16', activity: 'TMLearn Course: AI @ Work Readiness Survey', status: 'Completed', hours: { AI: 1 } },
-      { id: '12', project: 'PD Bi-Weekly', startDate: '2026-11-17', endDate: '2026-11-17', activity: 'Bi-weekly report', status: 'Completed', hours: { SC: 1 } },
-      { id: '13', project: 'MPAG Web Map Editor', startDate: '2026-11-17', endDate: '2026-11-17', activity: 'Checkpoint - Planning, requirements review', status: 'Completed', hours: { BA: 1 } },
-      { id: '14', project: 'Ad-hoc', startDate: '2026-11-18', endDate: '2026-11-18', activity: 'Resource Utilization Preparation', status: 'Completed', hours: { PR: 12, SC: 1, AI: 3 } },
-      { id: '15', project: 'STM Dashboard', startDate: '2026-11-19', endDate: '2026-11-19', activity: 'STM Dashboard comparison to existing lifetech reports to STM', status: 'Completed', hours: { DA: 0.5, DD: 1, SC: 1, PD: 1.5 } },
-      { id: '16', project: 'UPEN Dashboard AI CCTV', startDate: '2026-11-20', endDate: '2026-11-20', activity: 'Define dashboard standardization requirements', status: 'In Progress', hours: { DD: 4, SC: 3 } },
-      { id: '17', project: 'MPAG Web Map Editor', startDate: '2026-11-20', endDate: '2026-11-20', activity: 'Checkpoint - Planning, requirements review', status: 'Completed', hours: { BA: 1 } },
-      { id: '18', project: 'Learning', startDate: '2026-11-20', endDate: '2026-11-20', activity: 'TMLearn Course: SOCSO Compliance and Incident Reporting Awareness', status: 'Upcoming', hours: { AI: 2 } },
-      { id: '19', project: 'STM Dashboard', startDate: '2026-11-23', endDate: '2026-11-23', activity: 'STM Dashboard Workshop', status: 'Upcoming', hours: { BA: 2, SC: 0.5, PD: 1.5 } },
-      { id: '20', project: 'MPAG Phase 3: Kebersihan & Kesihatan', startDate: '2026-11-26', endDate: '2026-11-26', activity: 'UAT with MPAG', status: 'Upcoming', hours: { SC: 2, PD: 2 } }
+      { id: '1', entryType: 'work', project: 'Ad-hoc', startDate: '2026-11-02', endDate: '2026-11-02', activity: 'TAD On-boarding', status: 'Completed', hours: { SC: 1 } },
+      { id: '2', entryType: 'work', project: 'PD Bi-Weekly', startDate: '2026-11-03', endDate: '2026-11-03', activity: 'Bi-weekly report', status: 'Completed', hours: { SC: 1 } },
+      { id: '3', entryType: 'work', project: 'MPAG Phase 3: Kebersihan & Kesihatan', startDate: '2026-11-03', endDate: '2026-11-20', activity: 'Enhancement and optimization of Kesihatan and Kebersihan dashboards, including widget logic refinement & filter standardization.', status: 'Completed', hours: { BA: 4, DD: 28, PR: 16 } },
+      { id: '4', entryType: 'work', project: 'MPAG Web Map Editor', startDate: '2026-11-03', endDate: '2026-11-03', activity: 'Planning, requirements review, feature documentation.', status: 'Completed', hours: { BA: 2 } },
+      { id: '5', entryType: 'work', project: 'MPAG Web Map Editor', startDate: '2026-11-03', endDate: '2026-11-20', activity: 'Map Web Editor requirements and features documentation', status: 'In Progress', hours: { BA: 8, SC: 8, PD: 80 } },
+      { id: '6', entryType: 'work', project: 'Learning', startDate: '2026-11-05', endDate: '2026-11-05', activity: 'LinkedIn Learning: Critical Thinking for More Effective Communication', status: 'Completed', hours: { AI: 2 } },
+      { id: '7', entryType: 'work', project: 'Ad-hoc', startDate: '2026-11-06', endDate: '2026-11-06', activity: 'Discussion - Review Job Scope with Supervisor', status: 'Completed', hours: { SC: 0.5 } },
+      { id: '8', entryType: 'work', project: 'MPAG Web Map Editor', startDate: '2026-11-10', endDate: '2026-11-10', activity: 'Checkpoint - Planning, requirements review', status: 'Completed', hours: { BA: 1 } },
+      { id: '9', entryType: 'work', project: 'UPEN Dashboard AI CCTV', startDate: '2026-11-11', endDate: '2026-11-11', activity: 'Discuss AI CCTV use cases across 11 PBTs', status: 'Completed', hours: { BA: 2, SC: 3 } },
+      { id: '10', entryType: 'work', project: 'MPAG Web Map Editor', startDate: '2026-11-13', endDate: '2026-11-13', activity: 'Checkpoint - Planning, requirements review', status: 'Completed', hours: { BA: 1 } },
+      { id: '11', entryType: 'work', project: 'Learning', startDate: '2026-11-16', endDate: '2026-11-16', activity: 'TMLearn Course: AI @ Work Readiness Survey', status: 'Completed', hours: { AI: 1 } },
+      { id: '12', entryType: 'work', project: 'PD Bi-Weekly', startDate: '2026-11-17', endDate: '2026-11-17', activity: 'Bi-weekly report', status: 'Completed', hours: { SC: 1 } },
+      { id: '13', entryType: 'work', project: 'MPAG Web Map Editor', startDate: '2026-11-17', endDate: '2026-11-17', activity: 'Checkpoint - Planning, requirements review', status: 'Completed', hours: { BA: 1 } },
+      { id: '14', entryType: 'work', project: 'Ad-hoc', startDate: '2026-11-18', endDate: '2026-11-18', activity: 'Resource Utilization Preparation', status: 'Completed', hours: { PR: 12, SC: 1, AI: 3 } },
+      { id: '15', entryType: 'work', project: 'STM Dashboard', startDate: '2026-11-19', endDate: '2026-11-19', activity: 'STM Dashboard comparison to existing lifetech reports to STM', status: 'Completed', hours: { DA: 0.5, DD: 1, SC: 1, PD: 1.5 } },
+      { id: '16', entryType: 'work', project: 'UPEN Dashboard AI CCTV', startDate: '2026-11-20', endDate: '2026-11-20', activity: 'Define dashboard standardization requirements', status: 'In Progress', hours: { DD: 4, SC: 3 } },
+      { id: '17', entryType: 'work', project: 'MPAG Web Map Editor', startDate: '2026-11-20', endDate: '2026-11-20', activity: 'Checkpoint - Planning, requirements review', status: 'Completed', hours: { BA: 1 } },
+      { id: '18', entryType: 'work', project: 'Learning', startDate: '2026-11-20', endDate: '2026-11-20', activity: 'TMLearn Course: SOCSO Compliance and Incident Reporting Awareness', status: 'Upcoming', hours: { AI: 2 } },
+      { id: '19', entryType: 'work', project: 'STM Dashboard', startDate: '2026-11-23', endDate: '2026-11-23', activity: 'STM Dashboard Workshop', status: 'Upcoming', hours: { BA: 2, SC: 0.5, PD: 1.5 } },
+      { id: '20', entryType: 'work', project: 'MPAG Phase 3: Kebersihan & Kesihatan', startDate: '2026-11-26', endDate: '2026-11-26', activity: 'UAT with MPAG', status: 'Upcoming', hours: { SC: 2, PD: 2 } },
+      { id: '21', entryType: 'leave', leaveType: 'Public Holiday', project: 'Leave / Public Holiday', startDate: '2026-11-09', endDate: '2026-11-09', activity: 'Public Holiday', status: 'Absence', hours: {}, leaveHours: 8 }
     ];
 
     let appState = {
@@ -1121,7 +1201,9 @@
           }
           if (Array.isArray(data.years) && data.years.length > 0) appState.years = data.years;
           if (data.capacities) appState.capacities = data.capacities;
-          if (Array.isArray(data.projects) && data.projects.length > 0) appState.projects = data.projects;
+          if (Array.isArray(data.projects) && data.projects.length > 0) {
+            appState.projects = data.projects.filter(p => p !== 'Public Holiday');
+          }
           syncPeriodSelectors();
           syncProjectDropdowns();
           renderApp();
@@ -1142,6 +1224,7 @@
           const fetchedLogs = Object.keys(rawVal).map(key => ({
             id: key,
             ...rawVal[key],
+            entryType: rawVal[key].entryType || (rawVal[key].leaveHours > 0 ? 'leave' : 'work'),
             hours: rawVal[key].hours || {}
           }));
           fetchedLogs.sort((a, b) => (b.startDate || '').localeCompare(a.startDate || ''));
@@ -1174,6 +1257,9 @@
       try {
         const logRef = ref(rtdb, `${getRtdbBasePath()}/logs/${entry.id}`);
         await set(logRef, {
+          entryType: entry.entryType || 'work',
+          leaveType: entry.leaveType || null,
+          leaveHours: entry.leaveHours || 0,
           project: entry.project,
           startDate: entry.startDate,
           endDate: entry.endDate || entry.startDate,
@@ -1271,37 +1357,8 @@
       );
     }
 
-    function resetDemoData() {
-      confirmAction(
-        'Reset Sample Data',
-        'Restore default November 2026 sample logs and projects across your cloud database?',
-        async () => {
-          appState.years = ['2026'];
-          appState.selectedYear = '2026';
-          appState.selectedMonth = 'Nov';
-          appState.capacities = { '2026-Nov': { gross: 168, leave: 8 } };
-          appState.projects = [...DEFAULT_PROJECTS];
-          appState.logs = JSON.parse(JSON.stringify(INITIAL_SAMPLE_LOGS));
-
-          syncPeriodSelectors();
-          syncProjectDropdowns();
-          renderApp();
-
-          if (isCloudReady && rtdb) {
-            await saveSettingsToCloud();
-            const logsRootRef = ref(rtdb, `${getRtdbBasePath()}/logs`);
-            await remove(logsRootRef);
-            for (const log of INITIAL_SAMPLE_LOGS) {
-              await saveLogToCloud(log);
-            }
-          }
-          showToast('Sample data restored!', 'info');
-        }
-      );
-    }
-
     // =========================================================================
-    // 3. DATE, WORKING DAYS & PERIOD HELPERS
+    // 3. DATE, WORKING DAYS, LEAVE PRO-RATA & PERIOD HELPERS
     // =========================================================================
     function getMonthWorkingDays(yearStr, monthShort) {
       const year = parseInt(yearStr, 10);
@@ -1346,6 +1403,31 @@
       return weekdays.length > 0 ? weekdays : allDates;
     }
 
+    // Auto-calculate total Leave / Public Holiday hours for a specific Year & Month (pro-rata across working days)
+    function getLoggedLeaveHoursForMonth(yearStr, monthShort) {
+      const monthIdx = MONTHS.indexOf(monthShort);
+      if (monthIdx === -1) return 0;
+      const prefix = `${yearStr}-${String(monthIdx + 1).padStart(2, '0')}`;
+      let leaveTotal = 0;
+
+      appState.logs.filter(isLeaveEntry).forEach(log => {
+        const totalAbsenceHrs = getLogLeaveHours(log);
+        if (totalAbsenceHrs <= 0) return;
+
+        const activeDates = getLogDateSpanList(log.startDate, log.endDate);
+        if (activeDates.length === 0) return;
+
+        const dailyLeaveHrs = totalAbsenceHrs / activeDates.length;
+        activeDates.forEach(iso => {
+          if (iso.startsWith(prefix)) {
+            leaveTotal += dailyLeaveHrs;
+          }
+        });
+      });
+
+      return +leaveTotal.toFixed(2);
+    }
+
     function getLogYearMonth(log) {
       if (!log.startDate) return { year: '2026', month: 'Nov' };
       const parts = log.startDate.split('-');
@@ -1367,10 +1449,13 @@
 
     function getLogsForCurrentPeriod() {
       return appState.logs.filter(log => {
-        const { year, month } = getLogYearMonth(log);
-        if (year !== appState.selectedYear) return false;
-        if (appState.selectedMonth !== 'ALL' && month !== appState.selectedMonth) return false;
-        return true;
+        const activeDates = getLogDateSpanList(log.startDate, log.endDate);
+        if (appState.selectedMonth === 'ALL') {
+          return activeDates.some(iso => iso.startsWith(appState.selectedYear)) || getLogYearMonth(log).year === appState.selectedYear;
+        }
+        const monthIdx = MONTHS.indexOf(appState.selectedMonth);
+        const prefix = `${appState.selectedYear}-${String(monthIdx + 1).padStart(2, '0')}`;
+        return activeDates.some(iso => iso.startsWith(prefix)) || (getLogYearMonth(log).year === appState.selectedYear && getLogYearMonth(log).month === appState.selectedMonth);
       });
     }
 
@@ -1414,20 +1499,6 @@
       showToast(`Year ${yr} added & synced to cloud!`);
     }
 
-    async function updateCapacityField(field, val) {
-      if (appState.selectedMonth === 'ALL' || field === 'gross') return;
-      const num = Math.max(0, parseFloat(val) || 0);
-      const key = `${appState.selectedYear}-${appState.selectedMonth}`;
-      const autoGross = getAutoGrossHours(appState.selectedYear, appState.selectedMonth);
-      if (!appState.capacities[key]) {
-        appState.capacities[key] = { gross: autoGross, leave: 0 };
-      }
-      appState.capacities[key].gross = autoGross;
-      appState.capacities[key][field] = num;
-      renderApp();
-      await saveSettingsToCloud();
-    }
-
     // =========================================================================
     // 4. PROJECT / PORTFOLIO MANAGEMENT
     // =========================================================================
@@ -1437,10 +1508,11 @@
       const currentFilter = filterProj.value || 'ALL';
 
       formProj.innerHTML = appState.projects.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
-      filterProj.innerHTML = `<option value="ALL">All Projects</option>` +
+      filterProj.innerHTML = `<option value="ALL">All Projects & Leave</option>` +
+        `<option value="LEAVE_GROUP">Leave / Public Holiday</option>` +
         appState.projects.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
 
-      if (appState.projects.includes(currentFilter)) {
+      if (currentFilter === 'LEAVE_GROUP' || appState.projects.includes(currentFilter)) {
         filterProj.value = currentFilter;
       } else {
         filterProj.value = 'ALL';
@@ -1459,7 +1531,7 @@
     function renderProjectManagerList() {
       const listEl = document.getElementById('project-manager-list');
       listEl.innerHTML = appState.projects.map((proj, idx) => {
-        const logCount = appState.logs.filter(l => l.project === proj).length;
+        const logCount = appState.logs.filter(l => !isLeaveEntry(l) && l.project === proj).length;
         const theme = getProjectTheme(proj);
         return `
           <div class="py-2.5 flex items-center justify-between gap-2">
@@ -1522,7 +1594,7 @@
         `Rename "${oldName}" to "${newName}"? All existing activity logs under this project will also be updated.`,
         async () => {
           appState.projects[index] = newName;
-          const affectedLogs = appState.logs.filter(log => log.project === oldName);
+          const affectedLogs = appState.logs.filter(log => !isLeaveEntry(log) && log.project === oldName);
           for (const log of affectedLogs) {
             log.project = newName;
             await saveLogToCloud(log);
@@ -1593,6 +1665,7 @@
       document.getElementById('log-period-label').textContent = periodLabel;
 
       const periodLogs = getLogsForCurrentPeriod();
+      const workLogs = periodLogs.filter(l => !isLeaveEntry(l));
 
       const matrix = {};
       appState.projects.forEach(p => {
@@ -1602,12 +1675,13 @@
       const catTotals = { BA: 0, DA: 0, DD: 0, PR: 0, SC: 0, PD: 0, GI: 0, AI: 0 };
       let grandTotalHours = 0;
 
-      periodLogs.forEach(log => {
+      // Aggregate only Work Activities into Project Matrix & 8-Category Breakdown
+      workLogs.forEach(log => {
         if (!matrix[log.project]) {
           matrix[log.project] = { BA: 0, DA: 0, DD: 0, PR: 0, SC: 0, PD: 0, GI: 0, AI: 0, total: 0 };
         }
         CATEGORIES.forEach(cat => {
-          const h = parseFloat(log.hours[cat.code]) || 0;
+          const h = parseFloat((log.hours || {})[cat.code]) || 0;
           matrix[log.project][cat.code] += h;
           matrix[log.project].total += h;
           catTotals[cat.code] += h;
@@ -1616,14 +1690,14 @@
       });
 
       renderKPIs(grandTotalHours, isAnnual);
-      renderSmartInsights(matrix, catTotals, grandTotalHours, periodLogs);
+      renderSmartInsights(matrix, catTotals, grandTotalHours, workLogs);
       renderAnnualBreakdown(isAnnual);
       renderVisualCharts(matrix, catTotals, grandTotalHours, periodLogs, isAnnual);
       renderMatrix(matrix, catTotals, grandTotalHours);
       renderActivityLog(periodLogs);
     }
 
-    function renderSmartInsights(matrix, catTotals, grandTotal, periodLogs) {
+    function renderSmartInsights(matrix, catTotals, grandTotal, workLogs) {
       let topProj = 'No logged effort yet';
       let topProjHrs = 0;
       let activeProjCount = 0;
@@ -1651,10 +1725,10 @@
       document.getElementById('insight-top-category').textContent = topCatHrs > 0 ? `${topCat.code} — ${topCat.name}` : 'No category logged';
       document.getElementById('insight-top-category-sub').textContent = `${formatNum(topCatHrs)} hrs (${catPct}% share)`;
 
-      const completed = periodLogs.filter(l => l.status === 'Completed').length;
-      const inProgress = periodLogs.filter(l => l.status === 'In Progress').length;
-      const upcoming = periodLogs.filter(l => l.status === 'Upcoming').length;
-      document.getElementById('insight-completed-ratio').textContent = `${completed}/${periodLogs.length}`;
+      const completed = workLogs.filter(l => l.status === 'Completed').length;
+      const inProgress = workLogs.filter(l => l.status === 'In Progress').length;
+      const upcoming = workLogs.filter(l => l.status === 'Upcoming').length;
+      document.getElementById('insight-completed-ratio').textContent = `${completed}/${workLogs.length}`;
       document.getElementById('insight-pipeline-sub').textContent = `${inProgress} in progress · ${upcoming} upcoming`;
     }
 
@@ -1671,27 +1745,21 @@
         MONTHS.forEach(m => {
           const wd = getMonthWorkingDays(appState.selectedYear, m);
           const autoGross = wd * 8;
-          const cap = appState.capacities[`${appState.selectedYear}-${m}`] || { leave: 0 };
+          const loggedLeave = getLoggedLeaveHoursForMonth(appState.selectedYear, m);
           totalWorkingDays += wd;
           gross += autoGross;
-          leave += (parseFloat(cap.leave) || 0);
+          leave += loggedLeave;
         });
-        grossInput.value = gross;
-        leaveInput.value = leave;
+        grossInput.value = formatNum(gross);
+        leaveInput.value = formatNum(leave);
         if (wdBadge) wdBadge.textContent = `${totalWorkingDays}d`;
-        leaveInput.disabled = true;
-        leaveInput.classList.add('opacity-60', 'cursor-not-allowed');
       } else {
         const wd = getMonthWorkingDays(appState.selectedYear, appState.selectedMonth);
         gross = wd * 8;
-        const key = `${appState.selectedYear}-${appState.selectedMonth}`;
-        const cap = appState.capacities[key] || { leave: 0 };
-        leave = parseFloat(cap.leave) || 0;
-        grossInput.value = gross;
-        leaveInput.value = leave;
+        leave = getLoggedLeaveHoursForMonth(appState.selectedYear, appState.selectedMonth);
+        grossInput.value = formatNum(gross);
+        leaveInput.value = formatNum(leave);
         if (wdBadge) wdBadge.textContent = `${wd}d`;
-        leaveInput.disabled = false;
-        leaveInput.classList.remove('opacity-60', 'cursor-not-allowed');
       }
 
       const net = Math.max(0, gross - leave);
@@ -1739,20 +1807,19 @@
 
       const tbody = document.getElementById('annual-breakdown-body');
       tbody.innerHTML = MONTHS.map(m => {
-        const key = `${appState.selectedYear}-${m}`;
         const autoGross = getAutoGrossHours(appState.selectedYear, m);
-        const cap = appState.capacities[key] || { leave: 0 };
-        const leaveHrs = parseFloat(cap.leave) || 0;
+        const leaveHrs = getLoggedLeaveHoursForMonth(appState.selectedYear, m);
         const net = Math.max(0, autoGross - leaveHrs);
 
         const monthLogs = appState.logs.filter(l => {
+          if (isLeaveEntry(l)) return false;
           const ym = getLogYearMonth(l);
           return ym.year === appState.selectedYear && ym.month === m;
         });
 
         let hrs = 0;
         monthLogs.forEach(l => {
-          CATEGORIES.forEach(c => { hrs += parseFloat(l.hours[c.code]) || 0; });
+          CATEGORIES.forEach(c => { hrs += parseFloat((l.hours || {})[c.code]) || 0; });
         });
 
         const days = +(hrs / 8).toFixed(2);
@@ -1764,7 +1831,7 @@
               class="hover:bg-slate-200/65 cursor-pointer transition">
             <td class="py-3 px-4 sm:px-5 font-display font-bold text-slate-900">${m} ${appState.selectedYear}</td>
             <td class="py-3 px-2.5 text-right text-slate-600">${formatNum(autoGross)}</td>
-            <td class="py-3 px-2.5 text-right text-slate-600">${formatNum(leaveHrs)}</td>
+            <td class="py-3 px-2.5 text-right text-amber-800 font-medium">${formatNum(leaveHrs)}</td>
             <td class="py-3 px-2.5 text-right font-semibold text-slate-800">${formatNum(net)}</td>
             <td class="py-3 px-2.5 text-right font-bold text-brand-700">${formatNum(hrs)}</td>
             <td class="py-3 px-2.5 text-right text-slate-500 hidden sm:table-cell">${formatNum(days)}d</td>
@@ -1796,12 +1863,12 @@
 
       if (typeof Chart === 'undefined') return;
 
-      // 2. Horizontal Stacked Bar Chart
+      // 2. Horizontal Stacked Bar Chart (Work Portfolios Only)
       const sortedProjects = Object.keys(matrix)
         .filter(p => matrix[p].total > 0)
         .sort((a, b) => matrix[b].total - matrix[a].total);
 
-      const labels = sortedProjects.length > 0 ? sortedProjects.map(p => p.length > 26 ? p.slice(0, 24) + '…' : p) : ['No Logged Data'];
+      const labels = sortedProjects.length > 0 ? sortedProjects.map(p => p.length > 26 ? p.slice(0, 24) + '…' : p) : ['No Logged Work'];
       const datasets = CATEGORIES.map(cat => ({
         label: `${cat.code} — ${cat.name}`,
         data: sortedProjects.length > 0 ? sortedProjects.map(p => matrix[p][cat.code] || 0) : [0],
@@ -1890,43 +1957,57 @@
         }
       });
 
-      // 4. Effort Distribution Pulse Area Chart (Pro-Rata Working Day Distribution)
+      // 4. Effort & Absence Pulse Chart (Work Effort Line + Amber Leave/PH Bars)
       let pulseLabels = [];
-      let pulseValues = [];
+      let workPulseValues = [];
+      let leavePulseValues = [];
       let referenceLineValues = [];
 
       if (isAnnual) {
-        document.getElementById('pulse-subtitle').textContent = `Monthly pro-rata workload trajectory across ${appState.selectedYear}`;
+        document.getElementById('pulse-subtitle').textContent = `Monthly work effort vs. Leave/PH across ${appState.selectedYear}`;
         pulseLabels = MONTHS;
-        const monthTotals = {};
-        MONTHS.forEach(m => { monthTotals[m] = 0; });
-
-        appState.logs.filter(l => (l.startDate || '').startsWith(appState.selectedYear)).forEach(l => {
-          let totalTaskHrs = 0;
-          CATEGORIES.forEach(c => { totalTaskHrs += parseFloat(l.hours[c.code]) || 0; });
-          if (totalTaskHrs <= 0) return;
-
-          const activeDates = getLogDateSpanList(l.startDate, l.endDate);
-          const dailyHrs = activeDates.length > 0 ? totalTaskHrs / activeDates.length : totalTaskHrs;
-
-          activeDates.forEach(iso => {
-            const parts = iso.split('-');
-            if (parts[0] === appState.selectedYear) {
-              const mName = MONTHS[parseInt(parts[1], 10) - 1];
-              if (mName && monthTotals[mName] !== undefined) {
-                monthTotals[mName] += dailyHrs;
-              }
-            }
-          });
+        const monthWorkTotals = {};
+        const monthLeaveTotals = {};
+        MONTHS.forEach(m => {
+          monthWorkTotals[m] = 0;
+          monthLeaveTotals[m] = 0;
         });
 
-        pulseValues = MONTHS.map(m => +monthTotals[m].toFixed(2));
+        appState.logs.forEach(l => {
+          const activeDates = getLogDateSpanList(l.startDate, l.endDate);
+          if (activeDates.length === 0) return;
+
+          if (isLeaveEntry(l)) {
+            const totalLeave = getLogLeaveHours(l);
+            const dailyLeave = totalLeave / activeDates.length;
+            activeDates.forEach(iso => {
+              const parts = iso.split('-');
+              if (parts[0] === appState.selectedYear) {
+                const mName = MONTHS[parseInt(parts[1], 10) - 1];
+                if (mName) monthLeaveTotals[mName] += dailyLeave;
+              }
+            });
+          } else {
+            const totalWork = getLogWorkHours(l);
+            const dailyWork = totalWork / activeDates.length;
+            activeDates.forEach(iso => {
+              const parts = iso.split('-');
+              if (parts[0] === appState.selectedYear) {
+                const mName = MONTHS[parseInt(parts[1], 10) - 1];
+                if (mName) monthWorkTotals[mName] += dailyWork;
+              }
+            });
+          }
+        });
+
+        workPulseValues = MONTHS.map(m => +monthWorkTotals[m].toFixed(2));
+        leavePulseValues = MONTHS.map(m => +monthLeaveTotals[m].toFixed(2));
         referenceLineValues = MONTHS.map(m => {
-          const cap = appState.capacities[`${appState.selectedYear}-${m}`] || { leave: 0 };
-          return Math.max(0, getAutoGrossHours(appState.selectedYear, m) - (parseFloat(cap.leave) || 0));
+          const gross = getAutoGrossHours(appState.selectedYear, m);
+          return Math.max(0, gross - monthLeaveTotals[m]);
         });
       } else {
-        document.getElementById('pulse-subtitle').textContent = `Pro-rata working-day distribution across ${appState.selectedMonth} ${appState.selectedYear}`;
+        document.getElementById('pulse-subtitle').textContent = `Daily work effort & Leave/PH across ${appState.selectedMonth} ${appState.selectedYear}`;
         const yearNum = parseInt(appState.selectedYear, 10);
         const monthIdx = MONTHS.indexOf(appState.selectedMonth);
         const daysInMonth = new Date(yearNum, monthIdx + 1, 0).getDate();
@@ -1941,44 +2022,58 @@
           }
         }
 
-        const dailyMap = {};
-        monthWorkingIsos.forEach(iso => { dailyMap[iso] = 0; });
-
-        appState.logs.forEach(l => {
-          let totalTaskHrs = 0;
-          CATEGORIES.forEach(c => { totalTaskHrs += parseFloat(l.hours[c.code]) || 0; });
-          if (totalTaskHrs <= 0) return;
-
-          const activeDates = getLogDateSpanList(l.startDate, l.endDate);
-          const dailyHrs = activeDates.length > 0 ? totalTaskHrs / activeDates.length : totalTaskHrs;
-
-          activeDates.forEach(iso => {
-            if (iso.startsWith(prefix)) {
-              dailyMap[iso] = (dailyMap[iso] || 0) + dailyHrs;
-            }
-          });
+        const dailyWorkMap = {};
+        const dailyLeaveMap = {};
+        monthWorkingIsos.forEach(iso => {
+          dailyWorkMap[iso] = 0;
+          dailyLeaveMap[iso] = 0;
         });
 
-        const sortedIsos = Object.keys(dailyMap).sort();
+        appState.logs.forEach(l => {
+          const activeDates = getLogDateSpanList(l.startDate, l.endDate);
+          if (activeDates.length === 0) return;
+
+          if (isLeaveEntry(l)) {
+            const totalLeave = getLogLeaveHours(l);
+            const dailyLeave = totalLeave / activeDates.length;
+            activeDates.forEach(iso => {
+              if (iso.startsWith(prefix)) {
+                dailyLeaveMap[iso] = (dailyLeaveMap[iso] || 0) + dailyLeave;
+              }
+            });
+          } else {
+            const totalWork = getLogWorkHours(l);
+            const dailyWork = totalWork / activeDates.length;
+            activeDates.forEach(iso => {
+              if (iso.startsWith(prefix)) {
+                dailyWorkMap[iso] = (dailyWorkMap[iso] || 0) + dailyWork;
+              }
+            });
+          }
+        });
+
+        const sortedIsos = Object.keys(dailyWorkMap).sort();
         pulseLabels = sortedIsos.map(iso => `${parseInt(iso.split('-')[2], 10)} ${appState.selectedMonth}`);
-        pulseValues = sortedIsos.map(iso => +dailyMap[iso].toFixed(2));
+        workPulseValues = sortedIsos.map(iso => +dailyWorkMap[iso].toFixed(2));
+        leavePulseValues = sortedIsos.map(iso => +dailyLeaveMap[iso].toFixed(2));
         referenceLineValues = sortedIsos.map(() => 8);
       }
 
       const pulseCtx = document.getElementById('effortPulseChart').getContext('2d');
-      const gradient = pulseCtx.createLinearGradient(0, 0, 0, 170);
+      const gradient = pulseCtx.createLinearGradient(0, 0, 0, 180);
       gradient.addColorStop(0, 'rgba(79, 70, 229, 0.25)');
       gradient.addColorStop(1, 'rgba(79, 70, 229, 0.0)');
 
       if (effortPulseChartInstance) effortPulseChartInstance.destroy();
       effortPulseChartInstance = new Chart(pulseCtx, {
-        type: 'line',
+        type: 'bar',
         data: {
           labels: pulseLabels,
           datasets: [
             {
-              label: isAnnual ? 'Logged Hours' : 'Pro-Rata Daily Hours',
-              data: pulseValues,
+              type: 'line',
+              label: isAnnual ? 'Work Effort' : 'Work Effort (Pro-Rata)',
+              data: workPulseValues,
               borderColor: '#4f46e5',
               backgroundColor: gradient,
               borderWidth: 2.5,
@@ -1988,9 +2083,22 @@
               pointBorderColor: '#4f46e5',
               pointBorderWidth: 2,
               pointRadius: 3.5,
-              pointHoverRadius: 6
+              pointHoverRadius: 6,
+              order: 1
             },
             {
+              type: 'bar',
+              label: 'Leave / Public Holiday',
+              data: leavePulseValues,
+              backgroundColor: 'rgba(245, 158, 11, 0.45)',
+              borderColor: '#d97706',
+              borderWidth: 1,
+              borderRadius: 5,
+              barPercentage: 0.55,
+              order: 2
+            },
+            {
+              type: 'line',
               label: isAnnual ? 'Net Capacity' : '8h Standard Day',
               data: referenceLineValues,
               borderColor: 'rgba(100, 116, 139, 0.45)',
@@ -1998,7 +2106,8 @@
               borderWidth: 1.5,
               fill: false,
               pointRadius: 0,
-              pointHoverRadius: 0
+              pointHoverRadius: 0,
+              order: 3
             }
           ]
         },
@@ -2014,9 +2123,10 @@
               bodyFont: { family: 'JetBrains Mono', size: 12 },
               padding: 10,
               cornerRadius: 12,
+              filter: (item) => !(item.datasetIndex === 1 && item.raw === 0),
               callbacks: {
                 label: (ctx) => {
-                  if (ctx.datasetIndex === 1) {
+                  if (ctx.datasetIndex === 2) {
                     return ` ${ctx.dataset.label}: ${ctx.raw} hrs`;
                   }
                   return ` ${ctx.dataset.label}: ${ctx.raw} hrs (${+(ctx.raw / 8).toFixed(2)} days)`;
@@ -2154,11 +2264,21 @@
       const statusFilter = document.getElementById('filter-status').value;
 
       const filtered = periodLogs.filter(log => {
-        const matchesSearch = log.activity.toLowerCase().includes(search) ||
-          log.project.toLowerCase().includes(search) ||
+        const leaveFlag = isLeaveEntry(log);
+        const displayProj = leaveFlag ? (log.leaveType || 'Leave / Public Holiday') : log.project;
+
+        const matchesSearch = (log.activity || '').toLowerCase().includes(search) ||
+          displayProj.toLowerCase().includes(search) ||
           formatDisplayDateRange(log.startDate, log.endDate).toLowerCase().includes(search);
-        const matchesProj = projFilter === 'ALL' || log.project === projFilter;
-        const matchesStatus = statusFilter === 'ALL' || log.status === statusFilter;
+
+        const matchesProj = projFilter === 'ALL' ? true :
+          projFilter === 'LEAVE_GROUP' ? leaveFlag :
+          (!leaveFlag && log.project === projFilter);
+
+        const matchesStatus = statusFilter === 'ALL' ? true :
+          statusFilter === 'LEAVE_ONLY' ? leaveFlag :
+          (!leaveFlag && log.status === statusFilter);
+
         return matchesSearch && matchesProj && matchesStatus;
       });
 
@@ -2184,11 +2304,53 @@
       // 1. Mobile Native Feed Cards
       if (mobileCards) {
         mobileCards.innerHTML = filtered.map(log => {
+          const leaveFlag = isLeaveEntry(log);
+
+          if (leaveFlag) {
+            const leaveHrs = getLogLeaveHours(log);
+            const leaveDays = +(leaveHrs / 8).toFixed(2);
+            const absenceLabel = log.leaveType || 'Leave / Public Holiday';
+            return `
+              <div class="p-4 space-y-2.5 bg-amber-50/45">
+                <div class="flex items-start justify-between gap-2">
+                  <div class="min-w-0">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg font-display text-xs font-bold border bg-amber-100/90 text-amber-900 border-amber-300/80 max-w-full">
+                      <i class="ph-fill ph-calendar-x text-amber-600 shrink-0"></i>
+                      <span class="truncate">${escapeHtml(absenceLabel)}</span>
+                    </span>
+                    <span class="font-mono text-[11px] text-slate-600 flex items-center gap-1 mt-1">
+                      <i class="ph ph-calendar-blank"></i> ${escapeHtml(formatDisplayDateRange(log.startDate, log.endDate))}
+                    </span>
+                  </div>
+                  <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold border bg-amber-100/80 text-amber-800 border-amber-200 shrink-0">
+                    Deducted Cap.
+                  </span>
+                </div>
+
+                <p class="text-xs text-slate-700 leading-relaxed">${escapeHtml(log.activity)}</p>
+
+                <div class="pt-2 border-t border-amber-200/60 flex items-center justify-between">
+                  <div class="font-mono text-xs font-bold text-amber-900 tabular-nums">
+                    -${formatNum(leaveHrs)} hrs <span class="text-[11px] font-medium text-amber-800/80">(${leaveDays}d absence)</span>
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <button onclick="editActivity('${log.id}')" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-white/90 border border-slate-300 hover:text-brand-700 transition inline-flex items-center gap-1">
+                      <i class="ph-bold ph-pencil-simple"></i> Edit
+                    </button>
+                    <button onclick="confirmDeleteActivity('${log.id}')" class="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-100/70 transition" title="Delete">
+                      <i class="ph-bold ph-trash text-sm"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+
           let rowHours = 0;
           const tagPills = [];
           const projTheme = getProjectTheme(log.project);
           CATEGORIES.forEach(cat => {
-            const h = parseFloat(log.hours[cat.code]) || 0;
+            const h = parseFloat((log.hours || {})[cat.code]) || 0;
             if (h > 0) {
               rowHours += h;
               tagPills.push(`
@@ -2245,12 +2407,52 @@
 
       // 2. Desktop Table Rows
       tbody.innerHTML = filtered.map(log => {
+        const leaveFlag = isLeaveEntry(log);
+
+        if (leaveFlag) {
+          const leaveHrs = getLogLeaveHours(log);
+          const leaveDays = +(leaveHrs / 8).toFixed(3);
+          const absenceLabel = log.leaveType || 'Leave / Public Holiday';
+          return `
+            <tr class="bg-amber-50/40 hover:bg-amber-100/45 transition group">
+              <td class="py-3.5 px-5 align-top">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl font-display text-xs font-bold border bg-amber-100/90 text-amber-900 border-amber-300/80 leading-snug">
+                  <i class="ph-fill ph-calendar-x text-amber-600 shrink-0"></i>
+                  <span>${escapeHtml(absenceLabel)}</span>
+                </span>
+              </td>
+              <td class="py-3.5 px-3 font-mono text-slate-600 whitespace-nowrap align-top text-xs">${escapeHtml(formatDisplayDateRange(log.startDate, log.endDate))}</td>
+              <td class="py-3.5 px-4 text-slate-700 align-top leading-relaxed">${escapeHtml(log.activity)}</td>
+              <td class="py-3.5 px-3 align-top">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg font-mono text-[11px] font-bold border bg-amber-100/80 text-amber-800 border-amber-200">
+                  Leave / PH: ${formatNum(leaveHrs)}h
+                </span>
+              </td>
+              <td class="py-3.5 px-3 text-right font-mono font-bold text-amber-900 align-top tabular-nums">-${formatNum(leaveHrs)}</td>
+              <td class="py-3.5 px-3 text-right font-mono text-amber-800/80 align-top tabular-nums">${leaveDays}</td>
+              <td class="py-3.5 px-3 text-center align-top">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold border bg-amber-100/80 text-amber-800 border-amber-200">
+                  Absence
+                </span>
+              </td>
+              <td class="py-3.5 px-5 text-right align-top whitespace-nowrap">
+                <button onclick="editActivity('${log.id}')" class="p-1.5 rounded-lg text-slate-600 hover:text-brand-700 hover:bg-slate-200/80 transition" title="Edit">
+                  <i class="ph-bold ph-pencil-simple text-base"></i>
+                </button>
+                <button onclick="confirmDeleteActivity('${log.id}')" class="p-1.5 rounded-lg text-slate-600 hover:text-rose-600 hover:bg-rose-100/70 transition" title="Delete">
+                  <i class="ph-bold ph-trash text-base"></i>
+                </button>
+              </td>
+            </tr>
+          `;
+        }
+
         let rowHours = 0;
         const tagPills = [];
         const projTheme = getProjectTheme(log.project);
 
         CATEGORIES.forEach(cat => {
-          const h = parseFloat(log.hours[cat.code]) || 0;
+          const h = parseFloat((log.hours || {})[cat.code]) || 0;
           if (h > 0) {
             rowHours += h;
             tagPills.push(`
@@ -2301,7 +2503,7 @@
     }
 
     // =========================================================================
-    // 6. QUICK-LOG DRAWER & 2-STEP CONFIRMATION HANDLERS
+    // 6. QUICK-LOG DRAWER (WORK vs LEAVE/PH) & CONFIRMATION HANDLERS
     // =========================================================================
     function initFormElements() {
       syncProjectDropdowns();
@@ -2331,12 +2533,87 @@
       `).join('');
     }
 
-    function syncEndDateMin() {
+    function setDrawerEntryType(type, preserveExistingHours = false) {
+      document.getElementById('form-entry-type').value = type;
+      const workBtn = document.getElementById('entry-type-btn-work');
+      const leaveBtn = document.getElementById('entry-type-btn-leave');
+
+      const workProjGroup = document.getElementById('drawer-work-project-group');
+      const workStatusGroup = document.getElementById('drawer-work-status-group');
+      const workCatsGroup = document.getElementById('drawer-work-categories-group');
+      const leaveTypeGroup = document.getElementById('drawer-leave-type-group');
+      const leaveHoursGroup = document.getElementById('drawer-leave-hours-group');
+
+      const activityLabel = document.getElementById('form-activity-label');
+      const activityInput = document.getElementById('form-activity');
+      const footerLabel = document.getElementById('drawer-footer-label');
+      const totalHrsEl = document.getElementById('drawer-total-hours');
+      const submitBtn = document.getElementById('drawer-submit-btn');
+
+      if (type === 'leave') {
+        workBtn.className = 'py-2 px-3 rounded-xl font-display text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5 transition';
+        leaveBtn.className = 'py-2 px-3 rounded-xl font-display text-xs font-bold bg-white text-amber-900 shadow-xs flex items-center justify-center gap-1.5 transition';
+
+        workProjGroup.classList.add('hidden');
+        workStatusGroup.classList.add('hidden');
+        workCatsGroup.classList.add('hidden');
+        leaveTypeGroup.classList.remove('hidden');
+        leaveHoursGroup.classList.remove('hidden');
+
+        activityLabel.textContent = 'Remarks / Holiday Name';
+        activityInput.placeholder = 'e.g., Deepavali Public Holiday, Half-day Annual Leave, Clinic MC...';
+        footerLabel.textContent = 'Capacity Deduction';
+        totalHrsEl.className = 'text-amber-700';
+        submitBtn.textContent = 'Save Leave / PH';
+
+        if (!preserveExistingHours) {
+          autoFillLeaveHoursFromDates();
+        }
+      } else {
+        workBtn.className = 'py-2 px-3 rounded-xl font-display text-xs font-bold bg-white text-slate-900 shadow-xs flex items-center justify-center gap-1.5 transition';
+        leaveBtn.className = 'py-2 px-3 rounded-xl font-display text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5 transition';
+
+        workProjGroup.classList.remove('hidden');
+        workStatusGroup.classList.remove('hidden');
+        workCatsGroup.classList.remove('hidden');
+        leaveTypeGroup.classList.add('hidden');
+        leaveHoursGroup.classList.add('hidden');
+
+        activityLabel.textContent = 'Activity / Deliverable';
+        activityInput.placeholder = 'e.g., Enhancement and optimization of dashboards...';
+        footerLabel.textContent = 'Calculated Effort';
+        totalHrsEl.className = 'text-brand-700';
+        submitBtn.textContent = 'Save Log';
+      }
+
+      recalcDrawerTotal();
+    }
+
+    function autoFillLeaveHoursFromDates() {
+      const startIso = document.getElementById('form-start-date').value;
+      const endIso = document.getElementById('form-end-date').value || startIso;
+      if (!startIso) return;
+      const workingDays = getLogDateSpanList(startIso, endIso);
+      const suggestedHrs = workingDays.length * 8;
+      document.getElementById('form-leave-hours').value = suggestedHrs;
+      document.getElementById('leave-auto-hint').textContent = `${workingDays.length} working day${workingDays.length === 1 ? '' : 's'} × 8h = ${suggestedHrs}h (editable for half-day)`;
+      recalcDrawerTotal();
+    }
+
+    function setQuickLeaveHours(hrs) {
+      document.getElementById('form-leave-hours').value = hrs;
+      recalcDrawerTotal();
+    }
+
+    function handleDrawerDateChange() {
       const startInput = document.getElementById('form-start-date');
       const endInput = document.getElementById('form-end-date');
       endInput.min = startInput.value;
       if (!endInput.value || endInput.value < startInput.value) {
         endInput.value = startInput.value;
+      }
+      if (document.getElementById('form-entry-type').value === 'leave') {
+        autoFillLeaveHoursFromDates();
       }
     }
 
@@ -2349,31 +2626,40 @@
       document.getElementById('edit-entry-id').value = '';
 
       if (entryToEdit) {
-        document.getElementById('drawer-title').textContent = 'Edit Logged Activity';
+        const isLeave = isLeaveEntry(entryToEdit);
+        document.getElementById('drawer-title').textContent = isLeave ? 'Edit Leave / Public Holiday' : 'Edit Logged Activity';
         document.getElementById('edit-entry-id').value = entryToEdit.id;
-        if (!appState.projects.includes(entryToEdit.project)) {
-          appState.projects.push(entryToEdit.project);
-          syncProjectDropdowns();
-        }
-        document.getElementById('form-project').value = entryToEdit.project;
         document.getElementById('form-start-date').value = entryToEdit.startDate;
         document.getElementById('form-end-date').value = entryToEdit.endDate || entryToEdit.startDate;
         document.getElementById('form-end-date').min = entryToEdit.startDate;
-        document.getElementById('form-status').value = entryToEdit.status;
-        document.getElementById('form-activity').value = entryToEdit.activity;
+        document.getElementById('form-activity').value = entryToEdit.activity || '';
 
-        CATEGORIES.forEach(cat => {
-          const val = entryToEdit.hours[cat.code] || '';
-          document.getElementById(`cat-input-${cat.code}`).value = val;
-        });
+        if (isLeave) {
+          document.getElementById('form-leave-type').value = entryToEdit.leaveType || 'Public Holiday';
+          document.getElementById('form-leave-hours').value = getLogLeaveHours(entryToEdit);
+          setDrawerEntryType('leave', true);
+        } else {
+          if (!appState.projects.includes(entryToEdit.project)) {
+            appState.projects.push(entryToEdit.project);
+            syncProjectDropdowns();
+          }
+          document.getElementById('form-project').value = entryToEdit.project;
+          document.getElementById('form-status').value = entryToEdit.status;
+          CATEGORIES.forEach(cat => {
+            const val = (entryToEdit.hours || {})[cat.code] || '';
+            document.getElementById(`cat-input-${cat.code}`).value = val;
+          });
+          setDrawerEntryType('work', true);
+        }
       } else {
-        document.getElementById('drawer-title').textContent = 'Log Daily Activity';
+        document.getElementById('drawer-title').textContent = 'Log Daily Entry';
         const mIdx = appState.selectedMonth === 'ALL' ? new Date().getMonth() : MONTHS.indexOf(appState.selectedMonth);
         const mm = String(mIdx + 1).padStart(2, '0');
-        const defaultIso = `${appState.selectedYear}-${mm}-23`;
+        const defaultIso = `${appState.selectedYear}-${mm}-24`;
         document.getElementById('form-start-date').value = defaultIso;
         document.getElementById('form-end-date').value = defaultIso;
         document.getElementById('form-end-date').min = defaultIso;
+        setDrawerEntryType('work', false);
       }
 
       recalcDrawerTotal();
@@ -2387,11 +2673,18 @@
     }
 
     function recalcDrawerTotal() {
+      const entryType = document.getElementById('form-entry-type').value;
       let sum = 0;
-      CATEGORIES.forEach(cat => {
-        const val = parseFloat(document.getElementById(`cat-input-${cat.code}`).value) || 0;
-        sum += val;
-      });
+
+      if (entryType === 'leave') {
+        sum = parseFloat(document.getElementById('form-leave-hours').value) || 0;
+      } else {
+        CATEGORIES.forEach(cat => {
+          const val = parseFloat(document.getElementById(`cat-input-${cat.code}`).value) || 0;
+          sum += val;
+        });
+      }
+
       document.getElementById('drawer-total-hours').textContent = formatNum(sum);
       document.getElementById('drawer-total-days').textContent = +(sum / 8).toFixed(3);
     }
@@ -2399,10 +2692,9 @@
     function handleSaveActivity(e) {
       e.preventDefault();
       const editId = document.getElementById('edit-entry-id').value;
-      const project = document.getElementById('form-project').value;
+      const entryType = document.getElementById('form-entry-type').value;
       const startDate = document.getElementById('form-start-date').value;
       const endDate = document.getElementById('form-end-date').value || startDate;
-      const status = document.getElementById('form-status').value;
       const activity = document.getElementById('form-activity').value.trim();
 
       if (endDate < startDate) {
@@ -2410,19 +2702,58 @@
         return;
       }
 
-      const hoursObj = {};
+      let entryPayload = null;
       let totalHrs = 0;
-      CATEGORIES.forEach(cat => {
-        const val = parseFloat(document.getElementById(`cat-input-${cat.code}`).value) || 0;
-        if (val > 0) {
-          hoursObj[cat.code] = val;
-          totalHrs += val;
-        }
-      });
 
-      if (totalHrs <= 0) {
-        showToast('Please enter at least 0.5 hours in one category.', 'error');
-        return;
+      if (entryType === 'leave') {
+        const leaveType = document.getElementById('form-leave-type').value;
+        const leaveHours = parseFloat(document.getElementById('form-leave-hours').value) || 0;
+        if (leaveHours <= 0) {
+          showToast('Please enter at least 0.5 absence hours.', 'error');
+          return;
+        }
+        totalHrs = leaveHours;
+        entryPayload = {
+          id: editId || Date.now().toString(),
+          entryType: 'leave',
+          leaveType,
+          leaveHours,
+          project: 'Leave / Public Holiday',
+          startDate,
+          endDate,
+          activity,
+          status: 'Absence',
+          hours: {}
+        };
+      } else {
+        const project = document.getElementById('form-project').value;
+        const status = document.getElementById('form-status').value;
+        const hoursObj = {};
+        CATEGORIES.forEach(cat => {
+          const val = parseFloat(document.getElementById(`cat-input-${cat.code}`).value) || 0;
+          if (val > 0) {
+            hoursObj[cat.code] = val;
+            totalHrs += val;
+          }
+        });
+
+        if (totalHrs <= 0) {
+          showToast('Please enter at least 0.5 hours in one category.', 'error');
+          return;
+        }
+
+        entryPayload = {
+          id: editId || Date.now().toString(),
+          entryType: 'work',
+          leaveType: null,
+          leaveHours: 0,
+          project,
+          startDate,
+          endDate,
+          activity,
+          status,
+          hours: hoursObj
+        };
       }
 
       const executeSave = async () => {
@@ -2435,24 +2766,14 @@
         }
 
         if (editId) {
-          const updatedEntry = { id: editId, project, startDate, endDate, activity, status, hours: hoursObj };
           const idx = appState.logs.findIndex(item => item.id === editId);
-          if (idx !== -1) appState.logs[idx] = updatedEntry;
-          await saveLogToCloud(updatedEntry);
-          showToast('Activity updated & synced to cloud!');
+          if (idx !== -1) appState.logs[idx] = entryPayload;
+          await saveLogToCloud(entryPayload);
+          showToast(entryType === 'leave' ? 'Leave / PH updated & synced!' : 'Activity updated & synced!');
         } else {
-          const newEntry = {
-            id: Date.now().toString(),
-            project,
-            startDate,
-            endDate,
-            activity,
-            status,
-            hours: hoursObj
-          };
-          appState.logs.unshift(newEntry);
-          await saveLogToCloud(newEntry);
-          showToast('Activity logged & synced to cloud!');
+          appState.logs.unshift(entryPayload);
+          await saveLogToCloud(entryPayload);
+          showToast(entryType === 'leave' ? 'Leave / PH logged & capacity adjusted!' : 'Activity logged & synced!');
         }
 
         renderApp();
@@ -2461,7 +2782,7 @@
 
       if (editId) {
         confirmAction(
-          'Confirm Activity Update',
+          'Confirm Entry Update',
           `Save changes to "${activity}" (${formatNum(totalHrs)} hrs)?`,
           executeSave
         );
@@ -2480,7 +2801,7 @@
       if (!entry) return;
 
       confirmAction(
-        'Delete Activity Entry',
+        'Delete Log Entry',
         `Are you sure you want to permanently delete "${entry.activity}" (${formatDisplayDateRange(entry.startDate, entry.endDate)})?`,
         async () => {
           appState.logs = appState.logs.filter(item => item.id !== id);
@@ -2494,7 +2815,7 @@
     function cycleStatus(id) {
       const order = ['Completed', 'In Progress', 'Upcoming'];
       const entry = appState.logs.find(item => item.id === id);
-      if (entry) {
+      if (entry && !isLeaveEntry(entry)) {
         const nextIdx = (order.indexOf(entry.status) + 1) % order.length;
         const nextStatus = order[nextIdx];
         confirmAction(
@@ -2553,23 +2874,29 @@
     // =========================================================================
     function exportToCSV() {
       const periodLogs = getLogsForCurrentPeriod();
-      const headers = ['Project / Portfolio', 'Date Range', 'Activity / Deliverable', 'BA', 'DA', 'DD', 'PR', 'SC', 'PD', 'GI', 'AI', 'Total Hours', 'Days', 'Status'];
+      const headers = ['Entry Type', 'Project / Absence Type', 'Date Range', 'Activity / Remarks', 'BA', 'DA', 'DD', 'PR', 'SC', 'PD', 'GI', 'AI', 'Leave / PH Hours', 'Work Hours', 'Days', 'Status'];
       const rows = periodLogs.map(log => {
-        let total = 0;
+        const leaveFlag = isLeaveEntry(log);
+        let workTotal = 0;
         const catVals = CATEGORIES.map(c => {
-          const v = parseFloat(log.hours[c.code]) || 0;
-          total += v;
+          const v = leaveFlag ? 0 : (parseFloat((log.hours || {})[c.code]) || 0);
+          workTotal += v;
           return v || '';
         });
-        const days = +(total / 8).toFixed(3);
+        const leaveHrs = leaveFlag ? getLogLeaveHours(log) : '';
+        const days = +((leaveFlag ? getLogLeaveHours(log) : workTotal) / 8).toFixed(3);
+        const label = leaveFlag ? (log.leaveType || 'Leave / Public Holiday') : log.project;
+
         return [
-          `"${log.project.replace(/"/g, '""')}"`,
+          `"${leaveFlag ? 'Leave / PH' : 'Work'}"`,
+          `"${label.replace(/"/g, '""')}"`,
           `"${formatDisplayDateRange(log.startDate, log.endDate).replace(/"/g, '""')}"`,
-          `"${log.activity.replace(/"/g, '""')}"`,
+          `"${(log.activity || '').replace(/"/g, '""')}"`,
           ...catVals,
-          total,
+          leaveHrs,
+          workTotal || '',
           days,
-          `"${log.status}"`
+          `"${leaveFlag ? 'Absence' : log.status}"`
         ].join(',');
       });
 
@@ -2582,7 +2909,7 @@
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      showToast('CSV exported for Google Sheets!');
+      showToast('CSV exported with work & absence logs!');
     }
 
     function openTagReferenceModal() {
@@ -2709,13 +3036,15 @@
     window.exportToCSV = exportToCSV;
     window.openLogDrawer = openLogDrawer;
     window.closeLogDrawer = closeLogDrawer;
-    window.syncEndDateMin = syncEndDateMin;
+    window.setDrawerEntryType = setDrawerEntryType;
+    window.autoFillLeaveHoursFromDates = autoFillLeaveHoursFromDates;
+    window.setQuickLeaveHours = setQuickLeaveHours;
+    window.handleDrawerDateChange = handleDrawerDateChange;
     window.recalcDrawerTotal = recalcDrawerTotal;
     window.handleSaveActivity = handleSaveActivity;
     window.editActivity = editActivity;
     window.confirmDeleteActivity = confirmDeleteActivity;
     window.cycleStatus = cycleStatus;
-    window.updateCapacityField = updateCapacityField;
     window.openTagReferenceModal = openTagReferenceModal;
     window.closeTagReferenceModal = closeTagReferenceModal;
     window.confirmAction = confirmAction;
@@ -2725,7 +3054,6 @@
     window.openProfileModal = openProfileModal;
     window.closeProfileModal = closeProfileModal;
     window.handleSaveProfile = handleSaveProfile;
-    window.resetDemoData = resetDemoData;
     window.switchMobileChartTab = switchMobileChartTab;
     window.renderApp = renderApp;
 
