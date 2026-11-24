@@ -177,7 +177,7 @@
   <!-- Top Navigation Bar (Frosted Liquid Header) -->
   <header class="liquid-header sticky top-0 z-30">
     <div class="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-2.5 sm:py-0 sm:h-[70px] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-      <!-- Left: Clean Staff Identity (No Pencil Icon) -->
+      <!-- Left: Clean Staff Identity -->
       <div class="flex items-center justify-between sm:justify-start gap-3 min-w-0">
         <div class="flex items-center gap-3 min-w-0">
           <div id="header-avatar" class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-br from-slate-800 via-indigo-900 to-brand-600 text-white flex items-center justify-center font-display font-bold text-xs sm:text-sm shadow-sm ring-2 ring-white/50 shrink-0">
@@ -254,6 +254,11 @@
           <button onclick="closeHeaderMenu(); openProjectManagerModal();" class="w-full px-4 py-2.5 text-left hover:bg-slate-200/60 flex items-center gap-2.5 transition">
             <i class="ph-duotone ph-folders text-base text-indigo-600"></i>
             <span>Manage Projects</span>
+          </button>
+          <div class="my-1 border-t border-slate-200/80"></div>
+          <button onclick="closeHeaderMenu(); openBulkImportModal();" class="w-full px-4 py-2.5 text-left hover:bg-slate-200/60 flex items-center gap-2.5 transition">
+            <i class="ph-duotone ph-upload-simple text-base text-brand-600"></i>
+            <span>Bulk Import CSV</span>
           </button>
           <button onclick="closeHeaderMenu(); exportToCSV();" class="w-full px-4 py-2.5 text-left hover:bg-slate-200/60 flex items-center gap-2.5 transition">
             <i class="ph-duotone ph-export text-base text-slate-600"></i>
@@ -629,9 +634,9 @@
       <span>Log Activity</span>
     </button>
 
-    <button onclick="exportToCSV()" class="flex-1 flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-700 hover:bg-white/60 active:scale-95 transition">
-      <i class="ph-duotone ph-export text-lg text-slate-600"></i>
-      <span class="text-[10px] font-bold mt-0.5">Export</span>
+    <button onclick="openBulkImportModal()" class="flex-1 flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-700 hover:bg-white/60 active:scale-95 transition">
+      <i class="ph-duotone ph-upload-simple text-lg text-slate-600"></i>
+      <span class="text-[10px] font-bold mt-0.5">Import</span>
     </button>
   </nav>
 
@@ -784,6 +789,81 @@
       </div>
     </div>
   </aside>
+
+  <!-- ===================================================================== -->
+  <!-- BULK IMPORT CSV MODAL                                                 -->
+  <!-- ===================================================================== -->
+  <div id="bulk-import-modal" onclick="closeBulkImportModal()" class="fixed inset-0 bg-slate-900/45 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div onclick="event.stopPropagation()" class="bg-[#F8FAFC] rounded-3xl max-w-3xl w-full overflow-hidden shadow-2xl border border-white flex flex-col max-h-[88vh]">
+      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-100/80">
+        <div>
+          <h3 class="font-display text-base font-bold text-slate-900">Bulk Import Activity &amp; Absence Logs (CSV)</h3>
+          <p class="text-xs text-slate-500">Upload historical months (e.g., October) directly into Firebase Realtime Database</p>
+        </div>
+        <button onclick="closeBulkImportModal()" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200/70">
+          <i class="ph-bold ph-x text-base"></i>
+        </button>
+      </div>
+
+      <div class="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1">
+        <!-- Step 1: Download Template & Upload Zone -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-indigo-50/70 border border-indigo-200/80">
+          <div class="space-y-0.5">
+            <h4 class="font-display text-xs font-bold text-indigo-950">Step 1: Prepare your CSV spreadsheet</h4>
+            <p class="text-[11px] text-indigo-900/80">Supports both <code class="font-mono font-bold">Work</code> and <code class="font-mono font-bold">Leave / PH</code> rows, plus <code class="font-mono">DD/MM/YYYY</code> or <code class="font-mono">YYYY-MM-DD</code> dates.</p>
+          </div>
+          <button type="button" onclick="downloadImportTemplateCSV()" class="px-3.5 py-2 rounded-xl font-display text-xs font-bold text-indigo-900 bg-white border border-indigo-300 hover:bg-indigo-100/70 inline-flex items-center gap-1.5 shrink-0 shadow-2xs transition">
+            <i class="ph-bold ph-download-simple text-sm text-brand-600"></i>
+            <span>Download CSV Template</span>
+          </button>
+        </div>
+
+        <!-- Step 2: File Dropzone -->
+        <label for="bulk-csv-file-input"
+          class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-300 hover:border-brand-500 rounded-2xl bg-white hover:bg-indigo-50/30 cursor-pointer transition text-center">
+          <div class="w-11 h-11 rounded-2xl bg-indigo-100/80 text-brand-600 flex items-center justify-center mb-2">
+            <i class="ph-duotone ph-file-csv text-2xl"></i>
+          </div>
+          <span id="bulk-file-label" class="font-display text-sm font-bold text-slate-900">Choose a .CSV file to preview</span>
+          <span class="text-xs text-slate-500 mt-0.5">Matches the exact structure exported by Productivity Tracker</span>
+          <input id="bulk-csv-file-input" type="file" accept=".csv,text/csv" onchange="handleBulkCsvFileSelect(event)" class="hidden" />
+        </label>
+
+        <!-- Step 3: Parsed Preview Table -->
+        <div id="bulk-preview-container" class="hidden space-y-2.5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span id="bulk-preview-summary" class="font-display text-xs font-bold text-slate-800">0 valid rows ready to import</span>
+            <span id="bulk-new-projects-note" class="hidden text-[11px] font-semibold text-indigo-700 bg-indigo-100/80 px-2.5 py-0.5 rounded-full"></span>
+          </div>
+          <div class="border border-slate-200 rounded-2xl overflow-hidden bg-white max-h-60 overflow-y-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 border-b border-slate-200 text-slate-600 font-bold uppercase text-[10px]">
+                  <th class="py-2.5 px-3">Type</th>
+                  <th class="py-2.5 px-3">Project / Absence</th>
+                  <th class="py-2.5 px-3">Date Range</th>
+                  <th class="py-2.5 px-3">Activity / Remarks</th>
+                  <th class="py-2.5 px-3 text-right">Hrs</th>
+                </tr>
+              </thead>
+              <tbody id="bulk-preview-tbody" class="divide-y divide-slate-200/70"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-6 py-3.5 border-t border-slate-200 bg-slate-100/80 flex items-center justify-between gap-2">
+        <span class="text-[11px] text-slate-500">All imported entries sync automatically to Firebase RTDB</span>
+        <div class="flex gap-2">
+          <button type="button" onclick="closeBulkImportModal()" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100">Cancel</button>
+          <button type="button" id="bulk-import-submit-btn" disabled onclick="confirmAndRunBulkImport()"
+            class="px-5 py-2 rounded-xl font-display text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-slate-900 via-indigo-900 to-brand-700 disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-95 shadow-sm transition">
+            Import to Cloud
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ===================================================================== -->
   <!-- PROJECT / PORTFOLIO MANAGER MODAL (ADD / EDIT / DELETE)               -->
@@ -1115,6 +1195,7 @@
     let activeSettingsRef = null;
     let isCloudReady = false;
     let pendingConfirmCallback = null;
+    let pendingBulkImportRows = [];
     let projectStackedChartInstance = null;
     let categoryDonutChartInstance = null;
     let effortPulseChartInstance = null;
@@ -1137,9 +1218,7 @@
     }
 
     function getSanitizedAppId() {
-      const raw = (typeof __app_id !== 'undefined' && __app_id) ? String(__app_id) : 'annuar-resource-tracker';
-      if (raw.includes('index.html')) return 'annuar-resource-tracker';
-      return raw.replace(/[.#$\[\]\/]/g, '_');
+      return 'annuar-resource-tracker';
     }
 
     function getRtdbBasePath() {
@@ -1403,7 +1482,6 @@
       return weekdays.length > 0 ? weekdays : allDates;
     }
 
-    // Auto-calculate total Leave / Public Holiday hours for a specific Year & Month (pro-rata across working days)
     function getLoggedLeaveHoursForMonth(yearStr, monthShort) {
       const monthIdx = MONTHS.indexOf(monthShort);
       if (monthIdx === -1) return 0;
@@ -1675,7 +1753,6 @@
       const catTotals = { BA: 0, DA: 0, DD: 0, PR: 0, SC: 0, PD: 0, GI: 0, AI: 0 };
       let grandTotalHours = 0;
 
-      // Aggregate only Work Activities into Project Matrix & 8-Category Breakdown
       workLogs.forEach(log => {
         if (!matrix[log.project]) {
           matrix[log.project] = { BA: 0, DA: 0, DD: 0, PR: 0, SC: 0, PD: 0, GI: 0, AI: 0, total: 0 };
@@ -1842,7 +1919,6 @@
     }
 
     function renderVisualCharts(matrix, catTotals, grandTotal, periodLogs, isAnnual) {
-      // 1. Render Compact Legend Pills
       const legendContainer = document.getElementById('category-legend');
       legendContainer.innerHTML = CATEGORIES.map(cat => {
         const hrs = catTotals[cat.code];
@@ -1863,7 +1939,6 @@
 
       if (typeof Chart === 'undefined') return;
 
-      // 2. Horizontal Stacked Bar Chart (Work Portfolios Only)
       const sortedProjects = Object.keys(matrix)
         .filter(p => matrix[p].total > 0)
         .sort((a, b) => matrix[b].total - matrix[a].total);
@@ -1917,7 +1992,6 @@
         }
       });
 
-      // 3. Category Donut Chart
       const donutCtx = document.getElementById('categoryDonutChart').getContext('2d');
       if (categoryDonutChartInstance) categoryDonutChartInstance.destroy();
       const hasData = grandTotal > 0;
@@ -1957,7 +2031,6 @@
         }
       });
 
-      // 4. Effort & Absence Pulse Chart (Work Effort Line + Amber Leave/PH Bars)
       let pulseLabels = [];
       let workPulseValues = [];
       let leavePulseValues = [];
@@ -2158,7 +2231,6 @@
 
       const allMatrixProjects = Object.keys(matrix);
 
-      // 1. Mobile Zero-Horizontal-Scroll Cards
       if (mobileCards) {
         const activeTotalPills = CATEGORIES.filter(c => catTotals[c.code] > 0).map(c => `
           <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg font-mono text-[10px] font-bold border ${c.badgeBg}">
@@ -2207,7 +2279,6 @@
         `;
       }
 
-      // 2. Desktop Heat-Mapped Table
       let maxCell = 0;
       allMatrixProjects.forEach(p => {
         CATEGORIES.forEach(c => {
@@ -2301,7 +2372,6 @@
         'Upcoming': 'bg-sky-100/80 text-sky-800 border-sky-200'
       };
 
-      // 1. Mobile Native Feed Cards
       if (mobileCards) {
         mobileCards.innerHTML = filtered.map(log => {
           const leaveFlag = isLeaveEntry(log);
@@ -2405,7 +2475,6 @@
         }).join('');
       }
 
-      // 2. Desktop Table Rows
       tbody.innerHTML = filtered.map(log => {
         const leaveFlag = isLeaveEntry(log);
 
@@ -2832,7 +2901,288 @@
     }
 
     // =========================================================================
-    // 7. 2-STEP CONFIRMATION MODAL CONTROLLER
+    // 7. BULK CSV IMPORT ENGINE (TEMPLATE, PARSER, PREVIEW & CLOUD UPLOAD)
+    // =========================================================================
+    function openBulkImportModal() {
+      pendingBulkImportRows = [];
+      document.getElementById('bulk-csv-file-input').value = '';
+      document.getElementById('bulk-file-label').textContent = 'Choose a .CSV file to preview';
+      document.getElementById('bulk-preview-container').classList.add('hidden');
+      document.getElementById('bulk-import-submit-btn').disabled = true;
+      document.getElementById('bulk-import-modal').classList.remove('hidden');
+    }
+
+    function closeBulkImportModal() {
+      document.getElementById('bulk-import-modal').classList.add('hidden');
+    }
+
+    function downloadImportTemplateCSV() {
+      const headers = ['Entry Type', 'Project / Absence Type', 'Date Range', 'Activity / Remarks', 'BA', 'DA', 'DD', 'PR', 'SC', 'PD', 'GI', 'AI', 'Leave / PH Hours', 'Status'];
+      const sampleRows = [
+        ['Work', 'MPAG Web Map Editor', '05/10/2026 - 09/10/2026', 'Map editor UI prototyping and spatial layer setup', '4', '', '16', '', '4', '8', '8', '', '', 'Completed'],
+        ['Work', 'STM Dashboard', '14/10/2026', 'Stakeholder review workshop', '', '', '', '', '4', '', '', '', '', 'Completed'],
+        ['Leave / PH', 'Annual Leave', '19/10/2026', 'Annual leave (full day)', '', '', '', '', '', '', '', '', '8', 'Absence'],
+        ['Leave / PH', 'Medical Leave (MC)', '23/10/2026', 'Half-day clinic MC', '', '', '', '', '', '', '', '', '4', 'Absence']
+      ];
+      const csvStr = [headers.join(','), ...sampleRows.map(r => r.map(v => `"${v}"`).join(','))].join('\n');
+      const blob = new Blob([csvStr], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.setAttribute('download', 'Productivity_Tracker_Import_Template.csv');
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast('CSV import template downloaded!');
+    }
+
+    function parseCsvLine(line) {
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') {
+          if (inQuotes && line[i + 1] === '"') {
+            current += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (ch === ',' && !inQuotes) {
+          result.push(current.trim());
+          current = '';
+        } else {
+          current += ch;
+        }
+      }
+      result.push(current.trim());
+      return result;
+    }
+
+    function normalizeFlexibleDateToken(token) {
+      const t = (token || '').trim();
+      if (!t) return null;
+      // YYYY-MM-DD
+      if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(t)) {
+        const [y, m, d] = t.split('-');
+        return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+      }
+      // DD/MM/YYYY or D/M/YYYY
+      if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(t)) {
+        const [d, m, y] = t.split('/');
+        return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+      }
+      return null;
+    }
+
+    function parseFlexibleDateRange(rawRange) {
+      const cleaned = (rawRange || '').trim();
+      if (!cleaned) return null;
+      const parts = cleaned.split(/\s*(?:–|-|to)\s*/i);
+      if (parts.length >= 2 && parts[0].includes('/') && parts[1].includes('/')) {
+        const s = normalizeFlexibleDateToken(parts[0]);
+        const e = normalizeFlexibleDateToken(parts[1]);
+        if (s && e) return { startDate: s, endDate: e >= s ? e : s };
+      }
+      // Check YYYY-MM-DD to YYYY-MM-DD
+      const isoRangeMatch = cleaned.match(/^(\d{4}-\d{1,2}-\d{1,2})\s*(?:–|-|to)\s*(\d{4}-\d{1,2}-\d{1,2})$/i);
+      if (isoRangeMatch) {
+        const s = normalizeFlexibleDateToken(isoRangeMatch[1]);
+        const e = normalizeFlexibleDateToken(isoRangeMatch[2]);
+        if (s && e) return { startDate: s, endDate: e >= s ? e : s };
+      }
+      const single = normalizeFlexibleDateToken(cleaned);
+      if (single) return { startDate: single, endDate: single };
+      return null;
+    }
+
+    function handleBulkCsvFileSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      document.getElementById('bulk-file-label').textContent = file.name;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target.result || '';
+        const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+        if (lines.length < 2) {
+          showToast('CSV file is empty or missing data rows.', 'error');
+          return;
+        }
+
+        const headerCols = parseCsvLine(lines[0]).map(h => h.toLowerCase());
+        const findCol = (keywords) => headerCols.findIndex(h => keywords.some(k => h === k || h.includes(k)));
+
+        const idxType = findCol(['entry type', 'type']);
+        const idxProj = findCol(['project', 'absence']);
+        const idxDate = findCol(['date range', 'date']);
+        const idxAct = findCol(['activity', 'remarks', 'deliverable']);
+        const idxLeaveHrs = findCol(['leave / ph hours', 'leave hours', 'absence hours']);
+        const idxStatus = findCol(['status']);
+
+        const catIndices = {};
+        CATEGORIES.forEach(c => {
+          catIndices[c.code] = headerCols.findIndex(h => h === c.code.toLowerCase());
+        });
+
+        const parsedEntries = [];
+        const discoveredProjects = new Set();
+
+        for (let r = 1; r < lines.length; r++) {
+          const cols = parseCsvLine(lines[r]);
+          if (cols.every(c => !c)) continue;
+
+          const rawType = idxType !== -1 ? (cols[idxType] || '').toLowerCase() : '';
+          const rawProj = idxProj !== -1 ? (cols[idxProj] || '').trim() : '';
+          const rawDate = idxDate !== -1 ? (cols[idxDate] || '').trim() : '';
+          const rawAct = idxAct !== -1 ? (cols[idxAct] || '').trim() : 'Imported entry';
+          const rawStatus = idxStatus !== -1 ? (cols[idxStatus] || '').trim() : '';
+          const rawLeaveHrs = idxLeaveHrs !== -1 ? parseFloat(cols[idxLeaveHrs]) || 0 : 0;
+
+          const dateSpan = parseFlexibleDateRange(rawDate);
+          if (!dateSpan) continue;
+
+          const isLeave = rawType.includes('leave') || rawType.includes('holiday') || rawType.includes('ph') ||
+            rawLeaveHrs > 0 || ['public holiday', 'annual leave', 'medical leave (mc)', 'unpaid / other leave'].includes(rawProj.toLowerCase());
+
+          if (isLeave) {
+            const workingDays = getLogDateSpanList(dateSpan.startDate, dateSpan.endDate).length;
+            const leaveHours = rawLeaveHrs > 0 ? rawLeaveHrs : (workingDays * 8);
+            const leaveType = rawProj || 'Public Holiday';
+            parsedEntries.push({
+              id: `${Date.now()}_${r}_${Math.random().toString(36).slice(2, 6)}`,
+              entryType: 'leave',
+              leaveType,
+              leaveHours,
+              project: 'Leave / Public Holiday',
+              startDate: dateSpan.startDate,
+              endDate: dateSpan.endDate,
+              activity: rawAct || leaveType,
+              status: 'Absence',
+              hours: {}
+            });
+          } else {
+            const project = rawProj || appState.projects[0] || 'Ad-hoc';
+            const hoursObj = {};
+            let totalWork = 0;
+            CATEGORIES.forEach(c => {
+              const ci = catIndices[c.code];
+              const val = ci !== -1 ? (parseFloat(cols[ci]) || 0) : 0;
+              if (val > 0) {
+                hoursObj[c.code] = val;
+                totalWork += val;
+              }
+            });
+            if (totalWork <= 0) continue;
+
+            if (!appState.projects.includes(project)) {
+              discoveredProjects.add(project);
+            }
+
+            const validStatuses = ['Completed', 'In Progress', 'Upcoming'];
+            const status = validStatuses.includes(rawStatus) ? rawStatus : 'Completed';
+
+            parsedEntries.push({
+              id: `${Date.now()}_${r}_${Math.random().toString(36).slice(2, 6)}`,
+              entryType: 'work',
+              leaveType: null,
+              leaveHours: 0,
+              project,
+              startDate: dateSpan.startDate,
+              endDate: dateSpan.endDate,
+              activity: rawAct,
+              status,
+              hours: hoursObj
+            });
+          }
+        }
+
+        pendingBulkImportRows = parsedEntries;
+        const previewContainer = document.getElementById('bulk-preview-container');
+        const submitBtn = document.getElementById('bulk-import-submit-btn');
+
+        if (parsedEntries.length === 0) {
+          previewContainer.classList.add('hidden');
+          submitBtn.disabled = true;
+          showToast('No valid rows found. Check dates and hours in your CSV.', 'error');
+          return;
+        }
+
+        previewContainer.classList.remove('hidden');
+        submitBtn.disabled = false;
+        document.getElementById('bulk-preview-summary').textContent = `${parsedEntries.length} valid row${parsedEntries.length === 1 ? '' : 's'} ready to import`;
+
+        const newProjBadge = document.getElementById('bulk-new-projects-note');
+        if (discoveredProjects.size > 0) {
+          newProjBadge.textContent = `+${discoveredProjects.size} new project${discoveredProjects.size === 1 ? '' : 's'} will be added`;
+          newProjBadge.classList.remove('hidden');
+        } else {
+          newProjBadge.classList.add('hidden');
+        }
+
+        document.getElementById('bulk-preview-tbody').innerHTML = parsedEntries.map(item => {
+          const isL = isLeaveEntry(item);
+          const hrs = isL ? getLogLeaveHours(item) : getLogWorkHours(item);
+          return `
+            <tr class="${isL ? 'bg-amber-50/60' : ''}">
+              <td class="py-2 px-3 font-bold ${isL ? 'text-amber-800' : 'text-indigo-700'}">${isL ? 'Leave/PH' : 'Work'}</td>
+              <td class="py-2 px-3 font-semibold text-slate-800">${escapeHtml(isL ? item.leaveType : item.project)}</td>
+              <td class="py-2 px-3 font-mono text-[11px] text-slate-600 whitespace-nowrap">${escapeHtml(formatDisplayDateRange(item.startDate, item.endDate))}</td>
+              <td class="py-2 px-3 text-slate-600 truncate max-w-[200px]">${escapeHtml(item.activity)}</td>
+              <td class="py-2 px-3 text-right font-mono font-bold ${isL ? 'text-amber-900' : 'text-slate-900'}">${isL ? '-' : ''}${formatNum(hrs)}h</td>
+            </tr>
+          `;
+        }).join('');
+      };
+      reader.readAsText(file);
+    }
+
+    function confirmAndRunBulkImport() {
+      if (pendingBulkImportRows.length === 0) return;
+
+      confirmAction(
+        'Confirm Bulk Cloud Import',
+        `Upload ${pendingBulkImportRows.length} imported row${pendingBulkImportRows.length === 1 ? '' : 's'} to your Firebase Realtime Database?`,
+        async () => {
+          let settingsChanged = false;
+          for (const entry of pendingBulkImportRows) {
+            if (!isLeaveEntry(entry) && !appState.projects.includes(entry.project)) {
+              appState.projects.push(entry.project);
+              settingsChanged = true;
+            }
+            const yr = entry.startDate.split('-')[0];
+            if (yr && !appState.years.includes(yr)) {
+              appState.years.push(yr);
+              appState.years.sort();
+              settingsChanged = true;
+            }
+            appState.logs.unshift(entry);
+            await saveLogToCloud(entry);
+          }
+
+          if (settingsChanged) {
+            syncPeriodSelectors();
+            syncProjectDropdowns();
+            await saveSettingsToCloud();
+          }
+
+          // Switch view automatically to the first imported row's year & month so user sees it immediately
+          const firstYm = getLogYearMonth(pendingBulkImportRows[0]);
+          appState.selectedYear = firstYm.year;
+          appState.selectedMonth = firstYm.month;
+          syncPeriodSelectors();
+
+          renderApp();
+          closeBulkImportModal();
+          showToast(`Successfully imported ${pendingBulkImportRows.length} entries to cloud!`);
+          pendingBulkImportRows = [];
+        }
+      );
+    }
+
+    // =========================================================================
+    // 8. 2-STEP CONFIRMATION MODAL CONTROLLER
     // =========================================================================
     function confirmAction(title, message, onConfirm) {
       document.getElementById('confirm-modal-title').textContent = title;
@@ -2870,7 +3220,7 @@
     });
 
     // =========================================================================
-    // 8. EXPORT TO CSV & UTILITIES
+    // 9. EXPORT TO CSV & UTILITIES
     // =========================================================================
     function exportToCSV() {
       const periodLogs = getLogsForCurrentPeriod();
@@ -2950,7 +3300,7 @@
     }
 
     // =========================================================================
-    // 9. LANDING PAGE AUTHENTICATION GATEWAY
+    // 10. LANDING PAGE AUTHENTICATION GATEWAY
     // =========================================================================
     function toggleLoginPasswordVisibility() {
       const pwdInput = document.getElementById('login-password');
@@ -3033,6 +3383,11 @@
     window.handleAddProject = handleAddProject;
     window.confirmRenameProject = confirmRenameProject;
     window.confirmDeleteProject = confirmDeleteProject;
+    window.openBulkImportModal = openBulkImportModal;
+    window.closeBulkImportModal = closeBulkImportModal;
+    window.downloadImportTemplateCSV = downloadImportTemplateCSV;
+    window.handleBulkCsvFileSelect = handleBulkCsvFileSelect;
+    window.confirmAndRunBulkImport = confirmAndRunBulkImport;
     window.exportToCSV = exportToCSV;
     window.openLogDrawer = openLogDrawer;
     window.closeLogDrawer = closeLogDrawer;
