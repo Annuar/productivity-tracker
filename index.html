@@ -125,7 +125,7 @@
           <i class="ph-duotone ph-shield-check text-3xl"></i>
         </div>
         <h1 class="font-display text-2xl font-bold tracking-tight text-slate-900">Productivity Tracker</h1>
-        <p class="text-xs sm:text-sm text-slate-600 mt-1">Sign in with your authorized Firebase account to unlock your workspace</p>
+        <p class="text-xs sm:text-sm text-slate-600 mt-1">Sign in with your authorized account to unlock your workspace</p>
       </div>
 
       <!-- Error Banner -->
@@ -169,11 +169,8 @@
         </button>
       </form>
 
-      <div class="mt-6 pt-4 border-t border-slate-300/60 flex items-center justify-between text-[11px] text-slate-500">
-        <span class="inline-flex items-center gap-1.5 font-semibold">
-          <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Firebase Auth Protected
-        </span>
-        <span class="font-mono">Asia-Southeast1 RTDB</span>
+      <div class="mt-6 pt-4 border-t border-slate-300/60 flex items-center justify-center text-[11px] text-slate-500">
+        <span class="font-display font-semibold tracking-wide text-slate-600">&copy; 2026 AnnuarFaiz</span>
       </div>
     </div>
   </div>
@@ -801,7 +798,7 @@
       <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-100/80">
         <div>
           <h3 class="font-display text-base font-bold text-slate-900">Edit Profile &amp; Account Password</h3>
-          <p class="text-xs text-slate-500">Customize your display badge or update your Firebase password</p>
+          <p class="text-xs text-slate-500">Customize your display badge or update your account password</p>
         </div>
         <button onclick="closeProfileModal()" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200/70">
           <i class="ph-bold ph-x text-base"></i>
@@ -850,7 +847,7 @@
 
         <!-- Firebase Password Reset Form -->
         <form id="password-reset-form" onsubmit="handleUpdateAccountPassword(event)" class="pt-4 border-t border-slate-200 space-y-3">
-          <p class="text-xs font-bold uppercase tracking-wider text-slate-600">Change Firebase Login Password</p>
+          <p class="text-xs font-bold uppercase tracking-wider text-slate-600">Change Login Password</p>
           <div>
             <input id="account-current-password" type="password" required placeholder="Current password"
               class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600" />
@@ -922,7 +919,7 @@
       <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-100/80">
         <div>
           <h3 class="font-display text-base font-bold text-slate-900">Import / Export CSV Data</h3>
-          <p class="text-xs text-slate-500">Export your current period logs or bulk upload CSV records to Firebase Realtime Database</p>
+          <p class="text-xs text-slate-500">Export your current period logs or bulk upload CSV records to cloud storage</p>
         </div>
         <button onclick="closeBulkImportModal()" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200/70">
           <i class="ph-bold ph-x text-base"></i>
@@ -1000,14 +997,21 @@
   <!-- ===================================================================== -->
   <div id="project-modal" onclick="closeProjectManagerModal()" class="fixed inset-0 bg-slate-900/45 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
     <div onclick="event.stopPropagation()" class="bg-[#F8FAFC] rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-white flex flex-col max-h-[85vh]">
-      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-100/80">
+      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between gap-2 bg-slate-100/80">
         <div>
           <h3 class="font-display text-base font-bold text-slate-900">Manage Projects &amp; Portfolios</h3>
-          <p class="text-xs text-slate-500">Add, rename, or remove projects across your workspace</p>
+          <p class="text-xs text-slate-500">Add new portfolios or toggle edit mode to rename &amp; delete</p>
         </div>
-        <button onclick="closeProjectManagerModal()" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200/70">
-          <i class="ph-bold ph-x text-base"></i>
-        </button>
+        <div class="flex items-center gap-2 shrink-0">
+          <button type="button" id="toggle-project-edit-btn" onclick="toggleProjectEditMode()"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-100/90 text-indigo-800 border border-indigo-200 hover:bg-indigo-200/80 transition inline-flex items-center gap-1.5">
+            <i class="ph-bold ph-pencil-simple text-xs"></i>
+            <span>Edit Projects</span>
+          </button>
+          <button onclick="closeProjectManagerModal()" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200/70">
+            <i class="ph-bold ph-x text-base"></i>
+          </button>
+        </div>
       </div>
 
       <form onsubmit="handleAddProject(event)" class="p-4 bg-slate-100/60 border-b border-slate-200 flex gap-2">
@@ -1133,14 +1137,14 @@
   </div>
 
   <!-- ===================================================================== -->
-  <!-- FIREBASE CLOUD CONFIG MODAL                                           -->
+  <!-- CLOUD SYNC CONFIG MODAL                                               -->
   <!-- ===================================================================== -->
   <div id="firebase-modal" onclick="closeFirebaseConfigModal()" class="fixed inset-0 bg-slate-900/45 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
     <div onclick="event.stopPropagation()" class="bg-[#F8FAFC] rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-white">
       <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-100/80">
         <div>
-          <h3 class="font-display text-base font-bold text-slate-900">Firebase Realtime Database Sync</h3>
-          <p class="text-xs text-slate-500">Connected to your Asia-Southeast1 Realtime Database</p>
+          <h3 class="font-display text-base font-bold text-slate-900">Cloud Database Sync</h3>
+          <p class="text-xs text-slate-500">Workspace synchronization configuration</p>
         </div>
         <button onclick="closeFirebaseConfigModal()" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200/70">
           <i class="ph-bold ph-x text-base"></i>
@@ -1148,11 +1152,11 @@
       </div>
       <div class="p-6 space-y-4">
         <div class="p-3.5 rounded-2xl bg-indigo-50/80 border border-indigo-200/80 text-xs text-indigo-950 space-y-1">
-          <p class="font-bold">Endpoint: productivity-tracker-556c4-default-rtdb.asia-southeast1.firebasedatabase.app</p>
-          <p class="text-indigo-800/85">Ensure <strong>Email/Password</strong> sign-in is enabled and RTDB rules allow your authenticated User UID.</p>
+          <p class="font-bold">Cloud Sync Active</p>
+          <p class="text-indigo-800/85">Ensure <strong>Email/Password</strong> sign-in is enabled and database rules allow your authenticated User UID.</p>
         </div>
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Firebase Web Config JSON</label>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Web Config JSON</label>
           <textarea id="firebase-config-textarea" rows="6" placeholder='{"apiKey": "...", "authDomain": "...", "databaseURL": "...", "projectId": "..."}'
             class="w-full rounded-xl border border-slate-300 bg-white p-3 font-mono text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-600"></textarea>
         </div>
@@ -1253,6 +1257,7 @@
       getDatabase,
       ref,
       set,
+      update,
       remove,
       onValue,
       off
@@ -1271,8 +1276,8 @@
       appId: "1:202908168797:web:09dc050baf2173586f93b4",
       measurementId: "G-831Y8Z3GYR"
     };
-
-    const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const MAX_CATEGORIES = 10;
 
     const TAG_COLOR_OPTIONS = [
@@ -1439,7 +1444,8 @@
       logs: [],
       summaryScope: 'period',
       summaryExpandedGroups: {},
-      summaryAllExpanded: false
+      summaryAllExpanded: false,
+      isProjectEditMode: false
     };
 
     let projectStackedChartInstance = null;
@@ -1574,14 +1580,27 @@
       return workingDays.length > 0 ? workingDays : allDays;
     }
 
-    function getWorkingDaysInMonth(yearNum, monthIdx) {
-      const daysInMonth = new Date(yearNum, monthIdx + 1, 0).getDate();
+    function getWorkingDaysInMonth(yearInt, monthIdx) {
+      const daysInMonth = new Date(yearInt, monthIdx + 1, 0).getDate();
       let count = 0;
       for (let d = 1; d <= daysInMonth; d++) {
-        const dow = new Date(yearNum, monthIdx, d).getDay();
+        const dow = new Date(yearInt, monthIdx, d).getDay();
         if (dow !== 0 && dow !== 6) count++;
       }
       return count;
+    }
+
+    function getMonthIndex(monthVal) {
+      if (!monthVal || monthVal === 'ALL') return -1;
+      const fullIdx = MONTHS.indexOf(monthVal);
+      if (fullIdx !== -1) return fullIdx;
+      return SHORT_MONTHS.indexOf(monthVal);
+    }
+
+    function normalizeMonthName(monthVal) {
+      if (!monthVal || monthVal === 'ALL') return 'ALL';
+      const idx = getMonthIndex(monthVal);
+      return idx >= 0 ? MONTHS[idx] : monthVal;
     }
 
     function getWorkingDaysForPeriod(yearStr, monthStr) {
@@ -1591,13 +1610,13 @@
         for (let m = 0; m < 12; m++) total += getWorkingDaysInMonth(y, m);
         return total;
       }
-      const mIdx = MONTHS.indexOf(monthStr);
+      const mIdx = getMonthIndex(monthStr);
       return getWorkingDaysInMonth(y, mIdx >= 0 ? mIdx : 0);
     }
 
     function getLoggedLeaveHoursForPeriod(yearStr, monthStr) {
       const y = parseInt(yearStr, 10);
-      const targetMIdx = monthStr === 'ALL' ? -1 : MONTHS.indexOf(monthStr);
+      const targetMIdx = monthStr === 'ALL' ? -1 : getMonthIndex(monthStr);
       let totalLeave = 0;
 
       appState.logs.forEach(log => {
@@ -1635,6 +1654,8 @@
     function syncPeriodSelectors() {
       const yearSel = document.getElementById('year-selector');
       const monthSel = document.getElementById('month-selector');
+      if (!yearSel || !monthSel) return;
+      appState.selectedMonth = normalizeMonthName(appState.selectedMonth);
 
       yearSel.innerHTML = appState.years.map(y =>
         `<option value="${y}" ${y === appState.selectedYear ? 'selected' : ''}>${y}</option>`
@@ -1657,16 +1678,16 @@
       const searchQ = (document.getElementById('filter-search')?.value || '').trim().toLowerCase();
       const projFilter = document.getElementById('filter-project')?.value || 'ALL';
       const statusFilter = document.getElementById('filter-status')?.value || 'ALL';
+      const targetMonthIdx = getMonthIndex(appState.selectedMonth);
 
       return appState.logs.filter(log => {
         if (!log.startDate) return false;
         const [yStr, mStr] = log.startDate.split('-');
-        const mName = MONTHS[parseInt(mStr, 10) - 1];
+        const mIdx = parseInt(mStr, 10) - 1;
         const leaveFlag = isLeaveEntry(log);
 
         if (yStr !== appState.selectedYear) return false;
-        if (appState.selectedMonth !== 'ALL' && mName !== appState.selectedMonth) return false;
-
+        if (appState.selectedMonth !== 'ALL' && mIdx !== targetMonthIdx) return false;
         if (projFilter === 'LEAVE_ONLY' && !leaveFlag) return false;
         if (projFilter !== 'ALL' && projFilter !== 'LEAVE_ONLY') {
           if (leaveFlag || log.project !== projFilter) return false;
@@ -1688,16 +1709,38 @@
     // =========================================================================
     // 4. PROJECT & CATEGORY MANAGEMENT
     // =========================================================================
+    function getEffectiveProjectList(includeFromLogs = false) {
+      const baseList = Array.isArray(appState.projects) ? [...appState.projects] : [];
+
+      if (baseList.length === 0 && isPrimaryOwnerUser(currentUser)) {
+        DEFAULT_PROJECTS.forEach(p => {
+          if (!baseList.includes(p)) baseList.push(p);
+        });
+      }
+
+      if (includeFromLogs) {
+        appState.logs.forEach(log => {
+          if (!isLeaveEntry(log) && log.project && log.project !== 'Public Holiday' && !baseList.includes(log.project)) {
+            baseList.push(log.project);
+          }
+        });
+      }
+
+      return baseList;
+    }
+
     function syncProjectDropdowns() {
       const filterSel = document.getElementById('filter-project');
       const formSel = document.getElementById('form-project');
       const currentFilter = filterSel ? filterSel.value : 'ALL';
+      const projectList = getEffectiveProjectList();
+      appState.projects = projectList;
 
       if (filterSel) {
         filterSel.innerHTML = [
           `<option value="ALL">All Entries</option>`,
-          `<option value="LEAVE_ONLY">Leave &amp; Public Holidays</option>`,
-          ...appState.projects.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`)
+          `<option value="LEAVE_ONLY">Leave / Public Holiday Only</option>`,
+          ...projectList.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`)
         ].join('');
         if ([...filterSel.options].some(o => o.value === currentFilter)) {
           filterSel.value = currentFilter;
@@ -1705,40 +1748,82 @@
       }
 
       if (formSel) {
-        formSel.innerHTML = appState.projects.map(p =>
+        const currentFormVal = formSel.value;
+        formSel.innerHTML = projectList.map(p =>
           `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`
         ).join('');
+        if (currentFormVal && projectList.includes(currentFormVal)) {
+          formSel.value = currentFormVal;
+        }
       }
     }
 
     function openProjectManagerModal() {
+      appState.projects = getEffectiveProjectList();
+      appState.isProjectEditMode = false;
+      updateProjectEditToggleButton();
       renderProjectManagerList();
       document.getElementById('project-modal').classList.remove('hidden');
     }
 
     function closeProjectManagerModal() {
+      appState.isProjectEditMode = false;
       document.getElementById('project-modal').classList.add('hidden');
+    }
+
+    function toggleProjectEditMode() {
+      appState.isProjectEditMode = !appState.isProjectEditMode;
+      updateProjectEditToggleButton();
+      renderProjectManagerList();
+    }
+
+    function updateProjectEditToggleButton() {
+      const btn = document.getElementById('toggle-project-edit-btn');
+      if (!btn) return;
+      if (appState.isProjectEditMode) {
+        btn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white border border-slate-900 hover:bg-slate-800 transition inline-flex items-center gap-1.5';
+        btn.innerHTML = '<i class="ph-bold ph-check text-xs"></i><span>Done Editing</span>';
+      } else {
+        btn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-100/90 text-indigo-800 border border-indigo-200 hover:bg-indigo-200/80 transition inline-flex items-center gap-1.5';
+        btn.innerHTML = '<i class="ph-bold ph-pencil-simple text-xs"></i><span>Edit Projects</span>';
+      }
     }
 
     function renderProjectManagerList() {
       const container = document.getElementById('project-manager-list');
+      appState.projects = getEffectiveProjectList();
+      const isEditing = appState.isProjectEditMode === true;
+
       container.innerHTML = appState.projects.map((proj, idx) => {
         const count = appState.logs.filter(l => !isLeaveEntry(l) && l.project === proj).length;
         const projTheme = getProjectTheme(proj);
+
+        if (!isEditing) {
+          return `
+            <div class="py-3 px-1 flex items-center justify-between gap-2">
+              <div class="flex-1 min-w-0 flex items-center gap-2.5">
+                <span class="w-3 h-3 rounded-full shrink-0" style="background-color: ${projTheme.dot};"></span>
+                <span class="text-sm font-semibold text-slate-800 truncate">${escapeHtml(proj)}</span>
+              </div>
+              <span class="text-[11px] font-mono text-slate-500 bg-slate-200/70 px-2.5 py-0.5 rounded-lg shrink-0">${count} log${count === 1 ? '' : 's'}</span>
+            </div>
+          `;
+        }
+
         return `
           <div class="py-3 flex items-center justify-between gap-2">
             <div class="flex-1 min-w-0 flex items-center gap-2">
               <span class="w-3 h-3 rounded-full shrink-0" style="background-color: ${projTheme.dot};"></span>
               <input id="proj-edit-input-${idx}" type="text" value="${escapeHtml(proj)}"
-                class="w-full rounded-xl border border-transparent hover:border-slate-300 focus:border-brand-600 bg-transparent focus:bg-white px-2.5 py-1 text-sm font-semibold text-slate-800 focus:outline-none" />
+                class="w-full rounded-xl border border-slate-300 focus:border-brand-600 bg-white px-2.5 py-1 text-sm font-semibold text-slate-800 focus:outline-none" />
               <span class="text-[11px] text-slate-400 shrink-0">${count} logs</span>
             </div>
             <div class="flex items-center gap-1 shrink-0">
-              <button onclick="confirmRenameProject(${idx})" title="Save Rename"
+              <button type="button" onclick="confirmRenameProject(${idx})" title="Save Rename"
                 class="px-2.5 py-1 rounded-xl text-xs font-semibold bg-indigo-100/80 text-indigo-800 hover:bg-indigo-200/80">
                 Save
               </button>
-              <button onclick="confirmDeleteProject(${idx})" title="Delete Project"
+              <button type="button" onclick="confirmDeleteProject(${idx})" title="Delete Project"
                 class="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50">
                 <i class="ph-bold ph-trash text-sm"></i>
               </button>
@@ -1776,23 +1861,45 @@
     function confirmRenameProject(idx) {
       const oldName = appState.projects[idx];
       const newName = document.getElementById(`proj-edit-input-${idx}`).value.trim();
-      if (!newName || newName === oldName) return;
+      if (!oldName || !newName || newName === oldName) return;
 
       confirmAction(
         'Rename Project',
         `Rename "${oldName}" to "${newName}"? All existing activity logs under this project will also be updated.`,
         async () => {
-          appState.projects[idx] = newName;
-          for (const log of appState.logs) {
+          const updatedProjects = [];
+          appState.projects.forEach(p => {
+            const mapped = p === oldName ? newName : p;
+            if (mapped && !updatedProjects.includes(mapped)) {
+              updatedProjects.push(mapped);
+            }
+          });
+          if (!updatedProjects.includes(newName)) {
+            updatedProjects.push(newName);
+          }
+          appState.projects = updatedProjects;
+
+          const affectedLogs = [];
+          appState.logs.forEach(log => {
             if (!isLeaveEntry(log) && log.project === oldName) {
               log.project = newName;
-              await saveLogToCloud(log);
+              affectedLogs.push(log);
             }
+          });
+
+          if (isCloudReady && rtdb && currentUser && affectedLogs.length > 0) {
+            const batchUpdates = {};
+            const basePath = getRtdbBasePath();
+            affectedLogs.forEach(log => {
+              batchUpdates[`${basePath}/logs/${log.id}/project`] = newName;
+            });
+            await update(ref(rtdb), batchUpdates);
           }
+          await saveSettingsToCloud();
+
           syncProjectDropdowns();
           renderProjectManagerList();
           renderApp();
-          await saveSettingsToCloud();
           showToast(`Renamed to "${newName}"`);
         }
       );
@@ -2422,7 +2529,7 @@
 
       if (isAnnual) {
         if (pulseSub) pulseSub.textContent = `Pro-rata monthly work effort & Leave/PH across ${appState.selectedYear}`;
-        pulseLabels = MONTHS;
+        pulseLabels = SHORT_MONTHS;
         const monthlyWorkTotals = new Array(12).fill(0);
         const monthlyLeaveTotals = new Array(12).fill(0);
 
@@ -2446,7 +2553,8 @@
         pulseBaselineValues = MONTHS.map((_, idx) => getWorkingDaysInMonth(parseInt(appState.selectedYear, 10), idx) * 8);
       } else {
         const yNum = parseInt(appState.selectedYear, 10);
-        const mIdx = MONTHS.indexOf(appState.selectedMonth);
+        const mIdx = getMonthIndex(appState.selectedMonth);
+        const shortM = SHORT_MONTHS[mIdx] || appState.selectedMonth;
         const daysInMonth = new Date(yNum, mIdx + 1, 0).getDate();
         if (pulseSub) pulseSub.textContent = `Working-day pro-rata work effort & Leave/PH in ${appState.selectedMonth} ${appState.selectedYear}`;
 
@@ -2474,7 +2582,7 @@
           const iso = toIsoDateStr(dt);
           const isWeekend = dt.getDay() === 0 || dt.getDay() === 6;
           if (!isWeekend || (dailyWorkMap[iso] || 0) > 0 || (dailyLeaveMap[iso] || 0) > 0) {
-            pulseLabels.push(`${d} ${appState.selectedMonth}`);
+            pulseLabels.push(`${d} ${shortM}`);
             pulseWorkValues.push(+(dailyWorkMap[iso] || 0).toFixed(2));
             pulseLeaveValues.push(+(dailyLeaveMap[iso] || 0).toFixed(2));
             pulseBaselineValues.push(isWeekend ? 0 : 8);
@@ -2767,8 +2875,8 @@
         scopedLogs = appState.logs.filter(l => {
           if (!l.startDate) return false;
           const [yStr, mStr] = l.startDate.split('-');
-          const mName = MONTHS[parseInt(mStr, 10) - 1];
-          return yStr === appState.selectedYear && (isAnnual || mName === appState.selectedMonth);
+          const mIdx = parseInt(mStr, 10) - 1;
+          return yStr === appState.selectedYear && (isAnnual || mIdx === getMonthIndex(appState.selectedMonth));
         });
       } else {
         let winStart = null;
@@ -2776,12 +2884,13 @@
         if (scope === 'weekly' || scope === 'biweekly') {
           const daysBack = scope === 'weekly' ? 6 : 13;
           const isAnnual = appState.selectedMonth === 'ALL';
+          const targetMIdx = getMonthIndex(appState.selectedMonth);
           const periodDates = appState.logs
             .filter(l => {
               if (!l.startDate) return false;
               const [yStr, mStr] = l.startDate.split('-');
-              const mName = MONTHS[parseInt(mStr, 10) - 1];
-              return yStr === appState.selectedYear && (isAnnual || mName === appState.selectedMonth);
+              const mIdx = parseInt(mStr, 10) - 1;
+              return yStr === appState.selectedYear && (isAnnual || mIdx === targetMIdx);
             })
             .map(l => parseLocalDate(l.endDate || l.startDate))
             .filter(Boolean);
@@ -2791,7 +2900,7 @@
             anchor = new Date(Math.max(...periodDates.map(d => d.getTime())));
           } else if (!isAnnual) {
             const yNum = parseInt(appState.selectedYear, 10);
-            const mIdx = MONTHS.indexOf(appState.selectedMonth);
+            const mIdx = getMonthIndex(appState.selectedMonth);
             anchor = new Date(yNum, mIdx + 1, 0);
           } else {
             anchor = new Date();
@@ -2838,7 +2947,6 @@
 
       const totalLeaveHrs = leaveLogs.reduce((acc, l) => acc + getLogLeaveHours(l), 0);
 
-      // Update Expand All / Collapse All button state
       const expandIcon = document.getElementById('summary-expand-icon');
       const expandLabel = document.getElementById('summary-expand-label');
       if (expandIcon && expandLabel) {
@@ -2849,7 +2957,6 @@
       const projectKeys = Object.keys(grouped).sort((a, b) => grouped[b].hrs - grouped[a].hrs);
       if (leaveLogs.length > 0) projectKeys.push('__LEAVE__');
 
-      // Sync group expansion map cleanly
       projectKeys.forEach(k => {
         if (appState.summaryExpandedGroups[k] === undefined) {
           appState.summaryExpandedGroups[k] = appState.summaryAllExpanded;
@@ -2866,7 +2973,6 @@
         return;
       }
 
-      // Render Visual Collapsible Cards
       const cardsHtml = projectKeys.map(key => {
         const isExpanded = appState.summaryExpandedGroups[key] === true;
         const safeKey = escapeHtml(key).replace(/'/g, "\\'");
@@ -2943,7 +3049,6 @@
         ${cardsHtml}
       `;
 
-      // Build Universal Plain-Text Summary for Copy Button
       const textLines = [
         `TIMESHEET SUMMARY — ${headerTitle}`,
         `Staff: ${appState.profile.name}`,
@@ -3247,28 +3352,33 @@
       const activeCats = getActiveCategories();
 
       const grid = document.getElementById('category-inputs-grid');
-      grid.innerHTML = activeCats.map(cat => `
-        <div class="p-3 rounded-2xl border border-slate-200/90 bg-white focus-within:border-brand-600 transition flex items-center justify-between gap-2 shadow-2xs">
-          <div class="min-w-0">
-            <div class="flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${cat.color};"></span>
-              <span class="font-display text-xs font-bold text-slate-900">${escapeHtml(cat.code)}</span>
+      if (grid) {
+        grid.innerHTML = activeCats.map(cat => `
+          <div class="p-3 rounded-2xl border border-slate-200/90 bg-white focus-within:border-brand-600 transition flex items-center justify-between gap-2 shadow-2xs">
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${cat.color};"></span>
+                <span class="font-display text-xs font-bold text-slate-900">${escapeHtml(cat.code)}</span>
+              </div>
+              <p class="text-[11px] text-slate-500 truncate mt-0.5" title="${escapeHtml(cat.name)}">${escapeHtml(cat.name)}</p>
             </div>
-            <p class="text-[11px] text-slate-500 truncate mt-0.5" title="${escapeHtml(cat.name)}">${escapeHtml(cat.name)}</p>
+            <input type="number" id="cat-input-${escapeHtml(cat.code)}" data-cat="${escapeHtml(cat.code)}" step="0.5" min="0" placeholder="0"
+              oninput="recalcDrawerTotal()"
+              class="w-16 text-right font-mono font-bold text-sm bg-slate-50 border border-slate-300 rounded-xl px-2 py-1 text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-600 tabular-nums" />
           </div>
-          <input type="number" id="cat-input-${escapeHtml(cat.code)}" data-cat="${escapeHtml(cat.code)}" step="0.5" min="0" placeholder="0"
-            oninput="recalcDrawerTotal()"
-            class="w-16 text-right font-mono font-bold text-sm bg-slate-50 border border-slate-300 rounded-xl px-2 py-1 text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-600 tabular-nums" />
-        </div>
-      `).join('');
+        `).join('');
+      }
 
-      document.getElementById('ref-table-body').innerHTML = activeCats.map(cat => `
-        <tr>
-          <td class="py-3 pr-3 font-mono font-bold"><span class="px-2 py-0.5 rounded-lg border text-xs ${cat.badgeBg}">${escapeHtml(cat.code)}</span></td>
-          <td class="py-3 px-3 font-display font-bold text-slate-800">${escapeHtml(cat.name)}</td>
-          <td class="py-3 pl-3 text-slate-600">${escapeHtml(cat.useWhen || '—')}</td>
-        </tr>
-      `).join('');
+      const refBody = document.getElementById('ref-table-body');
+      if (refBody) {
+        refBody.innerHTML = activeCats.map(cat => `
+          <tr>
+            <td class="py-3 pr-3 font-mono font-bold"><span class="px-2 py-0.5 rounded-lg border text-xs ${cat.badgeBg}">${escapeHtml(cat.code)}</span></td>
+            <td class="py-3 px-3 font-display font-bold text-slate-800">${escapeHtml(cat.name)}</td>
+            <td class="py-3 pl-3 text-slate-600">${escapeHtml(cat.useWhen || '—')}</td>
+          </tr>
+        `).join('');
+      }
     }
 
     function setDrawerEntryType(type, skipAutoLeaveCalc = false) {
@@ -3341,6 +3451,7 @@
       const drawer = document.getElementById('log-drawer');
       const backdrop = document.getElementById('log-drawer-backdrop');
       document.getElementById('activity-form').reset();
+      syncProjectDropdowns();
       document.getElementById('edit-entry-id').value = '';
       document.getElementById('drawer-title').textContent = 'Log Daily Entry';
 
@@ -3375,7 +3486,7 @@
           setDrawerEntryType('work', true);
         }
       } else {
-        const mIdx = appState.selectedMonth === 'ALL' ? 10 : MONTHS.indexOf(appState.selectedMonth);
+        const mIdx = appState.selectedMonth === 'ALL' ? 10 : Math.max(0, getMonthIndex(appState.selectedMonth));
         const mStr = String(mIdx + 1).padStart(2, '0');
         document.getElementById('form-start-date').value = `${appState.selectedYear}-${mStr}-15`;
         setDrawerEntryType(requestedType, false);
@@ -3863,7 +3974,7 @@
       if (parsedBulkLogs.length === 0) return;
       confirmAction(
         'Import CSV Records',
-        `Upload ${parsedBulkLogs.length} activity/absence records to your Firebase Realtime Database?`,
+        `Upload ${parsedBulkLogs.length} activity/absence records to your cloud database?`,
         async () => {
           let settingsChanged = false;
           for (const item of parsedBulkLogs) {
@@ -3944,9 +4055,12 @@
     }
 
     function renderProfileHeader() {
-      document.getElementById('profile-display-name').textContent = appState.profile.name;
-      document.getElementById('profile-avatar-badge').textContent = appState.profile.initials;
-      document.getElementById('profile-display-subtitle').textContent = appState.profile.subtitle || 'Productivity Tracker';
+      const nameEl = document.getElementById('profile-display-name');
+      const badgeEl = document.getElementById('profile-avatar-badge');
+      const subEl = document.getElementById('profile-display-subtitle');
+      if (nameEl) nameEl.textContent = appState.profile.name;
+      if (badgeEl) badgeEl.textContent = appState.profile.initials;
+      if (subEl) subEl.textContent = appState.profile.subtitle || 'Productivity Tracker';
     }
 
     function handleSaveProfile(e) {
@@ -3991,7 +4105,7 @@
 
       confirmAction(
         'Change Login Password',
-        `Update Firebase authentication password for ${currentUser.email}?`,
+        `Update authentication password for ${currentUser.email}?`,
         async () => {
           try {
             const credential = EmailAuthProvider.credential(currentUser.email, currentPwd);
@@ -4227,10 +4341,9 @@
     let activeSettingsRef = null;
     let isCloudReady = false;
     let isUiInitialized = false;
+    let firebaseInitPromise = null;
 
-    // Primary owner email/UID keeps using the original /public/data path so existing records stay intact;
-    // any other authenticated user automatically gets an isolated private /users/{uid}/data workspace.
-    const PRIMARY_OWNER_EMAIL = 'annuarfaiz@gmail.com';
+    const PRIMARY_OWNER_EMAIL = 'annuar.faiz@gmail.com';
     const PRIMARY_OWNER_UID = 'sMH172uzBxTsvoVFmMqm2BPRfJH3';
 
     function getFirebaseConfig() {
@@ -4278,36 +4391,67 @@
       };
     }
 
-    async function ensureFirebaseInitialized(customConfig = null) {
-      const config = customConfig || getFirebaseConfig();
-      if (!config || !config.apiKey) return;
-
-      const existingApps = getApps();
-      for (const a of existingApps) {
-        await deleteApp(a);
+    function handleAuthSessionChange(user) {
+      const prevUid = currentUser ? currentUser.uid : null;
+      currentUser = user;
+      const uidDisplay = document.getElementById('firebase-uid-display');
+      if (uidDisplay) {
+        uidDisplay.textContent = user ? `UID: ${user.uid}` : 'Not signed in';
       }
 
-      firebaseApp = initializeApp(config);
-      firebaseAuth = getAuth(firebaseApp);
-      rtdb = getDatabase(firebaseApp, config.databaseURL || "https://productivity-tracker-556c4-default-rtdb.asia-southeast1.firebasedatabase.app/");
-
-      onAuthStateChanged(firebaseAuth, (user) => {
-        currentUser = user;
-        const uidDisplay = document.getElementById('firebase-uid-display');
-        if (uidDisplay) {
-          uidDisplay.textContent = user ? `UID: ${user.uid}` : 'Not signed in';
-        }
-
-        if (user) {
-          isCloudReady = true;
-          unlockDashboardUI();
+      if (user) {
+        isCloudReady = true;
+        unlockDashboardUI();
+        if (prevUid !== user.uid || !activeSettingsRef) {
           attachRealtimeListeners();
-        } else {
-          isCloudReady = false;
-          detachRealtimeListeners();
-          lockDashboardUI();
         }
-      });
+      } else {
+        isCloudReady = false;
+        detachRealtimeListeners();
+        lockDashboardUI();
+      }
+    }
+
+    async function ensureFirebaseInitialized(customConfig = null) {
+      if (firebaseInitPromise && !customConfig) {
+        return firebaseInitPromise;
+      }
+
+      firebaseInitPromise = (async () => {
+        const config = customConfig || getFirebaseConfig();
+        if (!config || !config.apiKey) return;
+
+        try {
+          if (customConfig || getApps().length === 0) {
+            const existingApps = getApps();
+            for (const a of existingApps) {
+              await deleteApp(a);
+            }
+            firebaseApp = initializeApp(config);
+          } else {
+            firebaseApp = getApps()[0];
+          }
+
+          firebaseAuth = getAuth(firebaseApp);
+          rtdb = getDatabase(firebaseApp, config.databaseURL || "https://productivity-tracker-556c4-default-rtdb.asia-southeast1.firebasedatabase.app/");
+
+          onAuthStateChanged(firebaseAuth, (user) => {
+            handleAuthSessionChange(user);
+          });
+
+          if (firebaseAuth.currentUser) {
+            handleAuthSessionChange(firebaseAuth.currentUser);
+          }
+        } catch (err) {
+          console.error('Firebase initialization error:', err);
+          const errBox = document.getElementById('login-error-box');
+          const errText = document.getElementById('login-error-text');
+          if (errText) errText.textContent = `Initialization error: ${err.message}`;
+          if (errBox) errBox.classList.remove('hidden');
+        }
+      })();
+
+      return firebaseInitPromise;
     }
 
     function detachRealtimeListeners() {
@@ -4354,6 +4498,8 @@
           }
           if (Array.isArray(data.projects) && data.projects.length > 0) {
             appState.projects = data.projects.filter(p => p !== 'Public Holiday');
+          } else {
+            appState.projects = getEffectiveProjectList(true);
           }
           syncPeriodSelectors();
           syncProjectDropdowns();
@@ -4363,7 +4509,7 @@
           if (isPrimaryOwnerUser(currentUser)) {
             appState.profile = { name: 'Gs. Annuar Faiz', initials: 'AF', subtitle: 'Productivity Tracker' };
             appState.selectedYear = '2026';
-            appState.selectedMonth = 'Nov';
+            appState.selectedMonth = 'November';
             appState.years = ['2026'];
             appState.categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
             appState.projects = [...DEFAULT_PROJECTS];
@@ -4385,7 +4531,7 @@
         }
       }, (err) => {
         console.error('RTDB settings listener error:', err);
-        showToast('Cloud sync error: check Firebase Database rules & UID.', 'error');
+        showToast('Cloud sync error: check database rules & UID.', 'error');
       });
 
       onValue(activeLogsRef, async (snapshot) => {
@@ -4403,11 +4549,18 @@
           }));
           fetchedLogs.sort((a, b) => (b.startDate || '').localeCompare(a.startDate || ''));
           appState.logs = fetchedLogs;
+          if (!Array.isArray(appState.projects) || appState.projects.length === 0) {
+            appState.projects = getEffectiveProjectList(true);
+            syncProjectDropdowns();
+            if (appState.projects.length > 0) {
+              await saveSettingsToCloud();
+            }
+          }
           renderApp();
         }
       }, (err) => {
         console.error('RTDB logs listener error:', err);
-        showToast('Cloud sync error: check Firebase Database rules & UID.', 'error');
+        showToast('Cloud sync error: check database rules & UID.', 'error');
       });
     }
 
@@ -4424,7 +4577,7 @@
         });
       } catch (err) {
         console.error('Error saving settings to RTDB:', err);
-        showToast('Cloud sync warning: check RTDB rules.', 'error');
+        showToast('Cloud sync warning: check database rules.', 'error');
       }
     }
 
@@ -4445,7 +4598,7 @@
         });
       } catch (err) {
         console.error('Error saving log to RTDB:', err);
-        showToast('Cloud sync warning: check RTDB rules.', 'error');
+        showToast('Cloud sync warning: check database rules.', 'error');
       }
     }
 
@@ -4484,11 +4637,12 @@
           return;
         }
         Object.assign(DEFAULT_FIREBASE_CONFIG, parsed);
+        firebaseInitPromise = null;
         closeFirebaseConfigModal();
-        showToast('Reconnecting Firebase client...');
+        showToast('Reconnecting cloud client...');
         await ensureFirebaseInitialized(DEFAULT_FIREBASE_CONFIG);
       } catch (e) {
-        showToast('Invalid JSON format. Please paste valid Firebase config JSON.', 'error');
+        showToast('Invalid JSON format. Please paste valid web config JSON.', 'error');
       }
     }
 
@@ -4511,13 +4665,17 @@
       if (gateway) gateway.classList.add('hidden');
       if (shell) shell.classList.remove('hidden');
 
-      if (!isUiInitialized) {
-        renderProfileHeader();
-        syncPeriodSelectors();
-        initFormElements();
-        isUiInitialized = true;
+      try {
+        if (!isUiInitialized) {
+          renderProfileHeader();
+          syncPeriodSelectors();
+          initFormElements();
+          isUiInitialized = true;
+        }
+        renderApp();
+      } catch (err) {
+        console.error('Error rendering dashboard after unlock:', err);
       }
-      renderApp();
     }
 
     function lockDashboardUI() {
@@ -4526,7 +4684,6 @@
       if (shell) shell.classList.add('hidden');
       if (gateway) gateway.classList.remove('hidden');
 
-      // Reset in-memory state cleanly on sign-out so nothing carries over between accounts
       appState.profile = { name: 'Productivity Tracker', initials: 'PT', subtitle: 'Workspace' };
       appState.categories = JSON.parse(JSON.stringify(SINGLE_AI_STARTER_CATEGORY));
       appState.projects = [];
@@ -4536,9 +4693,6 @@
 
     async function handleLoginSubmit(e) {
       e.preventDefault();
-      if (!firebaseAuth) {
-        await ensureFirebaseInitialized();
-      }
       const emailVal = document.getElementById('login-email').value.trim();
       const passVal = document.getElementById('login-password').value;
       const errBox = document.getElementById('login-error-box');
@@ -4547,16 +4701,42 @@
       const submitLabel = document.getElementById('login-submit-label');
 
       if (errBox) errBox.classList.add('hidden');
+
+      if (window.location.protocol === 'content:' || window.location.protocol === 'file:') {
+        if (errText) {
+          errText.textContent = 'Local file mode detected (content:// or file://). Please open your hosted https:// GitHub Pages link so authentication can connect.';
+        }
+        if (errBox) errBox.classList.remove('hidden');
+        return;
+      }
+
       if (submitBtn) submitBtn.disabled = true;
       if (submitLabel) submitLabel.textContent = 'Signing in...';
 
       try {
-        await signInWithEmailAndPassword(firebaseAuth, emailVal, passVal);
+        if (!firebaseAuth) {
+          await ensureFirebaseInitialized();
+        }
+        if (!firebaseAuth) {
+          throw new Error('Authentication service could not initialize. Check your internet connection.');
+        }
+
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Sign-in timed out. Ensure you are opening your authorized https:// web URL and check your network.')), 12000)
+        );
+        const cred = await Promise.race([
+          signInWithEmailAndPassword(firebaseAuth, emailVal, passVal),
+          timeoutPromise
+        ]);
         document.getElementById('login-password').value = '';
+        if (cred && cred.user) {
+          handleAuthSessionChange(cred.user);
+        }
         showToast('Signed in to Productivity Tracker!');
       } catch (err) {
+        console.error('Sign-in error:', err);
         if (errText) {
-          errText.textContent = err.message || 'Sign-in failed. Verify your email and password in Firebase Authentication.';
+          errText.textContent = err.message || 'Sign-in failed. Verify your email and password.';
         }
         if (errBox) errBox.classList.remove('hidden');
         document.getElementById('login-password').value = '';
@@ -4570,7 +4750,7 @@
     function handleLogout() {
       confirmAction(
         'Lock Workspace',
-        'Sign out of your Firebase session and lock your dashboard?',
+        'Sign out of your session and lock your dashboard?',
         async () => {
           try {
             if (firebaseAuth) {
@@ -4599,6 +4779,7 @@
     window.applyCustomFirebaseConfig = applyCustomFirebaseConfig;
     window.openProjectManagerModal = openProjectManagerModal;
     window.closeProjectManagerModal = closeProjectManagerModal;
+    window.toggleProjectEditMode = toggleProjectEditMode;
     window.handleAddProject = handleAddProject;
     window.confirmRenameProject = confirmRenameProject;
     window.confirmDeleteProject = confirmDeleteProject;
@@ -4652,11 +4833,26 @@
     window.switchMobileChartTab = switchMobileChartTab;
     window.renderApp = renderApp;
 
-    window.addEventListener('DOMContentLoaded', async () => {
+    async function bootstrapApp() {
       const emailInput = document.getElementById('login-email');
       if (emailInput) emailInput.focus();
+      if (window.location.protocol === 'content:' || window.location.protocol === 'file:') {
+        const errBox = document.getElementById('login-error-box');
+        const errText = document.getElementById('login-error-text');
+        if (errText) {
+          errText.textContent = 'Opened from local storage (content://). Upload this index.html to GitHub Pages and open your https:// URL to sign in.';
+        }
+        if (errBox) errBox.classList.remove('hidden');
+        return;
+      }
       await ensureFirebaseInitialized();
-    });
+    }
+
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', bootstrapApp);
+    } else {
+      bootstrapApp();
+    }
   </script>
 </body>
 </html>
